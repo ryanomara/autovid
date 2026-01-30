@@ -1,0 +1,1101 @@
+#!/usr/bin/env node
+/**
+ * AutoVid MCP Server
+ *
+ * Model Context Protocol server exposing video generation tools to LLM agents.
+ * Uses stdio transport for local process communication.
+ *
+ * Tools:
+ * - create_composition: Create new video composition
+ * - add_scene: Add scene to composition
+ * - render_video: Render composition to video (long-running)
+ * - preview_frame: Generate single frame preview
+ * - list_templates: Get available templates
+ *
+ * Resources:
+ * - Saved compositions accessible via composition://
+ */
+
+import { Server as McpServer } from '@modelcontextprotocol/sdk/server/index.js';
+import { ResourceTemplate } from '@modelcontextprotocol/sdk/types.js';
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { z } from 'zod';
+import { randomUUID } from 'crypto';
+import { writeFile, readFile, mkdir, readdir } from 'fs/promises';
+import { existsSync } from 'fs';
+import { join } from 'path';
+import { createLogger } from '../utils/logger.js';
+import type {
+  VideoProject,
+  VideoConfig,
+  Scene,
+  Layer,
+  TextLayer,
+  ShapeLayer,
+  ImageLayer,
+  Color,
+  Template,
+  EasingType,
+} from '../types/index.js';
+import { Renderer } from '../core/engine/renderer.js';
+import { Compositor } from '../core/engine/compositor.js';
+import { Timeline } from '../core/engine/timeline.js';
+import { createBuffer, fillBuffer, toRGB } from '../core/engine/canvas.js';
+
+// ============================================================================
+// Configuration
+// ============================================================================
+
+const logger = createLogger('mcp-server');
+const COMPOSITIONS_DIR = process.env.AUTOVID_COMPOSITIONS_DIR || './compositions';
+const OUTPUT_DIR = process.env.AUTOVID_OUTPUT_DIR || './output';
+
+// ============================================================================
+// In-Memory State
+// ============================================================================
+
+/** Active compositions in memory */
+const compositions = new Map<string, VideoProject>();
+
+/** Render tasks in progress */
+const renderTasks = new Map<string, { status: 'pending' | 'rendering' | 'complete' | 'error'; progress: number; error?: string; outputPath?: string }>();
+
+// ============================================================================
+// Zod Schemas
+// ============================================================================
+
+const ColorSchema = z.object({
+  r: z.number().int().min(0).max(255).describe('Red channel (0-255)'),
+  g: z.number().int().min(0).max(255).describe('Green channel (0-255)'),
+  b: z.number().int().min(0).max(255).describe('Blue channel (0-255)'),
+  a: z.number().min(0).max(1).default(1).describe('Alpha channel (0-1)'),
+}).describe('RGBA color');
+
+const PositionSchema = z.object({
+  x: z.number().describe('X coordinate in pixels'),
+  y: z.number().describe('Y coordinate in pixels'),
+});
+
+const DimensionsSchema = z.object({
+  width: z.number().positive().describe('Width in pixels'),
+  height: z.number().positive().describe('Height in pixels'),
+});
+
+const ScaleSchema = z.object({
+  x: z.number().positive().default(1).describe('Horizontal scale factor'),
+  y: z.number().positive().default(1).describe('Vertical scale factor'),
+});
+
+const EasingTypeSchema = z.enum([
+  'linear', 'easeIn', 'easeOut', 'easeInOut',
+  'easeInQuad', 'easeOutQuad', 'easeInOutQuad',
+  'easeInCubic', 'easeOutCubic', 'easeInOutCubic',
+  'easeInQuart', 'easeOutQuart', 'easeInOutQuart',
+  'easeInElastic', 'easeOutElastic', 'easeInOutElastic',
+  'easeInBounce', 'easeOutBounce', 'easeInOutBounce',
+]).default('linear');
+
+const TransitionSchema = z.object({
+  type: z.enum(['fade', 'slide', 'zoom', 'dissolve', 'wipe']).describe('Transition effect type'),
+  duration: z.number().positive().describe('Transition duration in milliseconds'),
+  easing: EasingTypeSchema.optional(),
+}).optional();
+
+// Tool Input Schemas
+const CreateCompositionInputSchema = {
+  name: z.string().min(1).max(100).describe('Name of the composition'),
+  width: z.number().int().positive().default(1920).describe('Video width in pixels (default: 1920)'),
+  height: z.number().int().positive().default(1080).describe('Video height in pixels (default: 1080)'),
+  fps: z.number().int().positive().min(1).max(120).default(30).describe('Frames per second (default: 30)'),
+  duration: z.number().positive().describe('Total duration in milliseconds'),
+  backgroundColor: ColorSchema.optional().describe('Background color (default: black)'),
+  outputFormat: z.enum(['mp4', 'webm', 'gif', 'frames']).default('mp4').describe('Output format'),
+  quality: z.enum(['low', 'medium', 'high', 'ultra']).default('high').describe('Output quality'),
+};
+
+const TextLayerInputSchema = z.object({
+  type: z.literal('text'),
+  text: z.string().min(1).describe('Text content to display'),
+  fontFamily: z.string().default('Arial').describe('Font family name'),
+  fontSize: z.number().positive().default(48).describe('Font size in pixels'),
+  color: ColorSchema.default({ r: 255, g: 255, b: 255, a: 1 }).describe('Text color'),
+  fontWeight: z.enum(['normal', 'bold', '100', '200', '300', '400', '500', '600', '700', '800', '900']).optional(),
+  fontStyle: z.enum(['normal', 'italic']).optional(),
+  textAlign: z.enum(['left', 'center', 'right']).optional(),
+});
+
+const ShapeLayerInputSchema = z.object({
+  type: z.literal('shape'),
+  shapeType: z.enum(['rectangle', 'circle', 'ellipse', 'polygon', 'path']).describe('Shape type'),
+  dimensions: DimensionsSchema.describe('Shape dimensions'),
+  fill: ColorSchema.optional().describe('Fill color'),
+  stroke: z.object({
+    color: ColorSchema,
+    width: z.number().positive(),
+  }).optional().describe('Stroke style'),
+  cornerRadius: z.number().nonnegative().optional().describe('Corner radius for rectangles'),
+});
+
+const ImageLayerInputSchema = z.object({
+  type: z.literal('image'),
+  src: z.string().min(1).describe('Image file path or URL'),
+  fit: z.enum(['cover', 'contain', 'fill', 'none']).optional().describe('Image fit mode'),
+});
+
+const LayerInputSchema = z.discriminatedUnion('type', [
+  TextLayerInputSchema,
+  ShapeLayerInputSchema,
+  ImageLayerInputSchema,
+]);
+
+const AddSceneInputSchema = {
+  compositionId: z.string().uuid().describe('ID of the composition to add scene to'),
+  name: z.string().optional().describe('Scene name for identification'),
+  startTime: z.number().nonnegative().describe('Scene start time in milliseconds'),
+  endTime: z.number().positive().describe('Scene end time in milliseconds'),
+  layers: z.array(z.object({
+    layer: LayerInputSchema,
+    position: PositionSchema.default({ x: 0, y: 0 }),
+    scale: ScaleSchema.optional(),
+    rotation: z.number().default(0).describe('Rotation in degrees'),
+    opacity: z.number().min(0).max(1).default(1),
+    blendMode: z.enum(['normal', 'multiply', 'screen', 'overlay']).optional(),
+  })).min(1).describe('Layers to add to the scene'),
+  transition: TransitionSchema.describe('Transition effect when entering scene'),
+  backgroundColor: ColorSchema.optional().describe('Scene-specific background color'),
+};
+
+const RenderVideoInputSchema = {
+  compositionId: z.string().uuid().describe('ID of the composition to render'),
+  outputPath: z.string().optional().describe('Output file path (auto-generated if not provided)'),
+  onlyFrames: z.boolean().default(false).describe('If true, only render frames without encoding'),
+};
+
+const PreviewFrameInputSchema = {
+  compositionId: z.string().uuid().describe('ID of the composition'),
+  time: z.number().nonnegative().describe('Time in milliseconds to preview'),
+  format: z.enum(['raw', 'base64']).default('base64').describe('Output format for frame data'),
+};
+
+const ListTemplatesInputSchema = {
+  category: z.enum(['corporate', 'social', 'presentation', 'ad', 'educational', 'custom', 'all']).default('all').describe('Filter by category'),
+};
+
+// ============================================================================
+// Utility Functions
+// ============================================================================
+
+async function ensureDir(dir: string): Promise<void> {
+  if (!existsSync(dir)) {
+    await mkdir(dir, { recursive: true });
+  }
+}
+
+async function saveComposition(project: VideoProject): Promise<void> {
+  await ensureDir(COMPOSITIONS_DIR);
+  const filepath = join(COMPOSITIONS_DIR, `${project.id}.json`);
+  await writeFile(filepath, JSON.stringify(project, null, 2));
+  logger.info({ projectId: project.id, filepath }, 'Composition saved');
+}
+
+async function loadComposition(id: string): Promise<VideoProject | null> {
+  const filepath = join(COMPOSITIONS_DIR, `${id}.json`);
+  if (!existsSync(filepath)) {
+    return null;
+  }
+  const data = await readFile(filepath, 'utf-8');
+  return JSON.parse(data) as VideoProject;
+}
+
+async function listSavedCompositions(): Promise<string[]> {
+  await ensureDir(COMPOSITIONS_DIR);
+  const files = await readdir(COMPOSITIONS_DIR);
+  return files
+    .filter((f) => f.endsWith('.json'))
+    .map((f) => f.replace('.json', ''));
+}
+
+function getComposition(id: string): VideoProject | undefined {
+  return compositions.get(id);
+}
+
+function formatError(message: string, suggestion?: string): { content: Array<{ type: 'text'; text: string }>; isError: true } {
+  const text = suggestion ? `Error: ${message}\n\nSuggestion: ${suggestion}` : `Error: ${message}`;
+  return {
+    content: [{ type: 'text', text }],
+    isError: true,
+  };
+}
+
+// ============================================================================
+// Built-in Templates
+// ============================================================================
+
+const TEMPLATES: Template[] = [
+  {
+    id: 'corporate-intro',
+    name: 'Corporate Introduction',
+    description: 'Professional company introduction with logo animation and text overlays. Ideal for brand presentations.',
+    category: 'corporate',
+    thumbnail: undefined,
+    defaultConfig: {
+      width: 1920,
+      height: 1080,
+      fps: 30,
+      duration: 10000,
+      outputFormat: 'mp4',
+      quality: 'high',
+    },
+    scenes: [
+      {
+        name: 'Logo Reveal',
+        layers: [],
+      },
+      {
+        name: 'Main Message',
+        layers: [],
+      },
+      {
+        name: 'Call to Action',
+        layers: [],
+      },
+    ],
+    requiredInputs: [
+      { name: 'companyName', type: 'text', description: 'Company name to display', required: true },
+      { name: 'tagline', type: 'text', description: 'Company tagline or slogan', required: false },
+      { name: 'logo', type: 'image', description: 'Company logo image', required: true },
+      { name: 'primaryColor', type: 'color', description: 'Brand primary color', required: false },
+    ],
+  },
+  {
+    id: 'social-square',
+    name: 'Social Media Square',
+    description: 'Square format video optimized for Instagram and Facebook feeds. Eye-catching animations.',
+    category: 'social',
+    defaultConfig: {
+      width: 1080,
+      height: 1080,
+      fps: 30,
+      duration: 15000,
+      outputFormat: 'mp4',
+      quality: 'high',
+    },
+    scenes: [
+      {
+        name: 'Hook',
+        layers: [],
+      },
+      {
+        name: 'Content',
+        layers: [],
+      },
+      {
+        name: 'CTA',
+        layers: [],
+      },
+    ],
+    requiredInputs: [
+      { name: 'headline', type: 'text', description: 'Main headline text', required: true },
+      { name: 'body', type: 'text', description: 'Supporting body text', required: false },
+      { name: 'ctaText', type: 'text', description: 'Call-to-action button text', required: true },
+    ],
+  },
+  {
+    id: 'presentation-slide',
+    name: 'Presentation Slide',
+    description: 'Clean animated presentation slide with bullet points and transitions.',
+    category: 'presentation',
+    defaultConfig: {
+      width: 1920,
+      height: 1080,
+      fps: 30,
+      duration: 8000,
+      outputFormat: 'mp4',
+      quality: 'high',
+    },
+    scenes: [
+      {
+        name: 'Title',
+        layers: [],
+      },
+      {
+        name: 'Content',
+        layers: [],
+      },
+    ],
+    requiredInputs: [
+      { name: 'title', type: 'text', description: 'Slide title', required: true },
+      { name: 'bulletPoints', type: 'text', description: 'Bullet points (one per line)', required: true },
+    ],
+  },
+  {
+    id: 'ad-banner',
+    name: 'Advertising Banner',
+    description: 'Animated web banner ad with product showcase and promotional text.',
+    category: 'ad',
+    defaultConfig: {
+      width: 728,
+      height: 90,
+      fps: 30,
+      duration: 5000,
+      outputFormat: 'gif',
+      quality: 'medium',
+    },
+    scenes: [
+      {
+        name: 'Product',
+        layers: [],
+      },
+      {
+        name: 'Offer',
+        layers: [],
+      },
+    ],
+    requiredInputs: [
+      { name: 'productImage', type: 'image', description: 'Product image', required: true },
+      { name: 'offerText', type: 'text', description: 'Promotional offer text', required: true },
+      { name: 'ctaText', type: 'text', description: 'Call-to-action text', required: true },
+    ],
+  },
+  {
+    id: 'educational-explainer',
+    name: 'Educational Explainer',
+    description: 'Step-by-step educational video with numbered sections and clear visuals.',
+    category: 'educational',
+    defaultConfig: {
+      width: 1920,
+      height: 1080,
+      fps: 30,
+      duration: 60000,
+      outputFormat: 'mp4',
+      quality: 'high',
+    },
+    scenes: [
+      {
+        name: 'Introduction',
+        layers: [],
+      },
+      {
+        name: 'Step 1',
+        layers: [],
+      },
+      {
+        name: 'Step 2',
+        layers: [],
+      },
+      {
+        name: 'Summary',
+        layers: [],
+      },
+    ],
+    requiredInputs: [
+      { name: 'topic', type: 'text', description: 'Topic being explained', required: true },
+      { name: 'steps', type: 'text', description: 'Steps to explain (JSON array)', required: true },
+    ],
+  },
+];
+
+// ============================================================================
+// MCP Server Setup
+// ============================================================================
+
+const server = new McpServer({
+  name: 'autovid-mcp',
+  version: '1.0.0',
+});
+
+// ============================================================================
+// Tool: create_composition
+// ============================================================================
+
+server.registerTool(
+  'create_composition',
+  {
+    title: 'Create Composition',
+    description: `Create a new video composition with specified dimensions, frame rate, and duration.
+
+Example usage:
+- Create a 1080p video at 30fps for 10 seconds
+- Create a square video for social media
+- Create a GIF animation
+
+Returns the composition ID for use with other tools.`,
+    inputSchema: CreateCompositionInputSchema,
+  },
+  async (input) => {
+    try {
+      const id = randomUUID();
+      const config: VideoConfig = {
+        width: input.width,
+        height: input.height,
+        fps: input.fps,
+        duration: input.duration,
+        backgroundColor: input.backgroundColor as Color | undefined,
+        outputFormat: input.outputFormat,
+        quality: input.quality,
+      };
+
+      const project: VideoProject = {
+        id,
+        name: input.name,
+        config,
+        scenes: [],
+        audio: [],
+        metadata: {
+          author: 'MCP Client',
+          tags: ['mcp-generated'],
+        },
+      };
+
+      compositions.set(id, project);
+      await saveComposition(project);
+
+      logger.info({ projectId: id, name: input.name }, 'Composition created');
+
+      return {
+        content: [{
+          type: 'text',
+          text: JSON.stringify({
+            success: true,
+            compositionId: id,
+            name: input.name,
+            config: {
+              width: config.width,
+              height: config.height,
+              fps: config.fps,
+              duration: config.duration,
+              outputFormat: config.outputFormat,
+            },
+            message: `Composition "${input.name}" created successfully. Use add_scene to add content.`,
+          }, null, 2),
+        }],
+      };
+    } catch (error) {
+      logger.error({ error }, 'Failed to create composition');
+      return formatError(
+        `Failed to create composition: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        'Ensure all parameters are valid. Duration must be positive, dimensions must be integers.'
+      );
+    }
+  }
+);
+
+// ============================================================================
+// Tool: add_scene
+// ============================================================================
+
+server.registerTool(
+  'add_scene',
+  {
+    title: 'Add Scene',
+    description: `Add a scene with layers to an existing composition.
+
+Example usage:
+- Add a title scene with text layer
+- Add a background shape with overlaid text
+- Add an image with animation
+
+Layers are rendered in order (first layer at bottom).
+Scene times must not overlap significantly with existing scenes.`,
+    inputSchema: AddSceneInputSchema,
+  },
+  async (input) => {
+    try {
+      let project = getComposition(input.compositionId);
+
+      if (!project) {
+        // Try loading from disk
+        project = await loadComposition(input.compositionId) ?? undefined;
+        if (project) {
+          compositions.set(input.compositionId, project);
+        }
+      }
+
+      if (!project) {
+        return formatError(
+          `Composition not found: ${input.compositionId}`,
+          'Use create_composition first, or check the composition ID is correct.'
+        );
+      }
+
+      // Validate time range
+      if (input.endTime <= input.startTime) {
+        return formatError(
+          'endTime must be greater than startTime',
+          `Provided: startTime=${input.startTime}, endTime=${input.endTime}`
+        );
+      }
+
+      if (input.endTime > project.config.duration) {
+        return formatError(
+          `Scene endTime (${input.endTime}ms) exceeds composition duration (${project.config.duration}ms)`,
+          'Either extend composition duration or adjust scene timing.'
+        );
+      }
+
+      const sceneId = randomUUID();
+      const layers: Layer[] = input.layers.map((layerInput, index) => {
+        const layerId = randomUUID();
+        const baseProps = {
+          id: layerId,
+          name: `Layer ${index + 1}`,
+          startTime: input.startTime,
+          endTime: input.endTime,
+          position: layerInput.position,
+          scale: layerInput.scale || { x: 1, y: 1 },
+          rotation: layerInput.rotation,
+          opacity: layerInput.opacity,
+          blendMode: layerInput.blendMode,
+          visible: true,
+        };
+
+        const layerData = layerInput.layer;
+
+        switch (layerData.type) {
+          case 'text':
+            return {
+              ...baseProps,
+              type: 'text' as const,
+              text: layerData.text,
+              fontFamily: layerData.fontFamily || 'Arial',
+              fontSize: layerData.fontSize || 48,
+              color: (layerData.color || { r: 255, g: 255, b: 255, a: 1 }) as Color,
+              fontWeight: layerData.fontWeight,
+              fontStyle: layerData.fontStyle,
+              textAlign: layerData.textAlign,
+            } as TextLayer;
+
+          case 'shape':
+            return {
+              ...baseProps,
+              type: 'shape' as const,
+              shapeType: layerData.shapeType,
+              dimensions: layerData.dimensions,
+              fill: layerData.fill as Color | undefined,
+              stroke: layerData.stroke ? {
+                color: layerData.stroke.color as Color,
+                width: layerData.stroke.width,
+              } : undefined,
+              cornerRadius: layerData.cornerRadius,
+            } as ShapeLayer;
+
+          case 'image':
+            return {
+              ...baseProps,
+              type: 'image' as const,
+              src: layerData.src,
+              fit: layerData.fit,
+            } as ImageLayer;
+        }
+      });
+
+      const scene: Scene = {
+        id: sceneId,
+        name: input.name || `Scene ${project.scenes.length + 1}`,
+        startTime: input.startTime,
+        endTime: input.endTime,
+        layers,
+        transition: input.transition ? {
+          type: input.transition.type,
+          duration: input.transition.duration,
+          easing: input.transition.easing as EasingType | undefined,
+        } : undefined,
+        backgroundColor: input.backgroundColor as Color | undefined,
+      };
+
+      project.scenes.push(scene);
+      project.scenes.sort((a, b) => a.startTime - b.startTime);
+
+      await saveComposition(project);
+
+      logger.info({ projectId: project.id, sceneId, layerCount: layers.length }, 'Scene added');
+
+      return {
+        content: [{
+          type: 'text',
+          text: JSON.stringify({
+            success: true,
+            sceneId,
+            name: scene.name,
+            timeRange: { startTime: input.startTime, endTime: input.endTime },
+            layerCount: layers.length,
+            totalScenes: project.scenes.length,
+            message: `Scene "${scene.name}" added with ${layers.length} layer(s). Use preview_frame to preview or render_video to export.`,
+          }, null, 2),
+        }],
+      };
+    } catch (error) {
+      logger.error({ error }, 'Failed to add scene');
+      return formatError(
+        `Failed to add scene: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        'Check layer definitions and ensure composition exists.'
+      );
+    }
+  }
+);
+
+// ============================================================================
+// Tool: render_video
+// ============================================================================
+
+server.registerTool(
+  'render_video',
+  {
+    title: 'Render Video',
+    description: `Render a composition to a video file. This is a long-running operation.
+
+Example usage:
+- Render composition to MP4
+- Export frames only for external processing
+
+Returns a task ID to track progress. The render runs asynchronously.
+Check render status by calling this tool again with the same composition ID.`,
+    inputSchema: RenderVideoInputSchema,
+  },
+  async (input) => {
+    try {
+      let project = getComposition(input.compositionId);
+
+      if (!project) {
+        project = await loadComposition(input.compositionId) ?? undefined;
+        if (project) {
+          compositions.set(input.compositionId, project);
+        }
+      }
+
+      if (!project) {
+        return formatError(
+          `Composition not found: ${input.compositionId}`,
+          'Use create_composition first, or check the composition ID.'
+        );
+      }
+
+      if (project.scenes.length === 0) {
+        return formatError(
+          'Composition has no scenes',
+          'Use add_scene to add at least one scene before rendering.'
+        );
+      }
+
+      // Check for existing render task
+      const existingTask = renderTasks.get(input.compositionId);
+      if (existingTask && existingTask.status === 'rendering') {
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify({
+              status: 'rendering',
+              progress: existingTask.progress,
+              message: `Render in progress: ${Math.round(existingTask.progress)}% complete`,
+            }, null, 2),
+          }],
+        };
+      }
+
+      if (existingTask && existingTask.status === 'complete') {
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify({
+              status: 'complete',
+              outputPath: existingTask.outputPath,
+              message: 'Render complete! Video available at the output path.',
+            }, null, 2),
+          }],
+        };
+      }
+
+      // Initialize render task
+      const taskId = input.compositionId;
+      const outputPath = input.outputPath || join(
+        OUTPUT_DIR,
+        `${project.name.replace(/[^a-z0-9]/gi, '_')}_${Date.now()}.${project.config.outputFormat}`
+      );
+
+      renderTasks.set(taskId, {
+        status: 'pending',
+        progress: 0,
+      });
+
+      // Start async render
+      (async () => {
+        try {
+          await ensureDir(OUTPUT_DIR);
+          const framesDir = join(OUTPUT_DIR, `frames_${taskId}`);
+          await ensureDir(framesDir);
+
+          renderTasks.set(taskId, { status: 'rendering', progress: 0 });
+
+          const renderer = new Renderer({
+            outputDir: framesDir,
+            framePrefix: 'frame_',
+            cacheEnabled: true,
+          });
+
+          const result = await renderer.render(project!, {
+            outputPath,
+            onProgress: (progress) => {
+              renderTasks.set(taskId, {
+                status: 'rendering',
+                progress: progress.percentage,
+              });
+            },
+          });
+
+          renderTasks.set(taskId, {
+            status: 'complete',
+            progress: 100,
+            outputPath: result,
+          });
+
+          logger.info({ taskId, outputPath: result }, 'Render complete');
+        } catch (error) {
+          logger.error({ taskId, error }, 'Render failed');
+          renderTasks.set(taskId, {
+            status: 'error',
+            progress: 0,
+            error: error instanceof Error ? error.message : 'Unknown error',
+          });
+        }
+      })();
+
+      return {
+        content: [{
+          type: 'text',
+          text: JSON.stringify({
+            success: true,
+            taskId,
+            status: 'started',
+            outputPath,
+            message: 'Render started. Call render_video again with the same compositionId to check progress.',
+          }, null, 2),
+        }],
+      };
+    } catch (error) {
+      logger.error({ error }, 'Failed to start render');
+      return formatError(
+        `Failed to start render: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        'Ensure composition has scenes and output directory is writable.'
+      );
+    }
+  }
+);
+
+// ============================================================================
+// Tool: preview_frame
+// ============================================================================
+
+server.registerTool(
+  'preview_frame',
+  {
+    title: 'Preview Frame',
+    description: `Generate a single frame preview at a specific timestamp.
+
+Example usage:
+- Preview frame at 0ms to see first frame
+- Preview at 5000ms to see mid-video content
+- Use base64 format for embedding in responses
+
+Returns frame data that can be used for visual verification.`,
+    inputSchema: PreviewFrameInputSchema,
+  },
+  async (input) => {
+    try {
+      let project = getComposition(input.compositionId);
+
+      if (!project) {
+        project = await loadComposition(input.compositionId) ?? undefined;
+        if (project) {
+          compositions.set(input.compositionId, project);
+        }
+      }
+
+      if (!project) {
+        return formatError(
+          `Composition not found: ${input.compositionId}`,
+          'Use create_composition first, or check the composition ID.'
+        );
+      }
+
+      if (input.time > project.config.duration) {
+        return formatError(
+          `Time (${input.time}ms) exceeds composition duration (${project.config.duration}ms)`,
+          `Use a time value between 0 and ${project.config.duration}.`
+        );
+      }
+
+      const compositor = new Compositor(
+        project.config.width,
+        project.config.height,
+        project.config.backgroundColor
+      );
+
+      const timeline = new Timeline({
+        fps: project.config.fps,
+        duration: project.config.duration,
+      });
+
+      // Find active scene
+      const activeScene = project.scenes.find(
+        (s) => input.time >= s.startTime && input.time < s.endTime
+      );
+
+      let frameBuffer;
+      if (!activeScene) {
+        // No scene at this time, return background
+        frameBuffer = createBuffer(project.config.width, project.config.height);
+        fillBuffer(frameBuffer, project.config.backgroundColor || { r: 0, g: 0, b: 0, a: 1 });
+      } else {
+        // Use renderer to create frame
+        const renderer = new Renderer({
+          outputDir: OUTPUT_DIR,
+          cacheEnabled: false,
+        });
+
+        frameBuffer = await renderer.renderFrame(
+          project,
+          input.time,
+          timeline,
+          compositor
+        );
+      }
+
+      const rgbData = toRGB(frameBuffer);
+
+      if (input.format === 'base64') {
+        const base64 = Buffer.from(rgbData).toString('base64');
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify({
+              success: true,
+              time: input.time,
+              width: project.config.width,
+              height: project.config.height,
+              format: 'raw-rgb',
+              encoding: 'base64',
+              dataLength: base64.length,
+              activeScene: activeScene?.name || null,
+              message: 'Frame preview generated. Data is raw RGB pixels in base64 encoding.',
+            }, null, 2),
+          }],
+        };
+      }
+
+      // Raw format - return metadata only (data too large for MCP)
+      return {
+        content: [{
+          type: 'text',
+          text: JSON.stringify({
+            success: true,
+            time: input.time,
+            width: project.config.width,
+            height: project.config.height,
+            format: 'raw-rgb',
+            bytesPerPixel: 3,
+            totalBytes: rgbData.length,
+            activeScene: activeScene?.name || null,
+            message: 'Frame info generated. Use base64 format to receive actual frame data.',
+          }, null, 2),
+        }],
+      };
+    } catch (error) {
+      logger.error({ error }, 'Failed to preview frame');
+      return formatError(
+        `Failed to preview frame: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        'Ensure composition exists and time is valid.'
+      );
+    }
+  }
+);
+
+// ============================================================================
+// Tool: list_templates
+// ============================================================================
+
+server.registerTool(
+  'list_templates',
+  {
+    title: 'List Templates',
+    description: `Get available video templates with their configurations and required inputs.
+
+Example usage:
+- List all templates
+- Filter by category (corporate, social, presentation, ad, educational)
+
+Templates provide pre-configured scenes and settings for common video types.`,
+    inputSchema: ListTemplatesInputSchema,
+  },
+  async (input) => {
+    try {
+      const filtered = input.category === 'all'
+        ? TEMPLATES
+        : TEMPLATES.filter((t) => t.category === input.category);
+
+      const templateList = filtered.map((t) => ({
+        id: t.id,
+        name: t.name,
+        description: t.description,
+        category: t.category,
+        defaultConfig: t.defaultConfig,
+        sceneCount: t.scenes.length,
+        requiredInputs: t.requiredInputs,
+      }));
+
+      return {
+        content: [{
+          type: 'text',
+          text: JSON.stringify({
+            success: true,
+            count: templateList.length,
+            category: input.category,
+            templates: templateList,
+            message: `Found ${templateList.length} template(s). Use template info to create customized compositions.`,
+          }, null, 2),
+        }],
+      };
+    } catch (error) {
+      logger.error({ error }, 'Failed to list templates');
+      return formatError(
+        `Failed to list templates: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        'This should not happen. Please report this issue.'
+      );
+    }
+  }
+);
+
+// ============================================================================
+// Resources: Saved Compositions
+// ============================================================================
+
+// Static resource listing all compositions
+server.registerResource(
+  'compositions-list',
+  'composition://list',
+  {
+    title: 'Composition List',
+    description: 'List of all saved video compositions',
+    mimeType: 'application/json',
+  },
+  async (uri) => {
+    const ids = await listSavedCompositions();
+    const compositionList = await Promise.all(
+      ids.map(async (id) => {
+        const project = await loadComposition(id);
+        return project ? {
+          id: project.id,
+          name: project.name,
+          duration: project.config.duration,
+          sceneCount: project.scenes.length,
+          outputFormat: project.config.outputFormat,
+        } : null;
+      })
+    );
+
+    return {
+      contents: [{
+        uri: uri.href,
+        mimeType: 'application/json',
+        text: JSON.stringify({
+          count: compositionList.filter(Boolean).length,
+          compositions: compositionList.filter(Boolean),
+        }, null, 2),
+      }],
+    };
+  }
+);
+
+// Dynamic resource for individual compositions
+server.registerResource(
+  'composition',
+  new ResourceTemplate('composition://{compositionId}', { list: undefined }),
+  {
+    title: 'Video Composition',
+    description: 'A saved video composition with all scenes and configuration',
+    mimeType: 'application/json',
+  },
+  async (uri, { compositionId }) => {
+    const project = await loadComposition(compositionId as string);
+
+    if (!project) {
+      return {
+        contents: [{
+          uri: uri.href,
+          mimeType: 'application/json',
+          text: JSON.stringify({
+            error: 'Composition not found',
+            compositionId,
+          }),
+        }],
+      };
+    }
+
+    return {
+      contents: [{
+        uri: uri.href,
+        mimeType: 'application/json',
+        text: JSON.stringify(project, null, 2),
+      }],
+    };
+  }
+);
+
+// ============================================================================
+// Server Lifecycle
+// ============================================================================
+
+async function main(): Promise<void> {
+  logger.info('Starting AutoVid MCP Server...');
+
+  // Ensure required directories exist
+  await ensureDir(COMPOSITIONS_DIR);
+  await ensureDir(OUTPUT_DIR);
+
+  // Connect via stdio transport
+  const transport = new StdioServerTransport();
+
+  // Handle transport errors
+  transport.onerror = (error) => {
+    logger.error({ error }, 'Transport error');
+  };
+
+  transport.onclose = () => {
+    logger.info('Transport closed');
+    process.exit(0);
+  };
+
+  try {
+    await server.connect(transport);
+    logger.info({ name: 'autovid-mcp', version: '1.0.0' }, 'MCP Server connected and ready');
+  } catch (error) {
+    logger.error({ error }, 'Failed to connect MCP server');
+    process.exit(1);
+  }
+}
+
+// Handle process signals
+process.on('SIGINT', () => {
+  logger.info('Received SIGINT, shutting down...');
+  process.exit(0);
+});
+
+process.on('SIGTERM', () => {
+  logger.info('Received SIGTERM, shutting down...');
+  process.exit(0);
+});
+
+process.on('uncaughtException', (error) => {
+  logger.error({ error }, 'Uncaught exception');
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason) => {
+  logger.error({ reason }, 'Unhandled rejection');
+  process.exit(1);
+});
+
+// Run server
+main().catch((error) => {
+  logger.error({ error }, 'Fatal error starting MCP server');
+  process.exit(1);
+});

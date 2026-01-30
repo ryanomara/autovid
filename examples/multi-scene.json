@@ -1,0 +1,157 @@
+{
+  "id": "multi-scene-demo",
+  "name": "Multi-Scene Demo",
+  "config": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "duration": 12000,
+    "backgroundColor": { "r": 0, "g": 0, "b": 0, "a": 1 },
+    "outputFormat": "mp4",
+    "quality": "high"
+  },
+  "scenes": [
+    {
+      "id": "intro",
+      "startTime": 0,
+      "endTime": 4000,
+      "backgroundColor": { "r": 30, "g": 30, "b": 80, "a": 1 },
+      "layers": [
+        {
+          "id": "intro-text",
+          "type": "text",
+          "text": "Scene 1: Introduction",
+          "fontFamily": "Arial",
+          "fontSize": 72,
+          "color": { "r": 255, "g": 255, "b": 255, "a": 1 },
+          "fontWeight": "bold",
+          "position": { "x": 960, "y": 540 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "startTime": 0,
+          "endTime": 4000,
+          "animations": [
+            {
+              "property": "opacity",
+              "keyframes": [
+                { "time": 0, "value": 0 },
+                { "time": 800, "value": 1, "easing": "easeOut" },
+                { "time": 3200, "value": 1 },
+                { "time": 4000, "value": 0, "easing": "easeIn" }
+              ]
+            }
+          ]
+        }
+      ],
+      "transition": {
+        "type": "fade",
+        "duration": 500,
+        "easing": "easeInOut"
+      }
+    },
+    {
+      "id": "content",
+      "startTime": 4000,
+      "endTime": 8000,
+      "backgroundColor": { "r": 80, "g": 30, "b": 30, "a": 1 },
+      "layers": [
+        {
+          "id": "content-text",
+          "type": "text",
+          "text": "Scene 2: Main Content",
+          "fontFamily": "Arial",
+          "fontSize": 72,
+          "color": { "r": 255, "g": 255, "b": 255, "a": 1 },
+          "fontWeight": "bold",
+          "position": { "x": 960, "y": 540 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "startTime": 4000,
+          "endTime": 8000,
+          "animations": [
+            {
+              "property": "opacity",
+              "keyframes": [
+                { "time": 4000, "value": 0 },
+                { "time": 4800, "value": 1, "easing": "easeOut" },
+                { "time": 7200, "value": 1 },
+                { "time": 8000, "value": 0, "easing": "easeIn" }
+              ]
+            },
+            {
+              "property": "position.y",
+              "keyframes": [
+                { "time": 4000, "value": 640 },
+                { "time": 4800, "value": 540, "easing": "easeOutCubic" }
+              ]
+            }
+          ]
+        }
+      ],
+      "transition": {
+        "type": "slide",
+        "duration": 500,
+        "easing": "easeInOut"
+      }
+    },
+    {
+      "id": "outro",
+      "startTime": 8000,
+      "endTime": 12000,
+      "backgroundColor": { "r": 30, "g": 80, "b": 30, "a": 1 },
+      "layers": [
+        {
+          "id": "outro-text",
+          "type": "text",
+          "text": "Scene 3: Thank You!",
+          "fontFamily": "Arial",
+          "fontSize": 72,
+          "color": { "r": 255, "g": 255, "b": 255, "a": 1 },
+          "fontWeight": "bold",
+          "position": { "x": 960, "y": 540 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "startTime": 8000,
+          "endTime": 12000,
+          "animations": [
+            {
+              "property": "opacity",
+              "keyframes": [
+                { "time": 8000, "value": 0 },
+                { "time": 8800, "value": 1, "easing": "easeOut" },
+                { "time": 11200, "value": 1 },
+                { "time": 12000, "value": 0, "easing": "easeIn" }
+              ]
+            },
+            {
+              "property": "scale.x",
+              "keyframes": [
+                { "time": 8000, "value": 0.5 },
+                { "time": 9000, "value": 1.1, "easing": "easeOutElastic" },
+                { "time": 9500, "value": 1 }
+              ]
+            },
+            {
+              "property": "scale.y",
+              "keyframes": [
+                { "time": 8000, "value": 0.5 },
+                { "time": 9000, "value": 1.1, "easing": "easeOutElastic" },
+                { "time": 9500, "value": 1 }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "audio": [],
+  "metadata": {
+    "title": "Multi-Scene Demo",
+    "description": "Demonstrates multiple scenes with different backgrounds and transitions",
+    "author": "AutoVid",
+    "tags": ["example", "multi-scene", "transitions"]
+  }
+}

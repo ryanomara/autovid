@@ -1,0 +1,419 @@
+{
+  "id": "comprehensive-test",
+  "name": "Comprehensive Feature Test",
+  "config": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "duration": 10000,
+    "backgroundColor": {
+      "r": 20,
+      "g": 30,
+      "b": 48,
+      "a": 1
+    },
+    "outputFormat": "mp4",
+    "quality": "high"
+  },
+  "scenes": [
+    {
+      "id": "scene1",
+      "name": "Title Scene",
+      "startTime": 0,
+      "endTime": 5000,
+      "layers": [
+        {
+          "id": "background",
+          "type": "shape",
+          "shapeType": "rectangle",
+          "dimensions": {
+            "width": 1920,
+            "height": 1080
+          },
+          "fill": {
+            "r": 20,
+            "g": 30,
+            "b": 48,
+            "a": 1
+          },
+          "position": {
+            "x": 0,
+            "y": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1
+          },
+          "rotation": 0,
+          "opacity": 1,
+          "startTime": 0,
+          "endTime": 5000
+        },
+        {
+          "id": "title",
+          "type": "text",
+          "text": "AutoVid Comprehensive Test",
+          "fontFamily": "Arial",
+          "fontSize": 72,
+          "fontWeight": "bold",
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1
+          },
+          "textAlign": "center",
+          "textShadow": {
+            "offsetX": 2,
+            "offsetY": 2,
+            "blur": 4,
+            "color": {
+              "r": 0,
+              "g": 0,
+              "b": 0,
+              "a": 0.5
+            }
+          },
+          "position": {
+            "x": 960,
+            "y": 400
+          },
+          "scale": {
+            "x": 1,
+            "y": 1
+          },
+          "rotation": 0,
+          "opacity": 1,
+          "startTime": 0,
+          "endTime": 5000,
+          "animations": [
+            {
+              "property": "opacity",
+              "keyframes": [
+                {
+                  "time": 0,
+                  "value": 0,
+                  "easing": "easeOut"
+                },
+                {
+                  "time": 1000,
+                  "value": 1
+                }
+              ]
+            },
+            {
+              "property": "scale",
+              "keyframes": [
+                {
+                  "time": 0,
+                  "value": {
+                    "x": 0.5,
+                    "y": 0.5
+                  },
+                  "easing": "easeOutElastic"
+                },
+                {
+                  "time": 1500,
+                  "value": {
+                    "x": 1,
+                    "y": 1
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "subtitle",
+          "type": "text",
+          "text": "Testing Text, Images, Audio & Effects",
+          "fontFamily": "Arial",
+          "fontSize": 36,
+          "color": {
+            "r": 200,
+            "g": 200,
+            "b": 200,
+            "a": 1
+          },
+          "textAlign": "center",
+          "position": {
+            "x": 960,
+            "y": 550
+          },
+          "scale": {
+            "x": 1,
+            "y": 1
+          },
+          "rotation": 0,
+          "opacity": 1,
+          "startTime": 0,
+          "endTime": 5000,
+          "animations": [
+            {
+              "property": "opacity",
+              "keyframes": [
+                {
+                  "time": 1000,
+                  "value": 0,
+                  "easing": "easeOut"
+                },
+                {
+                  "time": 2000,
+                  "value": 1
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "transition": {
+        "type": "fade",
+        "duration": 500
+      }
+    },
+    {
+      "id": "scene2",
+      "name": "Feature Showcase",
+      "startTime": 5000,
+      "endTime": 10000,
+      "layers": [
+        {
+          "id": "background2",
+          "type": "shape",
+          "shapeType": "rectangle",
+          "dimensions": {
+            "width": 1920,
+            "height": 1080
+          },
+          "fill": {
+            "r": 30,
+            "g": 40,
+            "b": 60,
+            "a": 1
+          },
+          "position": {
+            "x": 0,
+            "y": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1
+          },
+          "rotation": 0,
+          "opacity": 1,
+          "startTime": 5000,
+          "endTime": 10000
+        },
+        {
+          "id": "feature1",
+          "type": "text",
+          "text": "✓ Real Text Rendering",
+          "fontFamily": "Arial",
+          "fontSize": 48,
+          "color": {
+            "r": 100,
+            "g": 255,
+            "b": 100,
+            "a": 1
+          },
+          "position": {
+            "x": 200,
+            "y": 200
+          },
+          "scale": {
+            "x": 1,
+            "y": 1
+          },
+          "rotation": 0,
+          "opacity": 1,
+          "startTime": 5000,
+          "endTime": 10000,
+          "animations": [
+            {
+              "property": "position",
+              "keyframes": [
+                {
+                  "time": 5000,
+                  "value": {
+                    "x": -500,
+                    "y": 200
+                  },
+                  "easing": "easeOut"
+                },
+                {
+                  "time": 6000,
+                  "value": {
+                    "x": 200,
+                    "y": 200
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "feature2",
+          "type": "text",
+          "text": "✓ Image Processing",
+          "fontFamily": "Arial",
+          "fontSize": 48,
+          "color": {
+            "r": 100,
+            "g": 200,
+            "b": 255,
+            "a": 1
+          },
+          "position": {
+            "x": 200,
+            "y": 350
+          },
+          "scale": {
+            "x": 1,
+            "y": 1
+          },
+          "rotation": 0,
+          "opacity": 1,
+          "startTime": 5000,
+          "endTime": 10000,
+          "animations": [
+            {
+              "property": "position",
+              "keyframes": [
+                {
+                  "time": 5500,
+                  "value": {
+                    "x": -500,
+                    "y": 350
+                  },
+                  "easing": "easeOut"
+                },
+                {
+                  "time": 6500,
+                  "value": {
+                    "x": 200,
+                    "y": 350
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "feature3",
+          "type": "text",
+          "text": "✓ Audio Mixing",
+          "fontFamily": "Arial",
+          "fontSize": 48,
+          "color": {
+            "r": 255,
+            "g": 200,
+            "b": 100,
+            "a": 1
+          },
+          "position": {
+            "x": 200,
+            "y": 500
+          },
+          "scale": {
+            "x": 1,
+            "y": 1
+          },
+          "rotation": 0,
+          "opacity": 1,
+          "startTime": 5000,
+          "endTime": 10000,
+          "animations": [
+            {
+              "property": "position",
+              "keyframes": [
+                {
+                  "time": 6000,
+                  "value": {
+                    "x": -500,
+                    "y": 500
+                  },
+                  "easing": "easeOut"
+                },
+                {
+                  "time": 7000,
+                  "value": {
+                    "x": 200,
+                    "y": 500
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "feature4",
+          "type": "text",
+          "text": "✓ Visual Effects",
+          "fontFamily": "Arial",
+          "fontSize": 48,
+          "color": {
+            "r": 255,
+            "g": 150,
+            "b": 255,
+            "a": 1
+          },
+          "position": {
+            "x": 200,
+            "y": 650
+          },
+          "scale": {
+            "x": 1,
+            "y": 1
+          },
+          "rotation": 0,
+          "opacity": 1,
+          "startTime": 5000,
+          "endTime": 10000,
+          "animations": [
+            {
+              "property": "position",
+              "keyframes": [
+                {
+                  "time": 6500,
+                  "value": {
+                    "x": -500,
+                    "y": 650
+                  },
+                  "easing": "easeOut"
+                },
+                {
+                  "time": 7500,
+                  "value": {
+                    "x": 200,
+                    "y": 650
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "transition": {
+        "type": "slide",
+        "duration": 1000
+      }
+    }
+  ],
+  "audio": [
+    {
+      "id": "narration",
+      "type": "voice",
+      "startTime": 1000,
+      "endTime": 9000,
+      "volume": 0.8,
+      "fadeIn": 500,
+      "fadeOut": 500,
+      "tts": {
+        "text": "Welcome to AutoVid. A comprehensive video generation platform with real text rendering, image processing, audio mixing, and visual effects.",
+        "voice": "default",
+        "rate": 1.0,
+        "pitch": 1.0
+      }
+    }
+  ]
+}

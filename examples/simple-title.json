@@ -1,0 +1,96 @@
+{
+  "id": "simple-title",
+  "name": "Simple Title Animation",
+  "config": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "duration": 5000,
+    "backgroundColor": { "r": 20, "g": 20, "b": 50, "a": 1 },
+    "outputFormat": "mp4",
+    "quality": "high"
+  },
+  "scenes": [
+    {
+      "id": "title-scene",
+      "startTime": 0,
+      "endTime": 5000,
+      "layers": [
+        {
+          "id": "main-title",
+          "type": "text",
+          "text": "Welcome to AutoVid",
+          "fontFamily": "Arial",
+          "fontSize": 96,
+          "color": { "r": 255, "g": 255, "b": 255, "a": 1 },
+          "fontWeight": "bold",
+          "textAlign": "center",
+          "position": { "x": 960, "y": 440 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "startTime": 0,
+          "endTime": 5000,
+          "animations": [
+            {
+              "property": "opacity",
+              "keyframes": [
+                { "time": 0, "value": 0 },
+                { "time": 1000, "value": 1, "easing": "easeOut" },
+                { "time": 4000, "value": 1 },
+                { "time": 5000, "value": 0, "easing": "easeIn" }
+              ]
+            },
+            {
+              "property": "scale.x",
+              "keyframes": [
+                { "time": 0, "value": 0.8 },
+                { "time": 1000, "value": 1, "easing": "easeOutCubic" }
+              ]
+            },
+            {
+              "property": "scale.y",
+              "keyframes": [
+                { "time": 0, "value": 0.8 },
+                { "time": 1000, "value": 1, "easing": "easeOutCubic" }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "subtitle",
+          "type": "text",
+          "text": "Simple. Elegant. Powerful.",
+          "fontFamily": "Arial",
+          "fontSize": 48,
+          "color": { "r": 200, "g": 200, "b": 220, "a": 1 },
+          "textAlign": "center",
+          "position": { "x": 960, "y": 640 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "startTime": 1000,
+          "endTime": 5000,
+          "animations": [
+            {
+              "property": "opacity",
+              "keyframes": [
+                { "time": 1000, "value": 0 },
+                { "time": 2000, "value": 1, "easing": "easeOut" },
+                { "time": 4000, "value": 1 },
+                { "time": 5000, "value": 0, "easing": "easeIn" }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "audio": [],
+  "metadata": {
+    "title": "Simple Title Animation",
+    "description": "A basic title animation demonstrating AutoVid capabilities",
+    "author": "AutoVid",
+    "tags": ["example", "title", "simple"]
+  }
+}

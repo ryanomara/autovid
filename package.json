@@ -1,0 +1,59 @@
+{
+  "name": "autovid",
+  "version": "0.1.0",
+  "description": "Autonomous video generation platform for LLM agents and humans",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "autovid": "dist/cli/index.js"
+  },
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc && tsc-alias",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "lint": "eslint src --ext .ts,.tsx",
+    "format": "prettier --write \"src/**/*.{ts,tsx,json}\"",
+    "cli": "tsx src/cli/index.ts",
+    "mcp": "tsx src/mcp/server.ts"
+  },
+  "keywords": [
+    "video",
+    "animation",
+    "remotion",
+    "llm",
+    "agent",
+    "mcp",
+    "automation"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.5.0",
+    "canvas": "^3.2.1",
+    "commander": "^11.1.0",
+    "esbuild": "^0.19.11",
+    "execa": "^8.0.1",
+    "fluent-ffmpeg": "^2.1.3",
+    "pino": "^8.17.2",
+    "pino-pretty": "^10.3.1",
+    "sharp": "^0.34.5",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/fluent-ffmpeg": "^2.1.28",
+    "@types/node": "^20.10.6",
+    "@typescript-eslint/eslint-plugin": "^6.17.0",
+    "@typescript-eslint/parser": "^6.17.0",
+    "@vitest/ui": "^1.1.1",
+    "eslint": "^8.56.0",
+    "prettier": "^3.1.1",
+    "tsc-alias": "^1.8.8",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3",
+    "vitest": "^1.1.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
