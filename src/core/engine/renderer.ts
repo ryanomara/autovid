@@ -34,6 +34,8 @@ import { Compositor, createPositionedLayer, BlendMode } from './compositor.js';
 import { Timeline, AnimatedProperties } from './timeline.js';
 import { FFmpegEncoder } from './ffmpeg.js';
 import { AudioMixer } from '../audio/mixer.js';
+import { getCameraStateAtTime } from '../animation/camera.js';
+import { extractVideoFrame } from '../layers/video.js';
 
 const logger = createLogger('renderer');
 
@@ -62,10 +64,7 @@ export class Renderer {
     };
   }
 
-  async render(
-    project: VideoProject,
-    options: RenderOptions
-  ): Promise<string> {
+  async render(project: VideoProject, options: RenderOptions): Promise<string> {
     const { outputPath, onProgress } = options;
 
     logger.info({ projectId: project.id, name: project.name }, 'Starting render');
@@ -95,12 +94,7 @@ export class Renderer {
     for (let frame = 0; frame < totalFrames; frame++) {
       const time = timeline.frameToTime(frame);
       try {
-        const frameBuffer = await this.renderFrame(
-          project,
-          time,
-          timeline,
-          compositor
-        );
+        const frameBuffer = await this.renderFrame(project, time, timeline, compositor);
 
         const framePath = await this.writeFrame(frameBuffer, frame);
         state.renderedFrames.push(frame);
@@ -114,7 +108,7 @@ export class Renderer {
           onProgress({
             frame,
             totalFrames,
-            percentage: (frame + 1) / totalFrames * 100,
+            percentage: ((frame + 1) / totalFrames) * 100,
             estimatedTimeRemaining: avgTimePerFrame * remainingFrames,
             currentScene: this.getCurrentSceneName(project.scenes, time),
           });
@@ -144,15 +138,15 @@ export class Renderer {
     }
 
     if (project.config.outputFormat === 'frames') {
-      logger.info({ outputDir: this.config.outputDir }, 'Output format is frames, skipping encoding');
+      logger.info(
+        { outputDir: this.config.outputDir },
+        'Output format is frames, skipping encoding'
+      );
       return this.config.outputDir;
     }
 
     const encoder = new FFmpegEncoder();
-    const framePattern = join(
-      this.config.outputDir,
-      `${this.config.framePrefix}%06d.raw`
-    );
+    const framePattern = join(this.config.outputDir, `${this.config.framePrefix}%06d.raw`);
 
     try {
       await encoder.encode({
@@ -192,6 +186,12 @@ export class Renderer {
     }
 
     const activeLayers = timeline.getActiveLayersAtTime(activeScene.layers, time);
+    const cameraState = getCameraStateAtTime(
+      activeScene.camera,
+      time,
+      project.config.width,
+      project.config.height
+    );
     const compositorLayers = [];
 
     for (let i = 0; i < activeLayers.length; i++) {
@@ -199,25 +199,20 @@ export class Renderer {
       const props = timeline.getAnimatedPropertiesAtTime(layer, time);
 
       try {
-        const layerBuffer = await this.renderLayer(
-          layer,
-          props,
-          project.config,
-          time
-        );
+        const layerBuffer = await this.renderLayer(layer, props, project.config, time);
 
         if (layerBuffer) {
           const transformed = compositor.applyTransform(
             layerBuffer,
-            props.scale,
-            props.rotation
+            { x: props.scale.x * cameraState.zoom, y: props.scale.y * cameraState.zoom },
+            props.rotation + cameraState.rotation
           );
 
           compositorLayers.push(
             createPositionedLayer(
               transformed,
-              Math.round(props.position.x),
-              Math.round(props.position.y),
+              Math.round(props.position.x - cameraState.position.x + project.config.width / 2),
+              Math.round(props.position.y - cameraState.position.y + project.config.height / 2),
               i,
               (layer.blendMode as BlendMode) || 'normal',
               props.opacity
@@ -255,10 +250,7 @@ export class Renderer {
     }
   }
 
-  private renderTextLayer(
-    layer: TextLayer,
-    props: AnimatedProperties
-  ): PixelBuffer {
+  private renderTextLayer(layer: TextLayer, props: AnimatedProperties): PixelBuffer {
     const color = (props as unknown as { color?: Color }).color || layer.color;
 
     return renderText({
@@ -297,10 +289,7 @@ export class Renderer {
     }
   }
 
-  private renderShapeLayer(
-    layer: ShapeLayer,
-    props: AnimatedProperties
-  ): PixelBuffer {
+  private renderShapeLayer(layer: ShapeLayer, props: AnimatedProperties): PixelBuffer {
     const { width, height } = layer.dimensions;
     const buffer = createBuffer(Math.ceil(width), Math.ceil(height));
 
@@ -348,17 +337,26 @@ export class Renderer {
     props: AnimatedProperties,
     time: Timestamp
   ): Promise<PixelBuffer | null> {
+    if (!layer.src) {
+      return null;
+    }
+
     const layerTime = time - layer.startTime;
     const playbackRate = layer.playbackRate || 1;
     const videoTime = layerTime * playbackRate;
 
-    logger.debug({ videoTime, src: layer.src }, 'Video layer rendering placeholder');
+    logger.debug({ videoTime, src: layer.src }, 'Video layer rendering');
 
-    const buffer = createBuffer(320, 240);
-    fillBuffer(buffer, { r: 50, g: 50, b: 50, a: 1 });
-    drawText(buffer, 'VIDEO', { x: 120, y: 100 }, { r: 255, g: 255, b: 255, a: 1 }, 24);
+    const size = props.size as { width: number; height: number } | undefined;
+    const width = size?.width ?? 320;
+    const height = size?.height ?? 240;
 
-    return buffer;
+    return await extractVideoFrame({
+      src: layer.src,
+      time: videoTime,
+      width,
+      height,
+    });
   }
 
   private async loadImage(src: string): Promise<PixelBuffer | null> {

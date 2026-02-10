@@ -88,12 +88,49 @@ export interface Keyframe<T = any> {
 export interface Animation<T = any> {
   property: string;
   keyframes: Keyframe<T>[];
+  spring?: SpringConfig;
+  path?: {
+    points: Position[];
+    type: PathType;
+    closed?: boolean;
+  };
+}
+
+/**
+ * Path animation types
+ */
+export type PathType = 'linear' | 'bezier' | 'catmull-rom';
+
+/**
+ * Camera configuration and animations
+ */
+export type CameraKeyframes<T> = Array<{ time: Timestamp; value: T }>;
+
+export interface CameraConfig {
+  position?: Position;
+  zoom?: number;
+  rotation?: number;
+  animations?: {
+    position?: CameraKeyframes<Position>;
+    zoom?: CameraKeyframes<number>;
+    rotation?: CameraKeyframes<number>;
+  };
+}
+
+/**
+ * Spring animation configuration
+ */
+export interface SpringConfig {
+  stiffness?: number;
+  damping?: number;
+  mass?: number;
+  velocity?: number;
 }
 
 /**
  * Layer types
  */
-export type LayerType = 'text' | 'image' | 'video' | 'shape' | 'effect' | 'group';
+export type LayerType = 'text' | 'image' | 'video' | 'shape' | 'effect' | 'group' | '3d';
 
 /**
  * Base layer properties
@@ -122,7 +159,18 @@ export interface TextLayer extends BaseLayer {
   fontFamily: string;
   fontSize: number;
   color: Color;
-  fontWeight?: 'normal' | 'bold' | '100' | '200' | '300' | '400' | '500' | '600' | '700' | '800' | '900';
+  fontWeight?:
+    | 'normal'
+    | 'bold'
+    | '100'
+    | '200'
+    | '300'
+    | '400'
+    | '500'
+    | '600'
+    | '700'
+    | '800'
+    | '900';
   fontStyle?: 'normal' | 'italic';
   textAlign?: 'left' | 'center' | 'right';
   lineHeight?: number;
@@ -153,6 +201,8 @@ export interface VideoLayer extends BaseLayer {
   src: string;
   playbackRate?: number;
   volume?: number;
+  width?: number;
+  height?: number;
 }
 
 /**
@@ -182,7 +232,12 @@ export interface EffectLayer extends BaseLayer {
 /**
  * Layer union type
  */
-export type Layer = TextLayer | ImageLayer | VideoLayer | ShapeLayer | EffectLayer;
+export interface Layer3D extends BaseLayer {
+  type: '3d';
+  scene: string;
+}
+
+export type Layer = TextLayer | ImageLayer | VideoLayer | ShapeLayer | EffectLayer | Layer3D;
 
 /**
  * Scene definition
@@ -193,8 +248,24 @@ export interface Scene {
   startTime: Timestamp;
   endTime: Timestamp;
   layers: Layer[];
+  camera?: CameraConfig;
   transition?: {
-    type: 'fade' | 'slide' | 'zoom' | 'dissolve' | 'wipe';
+    type:
+      | 'fade'
+      | 'slide'
+      | 'zoom'
+      | 'dissolve'
+      | 'wipe'
+      | 'iris'
+      | 'clockWipe'
+      | 'blinds'
+      | 'flip'
+      | 'morph'
+      | 'glitch'
+      | 'pixelate'
+      | 'radialWipe'
+      | 'doorway'
+      | 'cube';
     duration: number;
     easing?: EasingType;
   };

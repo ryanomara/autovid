@@ -260,7 +260,9 @@ export function transitionZoom(
         const outA = srcA + dstA * (1 - srcA);
 
         if (outA > 0) {
-          resultData[destIdx] = Math.round((srcR * srcA + resultData[destIdx] * dstA * (1 - srcA)) / outA);
+          resultData[destIdx] = Math.round(
+            (srcR * srcA + resultData[destIdx] * dstA * (1 - srcA)) / outA
+          );
           resultData[destIdx + 1] = Math.round(
             (srcG * srcA + resultData[destIdx + 1] * dstA * (1 - srcA)) / outA
           );
@@ -435,6 +437,457 @@ export function transitionWipe(
 }
 
 /**
+ * Iris transition - circular reveal from center
+ */
+export function transitionIris(
+  fromBuffer: PixelBuffer | null,
+  toBuffer: PixelBuffer | null,
+  progress: number = 0,
+  easing: string = 'linear'
+): PixelBuffer {
+  if (!fromBuffer || !toBuffer) {
+    return fromBuffer || toBuffer || createBuffer(1, 1);
+  }
+
+  const easeFunc = getEasingFunction(easing);
+  const easedProgress = easeFunc(Math.max(0, Math.min(1, progress)));
+
+  const result = cloneBuffer(fromBuffer);
+  const { width, height } = result;
+  const centerX = width / 2;
+  const centerY = height / 2;
+  const maxRadius = Math.sqrt(centerX * centerX + centerY * centerY);
+  const radius = maxRadius * easedProgress;
+
+  const { data: resultData } = result;
+  const { data: fromData } = fromBuffer;
+  const { data: toData } = toBuffer;
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const dx = x - centerX;
+      const dy = y - centerY;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      const destIdx = (y * width + x) * 4;
+      const srcIdx = destIdx;
+
+      if (dist <= radius) {
+        resultData[destIdx] = toData[srcIdx];
+        resultData[destIdx + 1] = toData[srcIdx + 1];
+        resultData[destIdx + 2] = toData[srcIdx + 2];
+        resultData[destIdx + 3] = toData[srcIdx + 3];
+      } else {
+        resultData[destIdx] = fromData[srcIdx];
+        resultData[destIdx + 1] = fromData[srcIdx + 1];
+        resultData[destIdx + 2] = fromData[srcIdx + 2];
+        resultData[destIdx + 3] = fromData[srcIdx + 3];
+      }
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Clock wipe transition - angular reveal
+ */
+export function transitionClockWipe(
+  fromBuffer: PixelBuffer | null,
+  toBuffer: PixelBuffer | null,
+  progress: number = 0,
+  easing: string = 'linear'
+): PixelBuffer {
+  if (!fromBuffer || !toBuffer) {
+    return fromBuffer || toBuffer || createBuffer(1, 1);
+  }
+
+  const easeFunc = getEasingFunction(easing);
+  const easedProgress = easeFunc(Math.max(0, Math.min(1, progress)));
+  const threshold = easedProgress * Math.PI * 2;
+
+  const result = cloneBuffer(fromBuffer);
+  const { width, height } = result;
+  const centerX = width / 2;
+  const centerY = height / 2;
+  const { data: resultData } = result;
+  const { data: fromData } = fromBuffer;
+  const { data: toData } = toBuffer;
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const angle = Math.atan2(y - centerY, x - centerX) + Math.PI;
+      const destIdx = (y * width + x) * 4;
+      const srcIdx = destIdx;
+
+      if (angle <= threshold) {
+        resultData[destIdx] = toData[srcIdx];
+        resultData[destIdx + 1] = toData[srcIdx + 1];
+        resultData[destIdx + 2] = toData[srcIdx + 2];
+        resultData[destIdx + 3] = toData[srcIdx + 3];
+      } else {
+        resultData[destIdx] = fromData[srcIdx];
+        resultData[destIdx + 1] = fromData[srcIdx + 1];
+        resultData[destIdx + 2] = fromData[srcIdx + 2];
+        resultData[destIdx + 3] = fromData[srcIdx + 3];
+      }
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Blinds transition - reveals through stripes
+ */
+export function transitionBlinds(
+  fromBuffer: PixelBuffer | null,
+  toBuffer: PixelBuffer | null,
+  progress: number = 0,
+  direction: 'left' | 'right' | 'up' | 'down' = 'left',
+  easing: string = 'linear'
+): PixelBuffer {
+  if (!fromBuffer || !toBuffer) {
+    return fromBuffer || toBuffer || createBuffer(1, 1);
+  }
+
+  const easeFunc = getEasingFunction(easing);
+  const easedProgress = easeFunc(Math.max(0, Math.min(1, progress)));
+
+  const result = cloneBuffer(fromBuffer);
+  const { width, height } = result;
+  const stripeCount = 12;
+  const stripeWidth = Math.max(1, Math.floor(width / stripeCount));
+  const stripeHeight = Math.max(1, Math.floor(height / stripeCount));
+
+  const { data: resultData } = result;
+  const { data: fromData } = fromBuffer;
+  const { data: toData } = toBuffer;
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const destIdx = (y * width + x) * 4;
+      const srcIdx = destIdx;
+      const axisProgress =
+        direction === 'up' || direction === 'down'
+          ? (y % stripeHeight) / stripeHeight
+          : (x % stripeWidth) / stripeWidth;
+
+      const showTo = axisProgress <= easedProgress;
+
+      if (showTo) {
+        resultData[destIdx] = toData[srcIdx];
+        resultData[destIdx + 1] = toData[srcIdx + 1];
+        resultData[destIdx + 2] = toData[srcIdx + 2];
+        resultData[destIdx + 3] = toData[srcIdx + 3];
+      } else {
+        resultData[destIdx] = fromData[srcIdx];
+        resultData[destIdx + 1] = fromData[srcIdx + 1];
+        resultData[destIdx + 2] = fromData[srcIdx + 2];
+        resultData[destIdx + 3] = fromData[srcIdx + 3];
+      }
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Flip transition - horizontal flip around center
+ */
+export function transitionFlip(
+  fromBuffer: PixelBuffer | null,
+  toBuffer: PixelBuffer | null,
+  progress: number = 0,
+  easing: string = 'linear'
+): PixelBuffer {
+  if (!fromBuffer || !toBuffer) {
+    return fromBuffer || toBuffer || createBuffer(1, 1);
+  }
+
+  const easeFunc = getEasingFunction(easing);
+  const easedProgress = easeFunc(Math.max(0, Math.min(1, progress)));
+
+  const result = cloneBuffer(toBuffer);
+  const { width, height } = result;
+  const centerX = width / 2;
+  const { data: resultData } = result;
+  const { data: fromData } = fromBuffer;
+  const { data: toData } = toBuffer;
+
+  const showingTo = easedProgress >= 0.5;
+  const localProgress = showingTo ? (easedProgress - 0.5) * 2 : easedProgress * 2;
+  const scaleX = Math.max(0.05, showingTo ? localProgress : 1 - localProgress);
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const srcX = (x - centerX) / scaleX + centerX;
+      if (srcX < 0 || srcX >= width) continue;
+
+      const sx = Math.floor(srcX);
+      const destIdx = (y * width + x) * 4;
+      const srcIdx = (y * width + sx) * 4;
+      const srcData = showingTo ? toData : fromData;
+
+      resultData[destIdx] = srcData[srcIdx];
+      resultData[destIdx + 1] = srcData[srcIdx + 1];
+      resultData[destIdx + 2] = srcData[srcIdx + 2];
+      resultData[destIdx + 3] = srcData[srcIdx + 3];
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Morph transition - crossfade with subtle wave offset
+ */
+export function transitionMorph(
+  fromBuffer: PixelBuffer | null,
+  toBuffer: PixelBuffer | null,
+  progress: number = 0,
+  easing: string = 'linear'
+): PixelBuffer {
+  if (!fromBuffer || !toBuffer) {
+    return fromBuffer || toBuffer || createBuffer(1, 1);
+  }
+
+  const easeFunc = getEasingFunction(easing);
+  const easedProgress = easeFunc(Math.max(0, Math.min(1, progress)));
+
+  const result = cloneBuffer(toBuffer);
+  const { width, height } = result;
+  const { data: resultData } = result;
+  const { data: fromData } = fromBuffer;
+  const { data: toData } = toBuffer;
+
+  for (let y = 0; y < height; y++) {
+    const wave = Math.sin((y / height) * Math.PI * 2) * (1 - easedProgress) * 6;
+    for (let x = 0; x < width; x++) {
+      const fromX = Math.min(width - 1, Math.max(0, Math.floor(x + wave)));
+      const toX = Math.min(width - 1, Math.max(0, Math.floor(x - wave)));
+      const destIdx = (y * width + x) * 4;
+      const fromIdx = (y * width + fromX) * 4;
+      const toIdx = (y * width + toX) * 4;
+
+      resultData[destIdx] = Math.round(
+        fromData[fromIdx] * (1 - easedProgress) + toData[toIdx] * easedProgress
+      );
+      resultData[destIdx + 1] = Math.round(
+        fromData[fromIdx + 1] * (1 - easedProgress) + toData[toIdx + 1] * easedProgress
+      );
+      resultData[destIdx + 2] = Math.round(
+        fromData[fromIdx + 2] * (1 - easedProgress) + toData[toIdx + 2] * easedProgress
+      );
+      resultData[destIdx + 3] = 255;
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Glitch transition - horizontal line offsets
+ */
+export function transitionGlitch(
+  fromBuffer: PixelBuffer | null,
+  toBuffer: PixelBuffer | null,
+  progress: number = 0,
+  easing: string = 'linear'
+): PixelBuffer {
+  if (!fromBuffer || !toBuffer) {
+    return fromBuffer || toBuffer || createBuffer(1, 1);
+  }
+
+  const easeFunc = getEasingFunction(easing);
+  const easedProgress = easeFunc(Math.max(0, Math.min(1, progress)));
+  const result = cloneBuffer(fromBuffer);
+  const { width, height } = result;
+  const { data: resultData } = result;
+  const { data: fromData } = fromBuffer;
+  const { data: toData } = toBuffer;
+
+  for (let y = 0; y < height; y++) {
+    const rand = ((y * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;
+    const shift = Math.floor((rand - 0.5) * 20 * easedProgress);
+    const useTo = rand < easedProgress;
+
+    for (let x = 0; x < width; x++) {
+      const srcX = Math.min(width - 1, Math.max(0, x + shift));
+      const destIdx = (y * width + x) * 4;
+      const srcIdx = (y * width + srcX) * 4;
+      const srcData = useTo ? toData : fromData;
+
+      resultData[destIdx] = srcData[srcIdx];
+      resultData[destIdx + 1] = srcData[srcIdx + 1];
+      resultData[destIdx + 2] = srcData[srcIdx + 2];
+      resultData[destIdx + 3] = srcData[srcIdx + 3];
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Pixelate transition - blocky reveal
+ */
+export function transitionPixelate(
+  fromBuffer: PixelBuffer | null,
+  toBuffer: PixelBuffer | null,
+  progress: number = 0,
+  easing: string = 'linear'
+): PixelBuffer {
+  if (!fromBuffer || !toBuffer) {
+    return fromBuffer || toBuffer || createBuffer(1, 1);
+  }
+
+  const easeFunc = getEasingFunction(easing);
+  const easedProgress = easeFunc(Math.max(0, Math.min(1, progress)));
+  const result = cloneBuffer(fromBuffer);
+  const { width, height } = result;
+  const { data: resultData } = result;
+  const { data: fromData } = fromBuffer;
+  const { data: toData } = toBuffer;
+
+  const maxBlock = 20;
+  const blockSize = Math.max(1, Math.round((1 - easedProgress) * maxBlock) + 1);
+  const showTo = easedProgress >= 0.5;
+
+  for (let y = 0; y < height; y += blockSize) {
+    for (let x = 0; x < width; x += blockSize) {
+      const sampleX = Math.min(width - 1, x);
+      const sampleY = Math.min(height - 1, y);
+      const sampleIdx = (sampleY * width + sampleX) * 4;
+      const srcData = showTo ? toData : fromData;
+
+      for (let by = 0; by < blockSize; by++) {
+        const py = y + by;
+        if (py >= height) break;
+        for (let bx = 0; bx < blockSize; bx++) {
+          const px = x + bx;
+          if (px >= width) break;
+          const destIdx = (py * width + px) * 4;
+          resultData[destIdx] = srcData[sampleIdx];
+          resultData[destIdx + 1] = srcData[sampleIdx + 1];
+          resultData[destIdx + 2] = srcData[sampleIdx + 2];
+          resultData[destIdx + 3] = srcData[sampleIdx + 3];
+        }
+      }
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Radial wipe transition - radial reveal from center
+ */
+export function transitionRadialWipe(
+  fromBuffer: PixelBuffer | null,
+  toBuffer: PixelBuffer | null,
+  progress: number = 0,
+  easing: string = 'linear'
+): PixelBuffer {
+  return transitionIris(fromBuffer, toBuffer, progress, easing);
+}
+
+/**
+ * Doorway transition - panels open to reveal next scene
+ */
+export function transitionDoorway(
+  fromBuffer: PixelBuffer | null,
+  toBuffer: PixelBuffer | null,
+  progress: number = 0,
+  easing: string = 'linear'
+): PixelBuffer {
+  if (!fromBuffer || !toBuffer) {
+    return fromBuffer || toBuffer || createBuffer(1, 1);
+  }
+
+  const easeFunc = getEasingFunction(easing);
+  const easedProgress = easeFunc(Math.max(0, Math.min(1, progress)));
+  const result = cloneBuffer(toBuffer);
+  const { width, height } = result;
+  const { data: resultData } = result;
+  const { data: fromData } = fromBuffer;
+
+  const offset = Math.round((width / 2) * easedProgress);
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const srcIdx = (y * width + x) * 4;
+      const destIdx = srcIdx;
+
+      const isLeft = x < width / 2;
+      const dx = isLeft ? x - offset : x + offset;
+      if (dx >= 0 && dx < width) {
+        const fromIdx = (y * width + dx) * 4;
+        resultData[destIdx] = fromData[fromIdx];
+        resultData[destIdx + 1] = fromData[fromIdx + 1];
+        resultData[destIdx + 2] = fromData[fromIdx + 2];
+        resultData[destIdx + 3] = fromData[fromIdx + 3];
+      }
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Cube transition - faux 3D cube rotation
+ */
+export function transitionCube(
+  fromBuffer: PixelBuffer | null,
+  toBuffer: PixelBuffer | null,
+  progress: number = 0,
+  easing: string = 'linear'
+): PixelBuffer {
+  if (!fromBuffer || !toBuffer) {
+    return fromBuffer || toBuffer || createBuffer(1, 1);
+  }
+
+  const easeFunc = getEasingFunction(easing);
+  const easedProgress = easeFunc(Math.max(0, Math.min(1, progress)));
+  const result = cloneBuffer(fromBuffer);
+  const { width, height } = result;
+  const { data: resultData } = result;
+  const { data: fromData } = fromBuffer;
+  const { data: toData } = toBuffer;
+
+  const fromScale = Math.max(0.6, 1 - easedProgress * 0.4);
+  const toScale = Math.max(0.6, 0.6 + easedProgress * 0.4);
+  const fromOffset = Math.round(easedProgress * (width * 0.2));
+  const toOffset = Math.round((1 - easedProgress) * (width * 0.2));
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const destIdx = (y * width + x) * 4;
+      const srcXFrom = Math.floor((x - fromOffset - width / 2) / fromScale + width / 2);
+      const srcXTo = Math.floor((x + toOffset - width / 2) / toScale + width / 2);
+      const srcY = y;
+
+      const fromIdx = srcXFrom >= 0 && srcXFrom < width ? (srcY * width + srcXFrom) * 4 : -1;
+      const toIdx = srcXTo >= 0 && srcXTo < width ? (srcY * width + srcXTo) * 4 : -1;
+
+      const useTo = easedProgress > 0.5;
+
+      if (useTo && toIdx >= 0) {
+        resultData[destIdx] = toData[toIdx];
+        resultData[destIdx + 1] = toData[toIdx + 1];
+        resultData[destIdx + 2] = toData[toIdx + 2];
+        resultData[destIdx + 3] = toData[toIdx + 3];
+      } else if (!useTo && fromIdx >= 0) {
+        resultData[destIdx] = fromData[fromIdx];
+        resultData[destIdx + 1] = fromData[fromIdx + 1];
+        resultData[destIdx + 2] = fromData[fromIdx + 2];
+        resultData[destIdx + 3] = fromData[fromIdx + 3];
+      }
+    }
+  }
+
+  return result;
+}
+
+/**
  * Apply a transition between two buffers
  * @param fromBuffer - Outgoing buffer
  * @param toBuffer - Incoming buffer
@@ -452,7 +905,22 @@ export interface TransitionOptions {
 export function applyTransition(
   fromBuffer: PixelBuffer | null,
   toBuffer: PixelBuffer | null,
-  transitionType: 'fade' | 'slide' | 'zoom' | 'dissolve' | 'wipe',
+  transitionType:
+    | 'fade'
+    | 'slide'
+    | 'zoom'
+    | 'dissolve'
+    | 'wipe'
+    | 'iris'
+    | 'clockWipe'
+    | 'blinds'
+    | 'flip'
+    | 'morph'
+    | 'glitch'
+    | 'pixelate'
+    | 'radialWipe'
+    | 'doorway'
+    | 'cube',
   progress: number = 0,
   options: TransitionOptions = {}
 ): PixelBuffer {
@@ -469,6 +937,26 @@ export function applyTransition(
       return transitionDissolve(fromBuffer, toBuffer, progress, easing);
     case 'wipe':
       return transitionWipe(fromBuffer, toBuffer, progress, direction, easing);
+    case 'iris':
+      return transitionIris(fromBuffer, toBuffer, progress, easing);
+    case 'clockWipe':
+      return transitionClockWipe(fromBuffer, toBuffer, progress, easing);
+    case 'blinds':
+      return transitionBlinds(fromBuffer, toBuffer, progress, direction, easing);
+    case 'flip':
+      return transitionFlip(fromBuffer, toBuffer, progress, easing);
+    case 'morph':
+      return transitionMorph(fromBuffer, toBuffer, progress, easing);
+    case 'glitch':
+      return transitionGlitch(fromBuffer, toBuffer, progress, easing);
+    case 'pixelate':
+      return transitionPixelate(fromBuffer, toBuffer, progress, easing);
+    case 'radialWipe':
+      return transitionRadialWipe(fromBuffer, toBuffer, progress, easing);
+    case 'doorway':
+      return transitionDoorway(fromBuffer, toBuffer, progress, easing);
+    case 'cube':
+      return transitionCube(fromBuffer, toBuffer, progress, easing);
     default:
       return transitionFade(fromBuffer, toBuffer, progress, easing);
   }

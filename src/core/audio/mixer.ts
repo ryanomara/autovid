@@ -4,6 +4,8 @@ import { existsSync } from 'fs';
 import { join } from 'path';
 import { createLogger } from '../../utils/logger.js';
 import type { AudioTrack, VideoConfig } from '../../types/index.js';
+import { TTSService, PlaceholderTTSProvider } from './tts.js';
+import { HuggingFaceTTSProvider } from './providers/huggingface.js';
 
 const logger = createLogger('audio-mixer');
 
@@ -35,7 +37,7 @@ export class AudioMixer {
 
     for (let i = 0; i < tracks.length; i++) {
       const track = tracks[i];
-      
+
       try {
         if (track.tts) {
           const ttsPath = await this.generateTTS(track, i);
@@ -55,7 +57,7 @@ export class AudioMixer {
     }
 
     const mixedPath = await this.mixTracks(processedTracks, outputPath, config);
-    
+
     await this.cleanup(processedTracks);
 
     logger.info({ outputPath: mixedPath }, 'Audio mixing complete');
@@ -69,51 +71,24 @@ export class AudioMixer {
 
     const outputPath = join(this.tempDir, `tts_${index}.mp3`);
 
-    logger.info({ text: track.tts.text.substring(0, 50), voice: track.tts.voice }, 'Generating TTS');
+    logger.info(
+      { text: track.tts.text.substring(0, 50), voice: track.tts.voice },
+      'Generating TTS'
+    );
 
-    const text = track.tts.text;
-    const voice = track.tts.voice;
-    const rate = track.tts.rate || 1.0;
-    const pitch = track.tts.pitch || 1.0;
+    const ttsService = new TTSService({
+      providers: [
+        new HuggingFaceTTSProvider({
+          token: process.env.HF_TOKEN,
+        }),
+        new PlaceholderTTSProvider(),
+      ],
+      fallbackOrder: ['huggingface', 'placeholder'],
+    });
 
-    await this.synthesizeSpeech(text, voice, rate, pitch, outputPath);
+    await ttsService.synthesize(track, outputPath);
 
     return outputPath;
-  }
-
-  private async synthesizeSpeech(
-    text: string,
-    voice: string,
-    rate: number,
-    pitch: number,
-    outputPath: string
-  ): Promise<void> {
-    return new Promise((resolve, reject) => {
-      const args = [
-        '-i', 'pipe:0',
-        '-f', 'lavfi',
-        '-i', `sine=frequency=440:duration=${text.length * 0.1}`,
-        '-filter_complex', `[1:a]atempo=${rate}[a]`,
-        '-map', '[a]',
-        '-y',
-        outputPath
-      ];
-
-      const ffmpeg = spawn('ffmpeg', args);
-      
-      ffmpeg.stdin.write(text);
-      ffmpeg.stdin.end();
-
-      ffmpeg.on('close', (code) => {
-        if (code === 0) {
-          resolve();
-        } else {
-          reject(new Error(`TTS generation failed with code ${code}`));
-        }
-      });
-
-      ffmpeg.on('error', reject);
-    });
   }
 
   private async processAudioTrack(
@@ -148,9 +123,12 @@ export class AudioMixer {
     }
 
     const args = [
-      '-i', track.src,
-      '-ss', `${track.startTime / 1000}`,
-      '-t', `${(track.endTime - track.startTime) / 1000}`,
+      '-i',
+      track.src,
+      '-ss',
+      `${track.startTime / 1000}`,
+      '-t',
+      `${(track.endTime - track.startTime) / 1000}`,
     ];
 
     if (filters.length > 0) {
@@ -173,19 +151,22 @@ export class AudioMixer {
     outputPath: string,
     config: VideoConfig
   ): Promise<string> {
-    const inputs = trackPaths.flatMap(path => ['-i', path]);
-    
-    const filterComplex = trackPaths
-      .map((_, i) => `[${i}:a]`)
-      .join('') + `amix=inputs=${trackPaths.length}:duration=longest[out]`;
+    const inputs = trackPaths.flatMap((path) => ['-i', path]);
+
+    const filterComplex =
+      trackPaths.map((_, i) => `[${i}:a]`).join('') +
+      `amix=inputs=${trackPaths.length}:duration=longest[out]`;
 
     const args = [
       ...inputs,
-      '-filter_complex', filterComplex,
-      '-map', '[out]',
-      '-t', `${config.duration / 1000}`,
+      '-filter_complex',
+      filterComplex,
+      '-map',
+      '[out]',
+      '-t',
+      `${config.duration / 1000}`,
       '-y',
-      outputPath
+      outputPath,
     ];
 
     await this.runFFmpeg(args);
@@ -196,9 +177,9 @@ export class AudioMixer {
   private runFFmpeg(args: string[]): Promise<void> {
     return new Promise((resolve, reject) => {
       const ffmpeg = spawn('ffmpeg', args);
-      
+
       let stderr = '';
-      
+
       ffmpeg.stderr.on('data', (data) => {
         stderr += data.toString();
       });
