@@ -1,0 +1,306 @@
+{
+  "id": "google-stock-history-showcase",
+  "name": "Google Stock Price History Showcase",
+  "config": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "duration": 18000,
+    "backgroundColor": { "r": 14, "g": 18, "b": 30, "a": 1 },
+    "outputFormat": "mp4",
+    "quality": "high"
+  },
+  "scenes": [
+    {
+      "id": "intro",
+      "name": "Intro",
+      "startTime": 0,
+      "endTime": 3200,
+      "layers": [
+        {
+          "id": "intro-title",
+          "type": "text",
+          "text": "GOOGL STOCK HISTORY",
+          "fontFamily": "Arial",
+          "fontSize": 88,
+          "fontWeight": "bold",
+          "typographyPreset": "headline",
+          "textAlign": "center",
+          "color": { "r": 255, "g": 255, "b": 255, "a": 1 },
+          "textStroke": {
+            "color": { "r": 26, "g": 34, "b": 58, "a": 1 },
+            "width": 3
+          },
+          "startTime": 0,
+          "endTime": 3200,
+          "position": { "x": 960, "y": 430 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "animations": [
+            {
+              "property": "opacity",
+              "keyframes": [
+                { "time": 0, "value": 0 },
+                { "time": 700, "value": 1 }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "intro-subtitle",
+          "type": "text",
+          "text": "Animated charts, typography presets, and collision-safe text lanes",
+          "fontFamily": "Arial",
+          "fontSize": 36,
+          "fontWeight": "bold",
+          "typographyPreset": "callout",
+          "textAlign": "center",
+          "color": { "r": 168, "g": 219, "b": 255, "a": 1 },
+          "startTime": 250,
+          "endTime": 3200,
+          "position": { "x": 960, "y": 570 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "animations": [
+            {
+              "property": "opacity",
+              "keyframes": [
+                { "time": 700, "value": 0 },
+                { "time": 1500, "value": 1 }
+              ]
+            }
+          ]
+        }
+      ],
+      "transition": { "type": "fade", "duration": 700 }
+    },
+    {
+      "id": "price-line",
+      "name": "Price Timeline",
+      "startTime": 3200,
+      "endTime": 10400,
+      "layers": [
+        {
+          "id": "googl-line-chart",
+          "type": "chart",
+          "chartType": "line",
+          "title": "Google (Alphabet) Price Timeline",
+          "dimensions": { "width": 1720, "height": 860 },
+          "data": {
+            "labels": ["2004 IPO", "2007", "2010", "2014", "2018", "2021", "2024"],
+            "values": [50, 350, 300, 575, 1050, 2850, 172]
+          },
+          "yAxis": { "min": 0, "max": 3000, "ticks": 6 },
+          "style": {
+            "lineColor": { "r": 114, "g": 198, "b": 255, "a": 1 },
+            "labelColor": { "r": 210, "g": 220, "b": 240, "a": 1 },
+            "valueColor": { "r": 255, "g": 255, "b": 255, "a": 1 },
+            "lineWidth": 5,
+            "pointRadius": 5,
+            "maxLabels": 5,
+            "valueDecimals": 0,
+            "showValues": true,
+            "showPoints": true,
+            "showGrid": true
+          },
+          "startTime": 3200,
+          "endTime": 10400,
+          "position": { "x": 100, "y": 120 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "animations": [
+            {
+              "property": "chartProgress",
+              "keyframes": [
+                { "time": 3200, "value": 0 },
+                { "time": 9800, "value": 1 }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "line-callout-top",
+          "type": "text",
+          "text": "Peak run-up into 2021",
+          "fontFamily": "Arial",
+          "fontSize": 34,
+          "fontWeight": "bold",
+          "typographyPreset": "callout",
+          "textLane": "top",
+          "textAlign": "left",
+          "color": { "r": 255, "g": 233, "b": 165, "a": 1 },
+          "startTime": 7600,
+          "endTime": 10400,
+          "position": { "x": 1190, "y": 200 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "animations": [
+            {
+              "property": "position",
+              "keyframes": [
+                { "time": 7600, "value": { "x": 1120, "y": 200 } },
+                { "time": 9800, "value": { "x": 1370, "y": 200 } }
+              ]
+            },
+            {
+              "property": "opacity",
+              "keyframes": [
+                { "time": 7600, "value": 0 },
+                { "time": 8200, "value": 1 }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "line-callout-top-2",
+          "type": "text",
+          "text": "Post-split era reset",
+          "fontFamily": "Arial",
+          "fontSize": 32,
+          "fontWeight": "bold",
+          "typographyPreset": "body",
+          "textLane": "top",
+          "textAlign": "left",
+          "color": { "r": 255, "g": 189, "b": 189, "a": 1 },
+          "startTime": 7800,
+          "endTime": 10400,
+          "position": { "x": 1160, "y": 200 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "animations": [
+            {
+              "property": "position",
+              "keyframes": [
+                { "time": 7800, "value": { "x": 1100, "y": 200 } },
+                { "time": 10000, "value": { "x": 1330, "y": 200 } }
+              ]
+            },
+            {
+              "property": "opacity",
+              "keyframes": [
+                { "time": 7800, "value": 0 },
+                { "time": 8400, "value": 1 }
+              ]
+            }
+          ]
+        }
+      ],
+      "transition": { "type": "fade", "duration": 700 }
+    },
+    {
+      "id": "milestone-bars",
+      "name": "Milestone Comparison",
+      "startTime": 10400,
+      "endTime": 15300,
+      "layers": [
+        {
+          "id": "googl-bars",
+          "type": "chart",
+          "chartType": "bar",
+          "title": "Key Milestone Prices (USD)",
+          "dimensions": { "width": 1720, "height": 860 },
+          "data": {
+            "labels": ["IPO", "2010", "2021 High", "2024"],
+            "values": [50, 300, 2850, 172]
+          },
+          "yAxis": { "min": 0, "max": 3000, "ticks": 6 },
+          "style": {
+            "barColor": { "r": 146, "g": 255, "b": 191, "a": 1 },
+            "labelColor": { "r": 210, "g": 220, "b": 240, "a": 1 },
+            "valueColor": { "r": 255, "g": 255, "b": 255, "a": 1 },
+            "showValues": true,
+            "showGrid": true,
+            "valueDecimals": 0
+          },
+          "startTime": 10400,
+          "endTime": 15300,
+          "position": { "x": 100, "y": 120 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "animations": [
+            {
+              "property": "chartProgress",
+              "keyframes": [
+                { "time": 10400, "value": 0 },
+                { "time": 14200, "value": 1 }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "bar-note",
+          "type": "text",
+          "text": "Bars animate with value labels and collision-safe placement",
+          "fontFamily": "Arial",
+          "fontSize": 30,
+          "fontWeight": "bold",
+          "typographyPreset": "body",
+          "textAlign": "center",
+          "color": { "r": 180, "g": 227, "b": 255, "a": 1 },
+          "startTime": 12400,
+          "endTime": 15300,
+          "position": { "x": 960, "y": 940 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "animations": [
+            {
+              "property": "opacity",
+              "keyframes": [
+                { "time": 12400, "value": 0 },
+                { "time": 13200, "value": 1 }
+              ]
+            }
+          ]
+        }
+      ],
+      "transition": { "type": "fade", "duration": 700 }
+    },
+    {
+      "id": "outro",
+      "name": "Outro",
+      "startTime": 15300,
+      "endTime": 18000,
+      "layers": [
+        {
+          "id": "outro-title",
+          "type": "text",
+          "text": "AUTOVID FEATURE SHOWCASE",
+          "fontFamily": "Arial",
+          "fontSize": 76,
+          "fontWeight": "bold",
+          "typographyPreset": "headline",
+          "textAlign": "center",
+          "color": { "r": 255, "g": 255, "b": 255, "a": 1 },
+          "textStroke": {
+            "color": { "r": 20, "g": 24, "b": 42, "a": 1 },
+            "width": 2
+          },
+          "startTime": 15300,
+          "endTime": 18000,
+          "position": { "x": 960, "y": 470 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "animations": [
+            {
+              "property": "opacity",
+              "keyframes": [
+                { "time": 15300, "value": 0 },
+                { "time": 16000, "value": 1 }
+              ]
+            }
+          ]
+        }
+      ],
+      "transition": { "type": "fade", "duration": 700 }
+    }
+  ],
+  "audio": []
+}

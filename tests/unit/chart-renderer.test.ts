@@ -52,4 +52,39 @@ describe('Chart Renderer', () => {
 
     expect(fullVisible).toBeGreaterThan(earlyVisible);
   });
+
+  it('reduces x-axis label density when maxLabels is low', () => {
+    const labels = ['M1', 'M2', 'M3', 'M4', 'M5', 'M6', 'M7', 'M8', 'M9', 'M10', 'M11', 'M12'];
+    const values = [10, 12, 9, 14, 13, 17, 16, 19, 21, 20, 22, 24];
+
+    const baseLayer: ChartLayer = {
+      ...createLineLayer(),
+      data: { labels, values },
+      style: {
+        showValues: false,
+        showPoints: false,
+      },
+    };
+
+    const dense = renderChartLayer({
+      ...baseLayer,
+      style: {
+        ...baseLayer.style,
+        maxLabels: 12,
+      },
+    });
+
+    const sparse = renderChartLayer({
+      ...baseLayer,
+      style: {
+        ...baseLayer.style,
+        maxLabels: 3,
+      },
+    });
+
+    const denseVisible = countVisiblePixels(dense.data);
+    const sparseVisible = countVisiblePixels(sparse.data);
+
+    expect(denseVisible).toBeGreaterThan(sparseVisible);
+  });
 });

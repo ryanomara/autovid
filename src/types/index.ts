@@ -189,6 +189,8 @@ export interface TextLayer extends BaseLayer {
   textMask?: {
     mode: 'cutout' | 'inverse';
   };
+  typographyPreset?: 'headline' | 'body' | 'callout';
+  textLane?: 'top' | 'upper' | 'middle' | 'lower' | 'bottom' | number;
 }
 
 /**

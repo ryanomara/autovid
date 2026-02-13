@@ -73,9 +73,9 @@ export function suggestPacing(
   transitionDuration: number;
 } {
   const baseTimings = {
-    short: { duration: 30000, scene: 5000, transition: 300 },
-    medium: { duration: 60000, scene: 8000, transition: 500 },
-    long: { duration: 120000, scene: 12000, transition: 500 },
+    short: { duration: 30000, scene: 5000, transition: 700 },
+    medium: { duration: 60000, scene: 8000, transition: 700 },
+    long: { duration: 120000, scene: 12000, transition: 750 },
   };
 
   const audienceMultipliers = {

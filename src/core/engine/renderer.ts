@@ -71,6 +71,34 @@ interface TextBounds {
   height: number;
 }
 
+interface TypographyPresetConfig {
+  minFontSize: number;
+  lineHeight: number;
+  letterSpacing: number;
+  fontWeight: TextLayer['fontWeight'];
+}
+
+const typographyPresets: Record<'headline' | 'body' | 'callout', TypographyPresetConfig> = {
+  headline: {
+    minFontSize: 64,
+    lineHeight: 1.12,
+    letterSpacing: 1,
+    fontWeight: '700',
+  },
+  body: {
+    minFontSize: 28,
+    lineHeight: 1.28,
+    letterSpacing: 0,
+    fontWeight: '500',
+  },
+  callout: {
+    minFontSize: 36,
+    lineHeight: 1.2,
+    letterSpacing: 0.4,
+    fontWeight: '700',
+  },
+};
+
 export class Renderer {
   private config: RendererConfig;
   private imageCache: Map<string, PixelBuffer> = new Map();
@@ -251,9 +279,10 @@ export class Renderer {
           let y = Math.round(props.position.y - cameraState.position.y + project.config.height / 2);
 
           if (layer.type === 'text') {
-            const layerAlign = (layer as TextLayer).textAlign || 'left';
+            const textLayer = layer as TextLayer;
+            const layerAlign = textLayer.textAlign || 'left';
             const isPositionAnimated = this.isPositionAnimated(layer);
-            const hasExplicitAlign = (layer as TextLayer).textAlign !== undefined;
+            const hasExplicitAlign = textLayer.textAlign !== undefined;
             const effectiveAlign =
               !hasExplicitAlign && !isPositionAnimated && mainTextLayout
                 ? mainTextLayout.align
@@ -269,7 +298,36 @@ export class Renderer {
               x -= transformed.width;
             }
 
-            if (!isPositionAnimated) {
+            if (isPositionAnimated && textLayer.textLane !== undefined) {
+              const laneY = this.getTextLaneY(
+                textLayer.textLane,
+                project.config.height,
+                textMargin,
+                transformed.height
+              );
+              y = Math.round(laneY - transformed.height / 2);
+
+              x = this.clampPosition(
+                x,
+                textMargin,
+                project.config.width - textMargin - transformed.width
+              );
+              y = this.clampPosition(
+                y,
+                textMargin,
+                project.config.height - textMargin - transformed.height
+              );
+
+              x = this.resolveTextLaneCollision(
+                x,
+                y,
+                transformed.width,
+                transformed.height,
+                occupiedTextBounds,
+                textMargin,
+                project.config.width
+              );
+            } else if (!isPositionAnimated) {
               x = this.clampPosition(
                 x,
                 textMargin,
@@ -419,17 +477,25 @@ export class Renderer {
 
   private renderTextLayer(layer: TextLayer, props: AnimatedProperties): PixelBuffer {
     const color = (props as unknown as { color?: Color }).color || layer.color;
+    const preset = layer.typographyPreset ? typographyPresets[layer.typographyPreset] : null;
+    const resolvedFontSize = preset ? Math.max(layer.fontSize, preset.minFontSize) : layer.fontSize;
+    const resolvedLineHeight =
+      layer.lineHeight ?? (preset ? resolvedFontSize * preset.lineHeight : undefined);
+    const resolvedLetterSpacing =
+      layer.letterSpacing ?? (preset ? preset.letterSpacing : undefined);
+    const resolvedFontWeight = layer.fontWeight ?? (preset ? preset.fontWeight : undefined);
 
     return renderText({
       text: layer.text,
-      fontSize: layer.fontSize,
+      fontSize: resolvedFontSize,
       fontFamily: layer.fontFamily,
-      fontWeight: layer.fontWeight,
+      fontWeight: resolvedFontWeight,
       fontStyle: layer.fontStyle,
       color: color,
       textAlign: layer.textAlign,
       maxWidth: layer.maxWidth,
-      letterSpacing: layer.letterSpacing,
+      letterSpacing: resolvedLetterSpacing,
+      lineHeight: resolvedLineHeight,
       textShadow: layer.textShadow,
       textStroke: layer.textStroke,
       textMask: layer.textMask,
@@ -623,6 +689,75 @@ export class Renderer {
     }
 
     return resolvedY;
+  }
+
+  private resolveTextLaneCollision(
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    occupied: TextBounds[],
+    margin: number,
+    canvasWidth: number
+  ): number {
+    let resolvedX = x;
+    const spacing = Math.max(12, Math.round(width * 0.08));
+
+    const collides = (candidateX: number): boolean => {
+      const a: TextBounds = { x: candidateX, y, width, height };
+      return occupied.some((b) => this.rectanglesOverlap(a, b));
+    };
+
+    let safety = 0;
+    while (collides(resolvedX) && safety < 32) {
+      const right = resolvedX + spacing;
+      const left = resolvedX - spacing;
+      const canMoveRight = right + width <= canvasWidth - margin;
+      const canMoveLeft = left >= margin;
+
+      if (canMoveRight) {
+        resolvedX = right;
+      } else if (canMoveLeft) {
+        resolvedX = left;
+      } else {
+        break;
+      }
+
+      safety += 1;
+    }
+
+    return resolvedX;
+  }
+
+  private getTextLaneY(
+    lane: TextLayer['textLane'],
+    canvasHeight: number,
+    margin: number,
+    textHeight: number
+  ): number {
+    const top = margin + textHeight / 2;
+    const bottom = canvasHeight - margin - textHeight / 2;
+
+    if (typeof lane === 'number') {
+      if (lane <= 1) return top;
+      if (lane >= 5) return bottom;
+      const t = (lane - 1) / 4;
+      return top + (bottom - top) * t;
+    }
+
+    switch (lane) {
+      case 'top':
+        return top;
+      case 'upper':
+        return top + (bottom - top) * 0.25;
+      case 'middle':
+        return top + (bottom - top) * 0.5;
+      case 'lower':
+        return top + (bottom - top) * 0.75;
+      case 'bottom':
+      default:
+        return bottom;
+    }
   }
 
   private rectanglesOverlap(a: TextBounds, b: TextBounds): boolean {

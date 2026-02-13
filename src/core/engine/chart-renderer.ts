@@ -22,6 +22,30 @@ interface ChartPalette {
   bar: Color;
 }
 
+interface Rect {
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
+}
+
+function makeRect(x: number, y: number, width: number, height: number): Rect {
+  return {
+    left: x,
+    top: y,
+    right: x + width,
+    bottom: y + height,
+  };
+}
+
+function rectsIntersect(a: Rect, b: Rect): boolean {
+  return a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+}
+
+function intersectsAny(target: Rect, blockers: Rect[]): boolean {
+  return blockers.some((blocker) => rectsIntersect(target, blocker));
+}
+
 const defaults: ChartPalette = {
   axis: { r: 98, g: 108, b: 142, a: 1 },
   grid: { r: 58, g: 68, b: 98, a: 0.7 },
@@ -148,6 +172,18 @@ export function renderChartLayer(layer: ChartLayer, options: ChartRenderOptions 
     const visiblePointCount = Math.max(1, Math.ceil(progress * points.length));
     const visiblePoints = points.slice(0, visiblePointCount);
     const labelStride = Math.max(1, Math.ceil(points.length / labelLimit));
+    const occupiedRects: Rect[] = [];
+
+    for (const point of visiblePoints) {
+      occupiedRects.push(
+        makeRect(
+          Math.round(point.x - pointRadius - 2),
+          Math.round(point.y - pointRadius - 2),
+          pointRadius * 2 + 4,
+          pointRadius * 2 + 4
+        )
+      );
+    }
 
     for (let index = 0; index < visiblePoints.length; index++) {
       const point = visiblePoints[index];
@@ -166,10 +202,14 @@ export function renderChartLayer(layer: ChartLayer, options: ChartRenderOptions 
           color: palette.label,
           textAlign: 'center',
         });
-        blitBuffer(buffer, labelBuffer, {
-          x: Math.round(point.x - labelBuffer.width / 2),
-          y: plot.y + plot.height + 20,
-        });
+
+        const labelX = Math.round(point.x - labelBuffer.width / 2);
+        const labelY = plot.y + plot.height + 20;
+        const labelRect = makeRect(labelX, labelY, labelBuffer.width, labelBuffer.height);
+        if (!intersectsAny(labelRect, occupiedRects)) {
+          blitBuffer(buffer, labelBuffer, { x: labelX, y: labelY });
+          occupiedRects.push(labelRect);
+        }
       }
 
       if (showValues) {
@@ -183,10 +223,31 @@ export function renderChartLayer(layer: ChartLayer, options: ChartRenderOptions 
           color: palette.value,
           textAlign: 'center',
         });
-        blitBuffer(buffer, valueBuffer, {
-          x: Math.round(point.x - valueBuffer.width / 2),
-          y: Math.round(point.y - valueBuffer.height - 10),
-        });
+
+        const valueX = Math.round(point.x - valueBuffer.width / 2);
+        const preferredValueY = Math.round(point.y - valueBuffer.height - 10);
+        const fallbackValueY = Math.round(point.y + pointRadius + 8);
+
+        const preferredRect = makeRect(
+          valueX,
+          preferredValueY,
+          valueBuffer.width,
+          valueBuffer.height
+        );
+        const fallbackRect = makeRect(
+          valueX,
+          fallbackValueY,
+          valueBuffer.width,
+          valueBuffer.height
+        );
+
+        if (!intersectsAny(preferredRect, occupiedRects)) {
+          blitBuffer(buffer, valueBuffer, { x: valueX, y: preferredValueY });
+          occupiedRects.push(preferredRect);
+        } else if (!intersectsAny(fallbackRect, occupiedRects)) {
+          blitBuffer(buffer, valueBuffer, { x: valueX, y: fallbackValueY });
+          occupiedRects.push(fallbackRect);
+        }
       }
     }
   } else {
