@@ -72,6 +72,35 @@ function textBounds(layer) {
   };
 }
 
+function safeEnvelopeViolations(box, width, height, fontSize) {
+  const horizontalMargin = 0.6 * fontSize;
+  const verticalMargin = 0.4 * fontSize;
+  let violations = 0;
+  if (box.left < horizontalMargin) violations += 1;
+  if (box.right > width - horizontalMargin) violations += 1;
+  if (box.top < verticalMargin) violations += 1;
+  if (box.bottom > height - verticalMargin) violations += 1;
+  return violations;
+}
+
+function hasRiskyDisplayGlyphs(text) {
+  return /[\[\](){}]/.test(text);
+}
+
+function isTitleLikeTextLayer(layer) {
+  if (layer?.type !== 'text') return false;
+
+  const id = String(layer.id ?? '');
+  const name = String(layer.name ?? '');
+  const text = String(layer.text ?? '');
+  const fontSize = Number(layer.fontSize ?? 0);
+  const titlePattern = /(title|headline|intro|outro|summary|closing)/i;
+
+  return (
+    fontSize >= 56 || titlePattern.test(id) || titlePattern.test(name) || titlePattern.test(text)
+  );
+}
+
 function intersects(a, b) {
   return a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
 }
@@ -86,6 +115,9 @@ function analyzeFixture(filePath) {
       textOverlapCount: 0,
       labelCollisions: 0,
       contrastFailures: 0,
+      riskyGlyphFormattingCount: 0,
+      textSafeEnvelopeRiskCount: 0,
+      titleLayerZIndexViolations: 0,
       frameSharpnessProxy: 1,
     },
     errors: [],
@@ -110,6 +142,8 @@ function analyzeFixture(filePath) {
 
   const scenes = Array.isArray(project?.scenes) ? project.scenes : [];
   fixture.scenes = scenes.length;
+  const projectWidth = Number(project?.config?.width ?? 1920);
+  const projectHeight = Number(project?.config?.height ?? 1080);
 
   const bg = getBackground(project);
   let sharpnessPenalty = 0;
@@ -136,6 +170,27 @@ function analyzeFixture(filePath) {
       const ratio = contrastRatio(layer.color ?? { r: 255, g: 255, b: 255, a: 1 }, bg);
       if (ratio < 4.5) {
         fixture.metrics.contrastFailures += 1;
+      }
+
+      const fontSize = Number(layer.fontSize ?? 32);
+      const text = String(layer.text ?? '');
+      if (fontSize >= 56 && hasRiskyDisplayGlyphs(text)) {
+        fixture.metrics.riskyGlyphFormattingCount += 1;
+      }
+
+      const box = textBounds(layer);
+      fixture.metrics.textSafeEnvelopeRiskCount += safeEnvelopeViolations(
+        box,
+        projectWidth,
+        projectHeight,
+        fontSize
+      );
+
+      if (isTitleLikeTextLayer(layer)) {
+        const zIndex = Number(layer.zIndex);
+        if (!Number.isFinite(zIndex) || zIndex < 900) {
+          fixture.metrics.titleLayerZIndexViolations += 1;
+        }
       }
     }
 
@@ -176,6 +231,12 @@ function analyzeFixture(filePath) {
   if (fixture.metrics.textOverlapCount > 0) fixture.errors.push('text_overlap_detected');
   if (fixture.metrics.labelCollisions > 0) fixture.errors.push('label_collisions_detected');
   if (fixture.metrics.contrastFailures > 0) fixture.errors.push('contrast_failures_detected');
+  if (fixture.metrics.riskyGlyphFormattingCount > 0)
+    fixture.errors.push('risky_glyph_formatting_detected');
+  if (fixture.metrics.textSafeEnvelopeRiskCount > 0)
+    fixture.errors.push('text_safe_envelope_risk_detected');
+  if (fixture.metrics.titleLayerZIndexViolations > 0)
+    fixture.errors.push('title_layer_zindex_violation_detected');
   if (fixture.metrics.frameSharpnessProxy < 0.9)
     fixture.errors.push('frame_sharpness_proxy_below_threshold');
 
@@ -189,6 +250,9 @@ function aggregateMetrics(fixtures) {
       acc.textOverlapCount += fixture.metrics.textOverlapCount;
       acc.labelCollisions += fixture.metrics.labelCollisions;
       acc.contrastFailures += fixture.metrics.contrastFailures;
+      acc.riskyGlyphFormattingCount += fixture.metrics.riskyGlyphFormattingCount;
+      acc.textSafeEnvelopeRiskCount += fixture.metrics.textSafeEnvelopeRiskCount;
+      acc.titleLayerZIndexViolations += fixture.metrics.titleLayerZIndexViolations;
       acc.frameSharpnessProxy += fixture.metrics.frameSharpnessProxy;
       return acc;
     },
@@ -196,6 +260,9 @@ function aggregateMetrics(fixtures) {
       textOverlapCount: 0,
       labelCollisions: 0,
       contrastFailures: 0,
+      riskyGlyphFormattingCount: 0,
+      textSafeEnvelopeRiskCount: 0,
+      titleLayerZIndexViolations: 0,
       frameSharpnessProxy: 0,
     }
   );
@@ -219,16 +286,35 @@ function compareToBaseline(currentSummary) {
   }
 
   const failures = [];
-  if (currentSummary.metrics.textOverlapCount > baselineMetrics.textOverlapCount) {
+  const baselineTextOverlap = Number(baselineMetrics.textOverlapCount ?? 0);
+  const baselineLabelCollisions = Number(baselineMetrics.labelCollisions ?? 0);
+  const baselineContrastFailures = Number(baselineMetrics.contrastFailures ?? 0);
+  const baselineRiskyGlyphFormatting = Number(baselineMetrics.riskyGlyphFormattingCount ?? 0);
+  const baselineSafeEnvelopeRisk = Number(baselineMetrics.textSafeEnvelopeRiskCount ?? 0);
+  const baselineTitleLayerZIndexViolations = Number(
+    baselineMetrics.titleLayerZIndexViolations ?? 0
+  );
+  const baselineSharpness = Number(baselineMetrics.frameSharpnessProxy ?? 1);
+
+  if (currentSummary.metrics.textOverlapCount > baselineTextOverlap) {
     failures.push('regression_text_overlap_count');
   }
-  if (currentSummary.metrics.labelCollisions > baselineMetrics.labelCollisions) {
+  if (currentSummary.metrics.labelCollisions > baselineLabelCollisions) {
     failures.push('regression_label_collisions');
   }
-  if (currentSummary.metrics.contrastFailures > baselineMetrics.contrastFailures) {
+  if (currentSummary.metrics.contrastFailures > baselineContrastFailures) {
     failures.push('regression_contrast_failures');
   }
-  if (currentSummary.metrics.frameSharpnessProxy < baselineMetrics.frameSharpnessProxy - 0.02) {
+  if (currentSummary.metrics.riskyGlyphFormattingCount > baselineRiskyGlyphFormatting) {
+    failures.push('regression_risky_glyph_formatting_count');
+  }
+  if (currentSummary.metrics.textSafeEnvelopeRiskCount > baselineSafeEnvelopeRisk) {
+    failures.push('regression_text_safe_envelope_risk_count');
+  }
+  if (currentSummary.metrics.titleLayerZIndexViolations > baselineTitleLayerZIndexViolations) {
+    failures.push('regression_title_layer_zindex_violations');
+  }
+  if (currentSummary.metrics.frameSharpnessProxy < baselineSharpness - 0.02) {
     failures.push('regression_frame_sharpness_proxy');
   }
 
@@ -252,16 +338,19 @@ function toMarkdown(report) {
   lines.push(`- textOverlapCount: ${report.summary.metrics.textOverlapCount}`);
   lines.push(`- labelCollisions: ${report.summary.metrics.labelCollisions}`);
   lines.push(`- contrastFailures: ${report.summary.metrics.contrastFailures}`);
+  lines.push(`- riskyGlyphFormattingCount: ${report.summary.metrics.riskyGlyphFormattingCount}`);
+  lines.push(`- textSafeEnvelopeRiskCount: ${report.summary.metrics.textSafeEnvelopeRiskCount}`);
+  lines.push(`- titleLayerZIndexViolations: ${report.summary.metrics.titleLayerZIndexViolations}`);
   lines.push(`- frameSharpnessProxy: ${report.summary.metrics.frameSharpnessProxy.toFixed(3)}`);
   lines.push('');
   lines.push(
-    '| Fixture | Scenes | Text Overlap | Label Collisions | Contrast Failures | Sharpness Proxy | Passed |'
+    '| Fixture | Scenes | Text Overlap | Label Collisions | Contrast Failures | Risky Glyphs | Safe Envelope Risk | Title zIndex Violations | Sharpness Proxy | Passed |'
   );
-  lines.push('|---|---:|---:|---:|---:|---:|---|');
+  lines.push('|---|---:|---:|---:|---:|---:|---:|---:|---:|---|');
 
   for (const fixture of report.fixtures) {
     lines.push(
-      `| ${fixture.fixture} | ${fixture.scenes} | ${fixture.metrics.textOverlapCount} | ${fixture.metrics.labelCollisions} | ${fixture.metrics.contrastFailures} | ${fixture.metrics.frameSharpnessProxy.toFixed(3)} | ${fixture.passed ? 'yes' : 'no'} |`
+      `| ${fixture.fixture} | ${fixture.scenes} | ${fixture.metrics.textOverlapCount} | ${fixture.metrics.labelCollisions} | ${fixture.metrics.contrastFailures} | ${fixture.metrics.riskyGlyphFormattingCount} | ${fixture.metrics.textSafeEnvelopeRiskCount} | ${fixture.metrics.titleLayerZIndexViolations} | ${fixture.metrics.frameSharpnessProxy.toFixed(3)} | ${fixture.passed ? 'yes' : 'no'} |`
     );
   }
 
@@ -292,6 +381,9 @@ const summary = {
     textOverlapCount: metricTotals.textOverlapCount,
     labelCollisions: metricTotals.labelCollisions,
     contrastFailures: metricTotals.contrastFailures,
+    riskyGlyphFormattingCount: metricTotals.riskyGlyphFormattingCount,
+    textSafeEnvelopeRiskCount: metricTotals.textSafeEnvelopeRiskCount,
+    titleLayerZIndexViolations: metricTotals.titleLayerZIndexViolations,
     frameSharpnessProxy: Number(avgSharpness.toFixed(4)),
   },
   checks: {
@@ -309,6 +401,9 @@ summary.passed =
   summary.metrics.textOverlapCount === 0 &&
   summary.metrics.labelCollisions === 0 &&
   summary.metrics.contrastFailures === 0 &&
+  summary.metrics.riskyGlyphFormattingCount === 0 &&
+  summary.metrics.textSafeEnvelopeRiskCount === 0 &&
+  summary.metrics.titleLayerZIndexViolations === 0 &&
   summary.metrics.frameSharpnessProxy >= 0.9 &&
   summary.regressionFailures.length === 0;
 
@@ -332,6 +427,9 @@ if (!summary.passed) {
   if (summary.metrics.textOverlapCount > 0) reasons.push('textOverlapCount>0');
   if (summary.metrics.labelCollisions > 0) reasons.push('labelCollisions>0');
   if (summary.metrics.contrastFailures > 0) reasons.push('contrastFailures>0');
+  if (summary.metrics.riskyGlyphFormattingCount > 0) reasons.push('riskyGlyphFormattingCount>0');
+  if (summary.metrics.textSafeEnvelopeRiskCount > 0) reasons.push('textSafeEnvelopeRiskCount>0');
+  if (summary.metrics.titleLayerZIndexViolations > 0) reasons.push('titleLayerZIndexViolations>0');
   if (summary.metrics.frameSharpnessProxy < 0.9) reasons.push('frameSharpnessProxy<0.9');
   if (summary.regressionFailures.length > 0) {
     reasons.push(`regressions=${summary.regressionFailures.join(',')}`);

@@ -13,3 +13,6 @@ export * from './api/natural-language.js';
 export * from './integrations/copilot.js';
 export * from './utils/logger.js';
 export * from './utils/memory.js';
+export * from './domain/finance/index.js';
+export * from './domain/business/index.js';
+export * from './domain/sports/index.js';

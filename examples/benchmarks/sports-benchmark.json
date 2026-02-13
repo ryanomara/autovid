@@ -6,7 +6,12 @@
     "height": 1080,
     "fps": 30,
     "duration": 12000,
-    "backgroundColor": { "r": 16, "g": 22, "b": 28, "a": 1 },
+    "backgroundColor": {
+      "r": 16,
+      "g": 22,
+      "b": 28,
+      "a": 1
+    },
     "outputFormat": "mp4",
     "quality": "high"
   },
@@ -26,16 +31,31 @@
           "fontWeight": "bold",
           "typographyPreset": "headline",
           "textAlign": "center",
-          "color": { "r": 255, "g": 255, "b": 255, "a": 1 },
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1
+          },
           "startTime": 0,
           "endTime": 2500,
-          "position": { "x": 960, "y": 420 },
-          "scale": { "x": 1, "y": 1 },
+          "position": {
+            "x": 960,
+            "y": 420
+          },
+          "scale": {
+            "x": 1,
+            "y": 1
+          },
           "rotation": 0,
-          "opacity": 1
+          "opacity": 1,
+          "zIndex": 900
         }
       ],
-      "transition": { "type": "fade", "duration": 700 }
+      "transition": {
+        "type": "fade",
+        "duration": 700
+      }
     },
     {
       "id": "s-kpi",
@@ -52,13 +72,25 @@
           "fontWeight": "bold",
           "typographyPreset": "callout",
           "textAlign": "left",
-          "color": { "r": 255, "g": 255, "b": 255, "a": 1 },
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1
+          },
           "startTime": 2500,
           "endTime": 5000,
-          "position": { "x": 120, "y": 110 },
-          "scale": { "x": 1, "y": 1 },
+          "position": {
+            "x": 120,
+            "y": 110
+          },
+          "scale": {
+            "x": 1,
+            "y": 1
+          },
           "rotation": 0,
-          "opacity": 1
+          "opacity": 1,
+          "zIndex": 900
         },
         {
           "id": "s-kpi-a",
@@ -69,11 +101,22 @@
           "fontWeight": "bold",
           "typographyPreset": "body",
           "textAlign": "left",
-          "color": { "r": 146, "g": 255, "b": 191, "a": 1 },
+          "color": {
+            "r": 146,
+            "g": 255,
+            "b": 191,
+            "a": 1
+          },
           "startTime": 2600,
           "endTime": 5000,
-          "position": { "x": 140, "y": 300 },
-          "scale": { "x": 1, "y": 1 },
+          "position": {
+            "x": 140,
+            "y": 300
+          },
+          "scale": {
+            "x": 1,
+            "y": 1
+          },
           "rotation": 0,
           "opacity": 1
         },
@@ -86,16 +129,30 @@
           "fontWeight": "bold",
           "typographyPreset": "body",
           "textAlign": "left",
-          "color": { "r": 255, "g": 214, "b": 114, "a": 1 },
+          "color": {
+            "r": 255,
+            "g": 214,
+            "b": 114,
+            "a": 1
+          },
           "startTime": 2800,
           "endTime": 5000,
-          "position": { "x": 140, "y": 420 },
-          "scale": { "x": 1, "y": 1 },
+          "position": {
+            "x": 140,
+            "y": 420
+          },
+          "scale": {
+            "x": 1,
+            "y": 1
+          },
           "rotation": 0,
           "opacity": 1
         }
       ],
-      "transition": { "type": "fade", "duration": 700 }
+      "transition": {
+        "type": "fade",
+        "duration": 700
+      }
     },
     {
       "id": "s-line",
@@ -108,14 +165,40 @@
           "type": "chart",
           "chartType": "line",
           "title": "Expected Goals by Minute",
-          "dimensions": { "width": 1700, "height": 840 },
-          "data": {
-            "labels": ["15'", "30'", "45'", "60'", "75'", "90'"],
-            "values": [0.2, 0.6, 0.9, 1.1, 1.8, 2.3]
+          "dimensions": {
+            "width": 1700,
+            "height": 840
           },
-          "yAxis": { "min": 0, "max": 2.5, "ticks": 6 },
+          "data": {
+            "labels": [
+              "15'",
+              "30'",
+              "45'",
+              "60'",
+              "75'",
+              "90'"
+            ],
+            "values": [
+              0.2,
+              0.6,
+              0.9,
+              1.1,
+              1.8,
+              2.3
+            ]
+          },
+          "yAxis": {
+            "min": 0,
+            "max": 2.5,
+            "ticks": 6
+          },
           "style": {
-            "lineColor": { "r": 114, "g": 198, "b": 255, "a": 1 },
+            "lineColor": {
+              "r": 114,
+              "g": 198,
+              "b": 255,
+              "a": 1
+            },
             "maxLabels": 6,
             "showValues": true,
             "showPoints": true,
@@ -123,22 +206,37 @@
           },
           "startTime": 5000,
           "endTime": 9000,
-          "position": { "x": 110, "y": 130 },
-          "scale": { "x": 1, "y": 1 },
+          "position": {
+            "x": 110,
+            "y": 130
+          },
+          "scale": {
+            "x": 1,
+            "y": 1
+          },
           "rotation": 0,
           "opacity": 1,
           "animations": [
             {
               "property": "chartProgress",
               "keyframes": [
-                { "time": 5000, "value": 0 },
-                { "time": 8600, "value": 1 }
+                {
+                  "time": 5000,
+                  "value": 0
+                },
+                {
+                  "time": 8600,
+                  "value": 1
+                }
               ]
             }
           ]
         }
       ],
-      "transition": { "type": "fade", "duration": 700 }
+      "transition": {
+        "type": "fade",
+        "duration": 700
+      }
     },
     {
       "id": "s-bar",
@@ -151,34 +249,71 @@
           "type": "chart",
           "chartType": "bar",
           "title": "Team Comparison",
-          "dimensions": { "width": 1700, "height": 840 },
-          "data": {
-            "labels": ["Shots", "Passes", "Duels", "Corners"],
-            "values": [14, 512, 37, 6]
+          "dimensions": {
+            "width": 1700,
+            "height": 840
           },
-          "yAxis": { "min": 0, "max": 560, "ticks": 6 },
+          "data": {
+            "labels": [
+              "Shots",
+              "Passes",
+              "Duels",
+              "Corners"
+            ],
+            "values": [
+              14,
+              512,
+              37,
+              6
+            ]
+          },
+          "yAxis": {
+            "min": 0,
+            "max": 560,
+            "ticks": 6
+          },
           "style": {
-            "barColor": { "r": 146, "g": 255, "b": 191, "a": 1 },
+            "barColor": {
+              "r": 146,
+              "g": 255,
+              "b": 191,
+              "a": 1
+            },
             "showValues": true
           },
           "startTime": 9000,
           "endTime": 12000,
-          "position": { "x": 110, "y": 130 },
-          "scale": { "x": 1, "y": 1 },
+          "position": {
+            "x": 110,
+            "y": 130
+          },
+          "scale": {
+            "x": 1,
+            "y": 1
+          },
           "rotation": 0,
           "opacity": 1,
           "animations": [
             {
               "property": "chartProgress",
               "keyframes": [
-                { "time": 9000, "value": 0 },
-                { "time": 11400, "value": 1 }
+                {
+                  "time": 9000,
+                  "value": 0
+                },
+                {
+                  "time": 11400,
+                  "value": 1
+                }
               ]
             }
           ]
         }
       ],
-      "transition": { "type": "fade", "duration": 700 }
+      "transition": {
+        "type": "fade",
+        "duration": 700
+      }
     }
   ],
   "audio": []

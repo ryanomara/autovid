@@ -1,0 +1,140 @@
+{
+  "id": "business-domain-example",
+  "name": "Business Domain Example",
+  "config": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "duration": 9000,
+    "backgroundColor": {
+      "r": 12,
+      "g": 20,
+      "b": 30,
+      "a": 1
+    },
+    "outputFormat": "mp4",
+    "quality": "high"
+  },
+  "scenes": [
+    {
+      "id": "business-domain-kpis",
+      "startTime": 0,
+      "endTime": 9000,
+      "layers": [
+        {
+          "id": "business-domain-metric-arr",
+          "type": "text",
+          "text": "ARR: 128M",
+          "fontFamily": "Arial",
+          "fontSize": 54,
+          "typographyPreset": "callout",
+          "color": {
+            "r": 164,
+            "g": 240,
+            "b": 195,
+            "a": 1
+          },
+          "textAlign": "left",
+          "startTime": 0,
+          "endTime": 9000,
+          "position": {
+            "x": 160,
+            "y": 220
+          },
+          "scale": {
+            "x": 1,
+            "y": 1
+          },
+          "rotation": 0,
+          "opacity": 1
+        },
+        {
+          "id": "business-domain-metric-mrrGrowthPct",
+          "type": "text",
+          "text": "MRR Growth: 6.1%",
+          "fontFamily": "Arial",
+          "fontSize": 40,
+          "typographyPreset": "body",
+          "color": {
+            "r": 215,
+            "g": 225,
+            "b": 245,
+            "a": 1
+          },
+          "textAlign": "left",
+          "startTime": 0,
+          "endTime": 9000,
+          "position": {
+            "x": 160,
+            "y": 350
+          },
+          "scale": {
+            "x": 1,
+            "y": 1
+          },
+          "rotation": 0,
+          "opacity": 1
+        },
+        {
+          "id": "business-domain-metric-churnPct",
+          "type": "text",
+          "text": "Churn: 2.9%",
+          "fontFamily": "Arial",
+          "fontSize": 40,
+          "typographyPreset": "body",
+          "color": {
+            "r": 215,
+            "g": 225,
+            "b": 245,
+            "a": 1
+          },
+          "textAlign": "left",
+          "startTime": 0,
+          "endTime": 9000,
+          "position": {
+            "x": 160,
+            "y": 480
+          },
+          "scale": {
+            "x": 1,
+            "y": 1
+          },
+          "rotation": 0,
+          "opacity": 1
+        },
+        {
+          "id": "business-domain-metric-cac",
+          "type": "text",
+          "text": "CAC: $4,800",
+          "fontFamily": "Arial",
+          "fontSize": 40,
+          "typographyPreset": "body",
+          "color": {
+            "r": 215,
+            "g": 225,
+            "b": 245,
+            "a": 1
+          },
+          "textAlign": "left",
+          "startTime": 0,
+          "endTime": 9000,
+          "position": {
+            "x": 160,
+            "y": 610
+          },
+          "scale": {
+            "x": 1,
+            "y": 1
+          },
+          "rotation": 0,
+          "opacity": 1
+        }
+      ],
+      "transition": {
+        "type": "fade",
+        "duration": 700
+      }
+    }
+  ],
+  "audio": []
+}

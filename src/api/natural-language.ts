@@ -35,6 +35,8 @@ export const parseNaturalLanguage = (
     scale: { x: 1, y: 1 },
     rotation: 0,
     opacity: 1,
+    zIndex: 900,
+    overlapMode: 'avoid-text',
     startTime: 0,
     endTime: duration,
     textAlign: 'center',

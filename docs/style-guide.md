@@ -153,6 +153,19 @@ Design the path the viewer's eye should follow:
 - **Emphasis**: Scale pulse (1.0 → 1.05 → 1.0)
 - **Exit**: Fade out, no movement (avoids awkward transitions)
 
+### 8.1 Glyph-Safe Typography Rule (Hard Constraint)
+
+Use this rule to prevent punctuation clipping artifacts in generated videos.
+
+- Avoid bracket glyphs in large display text (`fontSize >= 56`) unless absolutely required:
+  - Avoid: `(...)`, `[...]`, `{...}`
+  - Prefer: `-`, `:`, or words (`to`, `vs`, `from`)
+- Never start or end a headline with bracket glyphs.
+- If brackets are required for correctness, keep them in body-sized text and not in title/closing slides.
+- Keep rendered text bounds away from edges:
+  - minimum horizontal envelope: `>= 0.6 * fontSize`
+  - minimum vertical envelope: `>= 0.4 * fontSize`
+
 ---
 
 ## 9. Color Systems
@@ -317,6 +330,20 @@ These rules codify common failure modes seen in generated scenes. Agents should 
 - For animated text, validate both start and end positions against safe envelope.
 - For center-aligned text, reserve full rendered width before placing neighboring blocks.
 - For right-aligned numbers, align by right edge, not center, to avoid value jitter.
+
+### 13.2.1 Layering and Overlap Policy (Hard Constraint)
+
+- Use explicit `zIndex` for deterministic stacking. Do not rely on incidental array order.
+- Recommended z-index bands:
+  - Background/plates: `0-99`
+  - Charts/images/video content: `100-399`
+  - Labels/callouts/annotations: `400-799`
+  - Titles, headers, critical UI text: `900+`
+- Title and closing headline layers must use `zIndex >= 900`.
+- Default text overlap policy is `overlapMode: "avoid-text"`.
+- Use `overlapMode: "avoid-all"` only when text must avoid all occupied regions.
+- Use `overlapMode: "label"` or `"effect"` only for intentional overlap use-cases.
+- Text-on-text overlap is forbidden unless the layer is explicitly marked as `overlapMode: "effect"`.
 
 ### 13.3 Chart Construction Rules
 

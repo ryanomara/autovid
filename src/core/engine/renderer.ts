@@ -260,6 +260,7 @@ export class Renderer {
     const textMargin = this.getSceneTextMargin(activeScene, cameraState.zoom);
     const compositorLayers = [];
     const occupiedTextBounds: TextBounds[] = [];
+    const occupiedObjectBounds: TextBounds[] = [];
 
     for (let i = 0; i < activeLayers.length; i++) {
       const layer = activeLayers[i];
@@ -282,6 +283,13 @@ export class Renderer {
             const textLayer = layer as TextLayer;
             const layerAlign = textLayer.textAlign || 'left';
             const isPositionAnimated = this.isPositionAnimated(layer);
+            const overlapMode = textLayer.overlapMode ?? 'avoid-text';
+            const shouldResolveTextOverlap =
+              overlapMode === 'avoid-text' || overlapMode === 'avoid-all';
+            const collisionTargets =
+              overlapMode === 'avoid-all'
+                ? [...occupiedTextBounds, ...occupiedObjectBounds]
+                : occupiedTextBounds;
             const hasExplicitAlign = textLayer.textAlign !== undefined;
             const effectiveAlign =
               !hasExplicitAlign && !isPositionAnimated && mainTextLayout
@@ -298,7 +306,11 @@ export class Renderer {
               x -= transformed.width;
             }
 
-            if (isPositionAnimated && textLayer.textLane !== undefined) {
+            if (
+              isPositionAnimated &&
+              textLayer.textLane !== undefined &&
+              shouldResolveTextOverlap
+            ) {
               const laneY = this.getTextLaneY(
                 textLayer.textLane,
                 project.config.height,
@@ -323,7 +335,7 @@ export class Renderer {
                 y,
                 transformed.width,
                 transformed.height,
-                occupiedTextBounds,
+                collisionTargets,
                 textMargin,
                 project.config.width
               );
@@ -339,24 +351,40 @@ export class Renderer {
                 project.config.height - textMargin - transformed.height
               );
 
-              y = this.resolveTextCollision(
-                x,
-                y,
-                transformed.width,
-                transformed.height,
-                occupiedTextBounds,
-                textMargin,
-                project.config.height
-              );
+              if (shouldResolveTextOverlap) {
+                y = this.resolveTextCollision(
+                  x,
+                  y,
+                  transformed.width,
+                  transformed.height,
+                  collisionTargets,
+                  textMargin,
+                  project.config.height
+                );
+              }
             }
 
             occupiedTextBounds.push({ x, y, width: transformed.width, height: transformed.height });
+          } else {
+            occupiedObjectBounds.push({
+              x,
+              y,
+              width: transformed.width,
+              height: transformed.height,
+            });
           }
 
           const blendMode = this.getEffectiveBlendMode(layer);
 
           compositorLayers.push(
-            createPositionedLayer(transformed, x, y, i, blendMode, props.opacity)
+            createPositionedLayer(
+              transformed,
+              x,
+              y,
+              this.getLayerZIndex(layer, i),
+              blendMode,
+              props.opacity
+            )
           );
         }
       } catch (error) {
@@ -651,6 +679,15 @@ export class Renderer {
     }
 
     return ((layer.blendMode as BlendMode) || 'normal') as BlendMode;
+  }
+
+  private getLayerZIndex(layer: Layer, fallbackIndex: number): number {
+    const zIndex = (layer as { zIndex?: number }).zIndex;
+    if (typeof zIndex === 'number' && Number.isFinite(zIndex)) {
+      return zIndex;
+    }
+
+    return fallbackIndex;
   }
 
   private resolveTextCollision(

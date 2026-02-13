@@ -1,0 +1,203 @@
+{
+  "id": "alphabet-finance-report-5y",
+  "name": "Alphabet 5Y Financial Report",
+  "config": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "duration": 16000,
+    "backgroundColor": { "r": 12, "g": 18, "b": 30, "a": 1 },
+    "outputFormat": "mp4",
+    "quality": "high"
+  },
+  "scenes": [
+    {
+      "id": "title",
+      "name": "Title",
+      "startTime": 0,
+      "endTime": 2600,
+      "layers": [
+        {
+          "id": "title-main",
+          "type": "text",
+          "text": "ALPHABET FINANCIALS - 2021 TO 2025",
+          "fontFamily": "Arial",
+          "fontSize": 74,
+          "fontWeight": "bold",
+          "typographyPreset": "headline",
+          "textAlign": "center",
+          "color": { "r": 255, "g": 255, "b": 255, "a": 1 },
+          "startTime": 0,
+          "endTime": 2600,
+          "position": { "x": 960, "y": 460 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "animations": [
+            {
+              "property": "opacity",
+              "keyframes": [
+                { "time": 0, "value": 0 },
+                { "time": 700, "value": 1 }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "title-sub",
+          "type": "text",
+          "text": "Revenue, Operating Income, Net Income (USD Billions)",
+          "fontFamily": "Arial",
+          "fontSize": 34,
+          "fontWeight": "bold",
+          "typographyPreset": "callout",
+          "textAlign": "center",
+          "color": { "r": 170, "g": 218, "b": 255, "a": 1 },
+          "startTime": 200,
+          "endTime": 2600,
+          "position": { "x": 960, "y": 570 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1
+        }
+      ],
+      "transition": { "type": "fade", "duration": 700 }
+    },
+    {
+      "id": "revenue-trend",
+      "name": "Revenue Trend",
+      "startTime": 2600,
+      "endTime": 9000,
+      "layers": [
+        {
+          "id": "revenue-chart",
+          "type": "chart",
+          "chartType": "line",
+          "title": "Revenue Trend",
+          "dimensions": { "width": 1720, "height": 840 },
+          "data": {
+            "labels": ["2021", "2022", "2023", "2024", "2025"],
+            "values": [257.637, 282.836, 307.394, 350.018, 402.836]
+          },
+          "yAxis": { "min": 200, "max": 420, "ticks": 6 },
+          "style": {
+            "lineColor": { "r": 112, "g": 196, "b": 255, "a": 1 },
+            "labelColor": { "r": 210, "g": 220, "b": 240, "a": 1 },
+            "valueColor": { "r": 255, "g": 255, "b": 255, "a": 1 },
+            "lineWidth": 5,
+            "pointRadius": 5,
+            "maxLabels": 5,
+            "valueDecimals": 1,
+            "showValues": true,
+            "showPoints": true,
+            "showGrid": true
+          },
+          "startTime": 2600,
+          "endTime": 9000,
+          "position": { "x": 100, "y": 130 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "animations": [
+            {
+              "property": "chartProgress",
+              "keyframes": [
+                { "time": 2600, "value": 0 },
+                { "time": 8600, "value": 1 }
+              ]
+            }
+          ]
+        }
+      ],
+      "transition": { "type": "fade", "duration": 700 }
+    },
+    {
+      "id": "profitability-bars",
+      "name": "2025 Profitability Snapshot",
+      "startTime": 9000,
+      "endTime": 13300,
+      "layers": [
+        {
+          "id": "profit-chart",
+          "type": "chart",
+          "chartType": "bar",
+          "title": "2025 Snapshot (USD Billions)",
+          "dimensions": { "width": 1720, "height": 840 },
+          "data": {
+            "labels": ["Revenue", "Operating Income", "Net Income"],
+            "values": [402.836, 129.039, 132.17]
+          },
+          "yAxis": { "min": 0, "max": 420, "ticks": 7 },
+          "style": {
+            "barColor": { "r": 148, "g": 255, "b": 192, "a": 1 },
+            "labelColor": { "r": 210, "g": 220, "b": 240, "a": 1 },
+            "valueColor": { "r": 255, "g": 255, "b": 255, "a": 1 },
+            "showValues": true,
+            "showGrid": true,
+            "valueDecimals": 1
+          },
+          "startTime": 9000,
+          "endTime": 13300,
+          "position": { "x": 100, "y": 130 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "animations": [
+            {
+              "property": "chartProgress",
+              "keyframes": [
+                { "time": 9000, "value": 0 },
+                { "time": 12500, "value": 1 }
+              ]
+            }
+          ]
+        }
+      ],
+      "transition": { "type": "fade", "duration": 700 }
+    },
+    {
+      "id": "summary",
+      "name": "Summary",
+      "startTime": 13300,
+      "endTime": 16000,
+      "layers": [
+        {
+          "id": "summary-1",
+          "type": "text",
+          "text": "2021 Revenue: $257.6B -> 2025 Revenue: $402.8B",
+          "fontFamily": "Arial",
+          "fontSize": 42,
+          "fontWeight": "bold",
+          "typographyPreset": "callout",
+          "textAlign": "center",
+          "color": { "r": 255, "g": 238, "b": 180, "a": 1 },
+          "startTime": 13300,
+          "endTime": 16000,
+          "position": { "x": 960, "y": 430 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1
+        },
+        {
+          "id": "summary-2",
+          "type": "text",
+          "text": "Source: SEC 10-K / companyfacts - Alphabet CIK 1652044",
+          "fontFamily": "Arial",
+          "fontSize": 30,
+          "fontWeight": "bold",
+          "typographyPreset": "body",
+          "textAlign": "center",
+          "color": { "r": 178, "g": 226, "b": 255, "a": 1 },
+          "startTime": 13300,
+          "endTime": 16000,
+          "position": { "x": 960, "y": 530 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1
+        }
+      ],
+      "transition": { "type": "fade", "duration": 700 }
+    }
+  ],
+  "audio": []
+}

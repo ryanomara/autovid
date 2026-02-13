@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-02-13T21:36:40.411Z",
+  "generatedAt": "2026-02-13T22:58:37.181Z",
   "fixtures": [
     {
       "fixture": "examples/benchmarks/finance-benchmark.json",
@@ -9,6 +9,9 @@
         "textOverlapCount": 0,
         "labelCollisions": 0,
         "contrastFailures": 0,
+        "riskyGlyphFormattingCount": 0,
+        "textSafeEnvelopeRiskCount": 0,
+        "titleLayerZIndexViolations": 0,
         "frameSharpnessProxy": 1
       },
       "errors": [],
@@ -23,6 +26,9 @@
         "textOverlapCount": 0,
         "labelCollisions": 0,
         "contrastFailures": 0,
+        "riskyGlyphFormattingCount": 0,
+        "textSafeEnvelopeRiskCount": 0,
+        "titleLayerZIndexViolations": 0,
         "frameSharpnessProxy": 1
       },
       "errors": [],
@@ -37,6 +43,9 @@
         "textOverlapCount": 0,
         "labelCollisions": 0,
         "contrastFailures": 0,
+        "riskyGlyphFormattingCount": 0,
+        "textSafeEnvelopeRiskCount": 0,
+        "titleLayerZIndexViolations": 0,
         "frameSharpnessProxy": 1
       },
       "errors": [],
@@ -53,6 +62,9 @@
       "textOverlapCount": 0,
       "labelCollisions": 0,
       "contrastFailures": 0,
+      "riskyGlyphFormattingCount": 0,
+      "textSafeEnvelopeRiskCount": 0,
+      "titleLayerZIndexViolations": 0,
       "frameSharpnessProxy": 1
     },
     "checks": {

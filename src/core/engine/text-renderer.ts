@@ -123,7 +123,9 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number)
 export function renderText(options: TextRenderOptions): PixelBuffer {
   // Measure text first to determine canvas size
   const dimensions = measureText(options);
-  const padding = 10;
+  const strokePadding = options.textStroke?.width ?? 0;
+  const dynamicPadding = Math.ceil(options.fontSize * 0.22);
+  const padding = Math.max(10, dynamicPadding + strokePadding + 2);
   const width = dimensions.width + padding * 2;
   const height = dimensions.height + padding * 2;
 

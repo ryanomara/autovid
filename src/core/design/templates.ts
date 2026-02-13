@@ -26,6 +26,7 @@ export const titleSlideTemplate: Template = {
           scale: { x: 1, y: 1 },
           rotation: 0,
           opacity: 1,
+          zIndex: 0,
           startTime: 0,
           endTime: 5000,
         },
@@ -43,6 +44,8 @@ export const titleSlideTemplate: Template = {
           scale: { x: 1, y: 1 },
           rotation: 0,
           opacity: 1,
+          zIndex: 900,
+          overlapMode: 'avoid-text',
           startTime: 0,
           endTime: 5000,
           animations: [
@@ -68,6 +71,8 @@ export const titleSlideTemplate: Template = {
           scale: { x: 1, y: 1 },
           rotation: 0,
           opacity: 1,
+          zIndex: 910,
+          overlapMode: 'avoid-text',
           startTime: 1000,
           endTime: 5000,
           animations: [
@@ -126,6 +131,7 @@ export const lowerThirdTemplate: Template = {
           scale: { x: 1, y: 1 },
           rotation: 0,
           opacity: 1,
+          zIndex: 100,
           startTime: 0,
           endTime: 5000,
           animations: [
@@ -153,6 +159,8 @@ export const lowerThirdTemplate: Template = {
           scale: { x: 1, y: 1 },
           rotation: 0,
           opacity: 1,
+          zIndex: 900,
+          overlapMode: 'avoid-text',
           startTime: 0,
           endTime: 5000,
           animations: [
@@ -179,6 +187,8 @@ export const lowerThirdTemplate: Template = {
           scale: { x: 1, y: 1 },
           rotation: 0,
           opacity: 1,
+          zIndex: 910,
+          overlapMode: 'avoid-text',
           startTime: 0,
           endTime: 5000,
           animations: [
@@ -225,12 +235,9 @@ export function listTemplates(): Template[] {
   return Object.values(templates);
 }
 
-export function applyTemplate(
-  template: Template,
-  inputs: Record<string, any>
-): Partial<Scene> {
+export function applyTemplate(template: Template, inputs: Record<string, any>): Partial<Scene> {
   const scene = JSON.parse(JSON.stringify(template.scenes[0]));
-  
+
   const replaceTokens = (obj: any): any => {
     if (typeof obj === 'string') {
       return obj.replace(/\{\{(\w+)\}\}/g, (_, key) => inputs[key] || '');

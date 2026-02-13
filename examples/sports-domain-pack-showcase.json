@@ -1,0 +1,140 @@
+{
+  "id": "sports-domain-example",
+  "name": "Sports Domain Example",
+  "config": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "duration": 9000,
+    "backgroundColor": {
+      "r": 16,
+      "g": 22,
+      "b": 28,
+      "a": 1
+    },
+    "outputFormat": "mp4",
+    "quality": "high"
+  },
+  "scenes": [
+    {
+      "id": "sports-domain-kpis",
+      "startTime": 0,
+      "endTime": 9000,
+      "layers": [
+        {
+          "id": "sports-domain-metric-pointsPerGame",
+          "type": "text",
+          "text": "Points / Game: 118.4",
+          "fontFamily": "Arial",
+          "fontSize": 54,
+          "typographyPreset": "callout",
+          "color": {
+            "r": 146,
+            "g": 255,
+            "b": 191,
+            "a": 1
+          },
+          "textAlign": "left",
+          "startTime": 0,
+          "endTime": 9000,
+          "position": {
+            "x": 160,
+            "y": 220
+          },
+          "scale": {
+            "x": 1,
+            "y": 1
+          },
+          "rotation": 0,
+          "opacity": 1
+        },
+        {
+          "id": "sports-domain-metric-assistsPerGame",
+          "type": "text",
+          "text": "Assists / Game: 29.2",
+          "fontFamily": "Arial",
+          "fontSize": 40,
+          "typographyPreset": "body",
+          "color": {
+            "r": 215,
+            "g": 225,
+            "b": 245,
+            "a": 1
+          },
+          "textAlign": "left",
+          "startTime": 0,
+          "endTime": 9000,
+          "position": {
+            "x": 160,
+            "y": 350
+          },
+          "scale": {
+            "x": 1,
+            "y": 1
+          },
+          "rotation": 0,
+          "opacity": 1
+        },
+        {
+          "id": "sports-domain-metric-reboundsPerGame",
+          "type": "text",
+          "text": "Rebounds / Game: 46.1",
+          "fontFamily": "Arial",
+          "fontSize": 40,
+          "typographyPreset": "body",
+          "color": {
+            "r": 215,
+            "g": 225,
+            "b": 245,
+            "a": 1
+          },
+          "textAlign": "left",
+          "startTime": 0,
+          "endTime": 9000,
+          "position": {
+            "x": 160,
+            "y": 480
+          },
+          "scale": {
+            "x": 1,
+            "y": 1
+          },
+          "rotation": 0,
+          "opacity": 1
+        },
+        {
+          "id": "sports-domain-metric-fieldGoalPct",
+          "type": "text",
+          "text": "Field Goal %: 51.2%",
+          "fontFamily": "Arial",
+          "fontSize": 40,
+          "typographyPreset": "body",
+          "color": {
+            "r": 215,
+            "g": 225,
+            "b": 245,
+            "a": 1
+          },
+          "textAlign": "left",
+          "startTime": 0,
+          "endTime": 9000,
+          "position": {
+            "x": 160,
+            "y": 610
+          },
+          "scale": {
+            "x": 1,
+            "y": 1
+          },
+          "rotation": 0,
+          "opacity": 1
+        }
+      ],
+      "transition": {
+        "type": "fade",
+        "duration": 700
+      }
+    }
+  ],
+  "audio": []
+}

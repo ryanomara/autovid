@@ -8,6 +8,9 @@ This rubric defines objective quality gates for stats-driven videos.
 - Chart label-mark collisions: target `0`.
 - Contrast failures (text/annotation): target `0`.
 - Overcrowded scene flags (more than one dominant focal area): target `0`.
+- Risky glyph formatting in display text (`()[]{}` in large titles): target `0`.
+- Text safe-envelope clipping risk (bounds too close to frame edge): target `0`.
+- Title layer z-index violations (title-like text below top band): target `0`.
 
 ## 2. Chart Quality Metrics
 
@@ -64,11 +67,17 @@ Required protocol:
   - `textOverlapCount`
   - `labelCollisions`
   - `contrastFailures`
+  - `riskyGlyphFormattingCount`
+  - `textSafeEnvelopeRiskCount`
+  - `titleLayerZIndexViolations`
   - `frameSharpnessProxy`
 - A change is blocked if any metric regresses beyond threshold:
   - `textOverlapCount` increases
   - `labelCollisions` increases
   - `contrastFailures` increases
+  - `riskyGlyphFormattingCount` increases
+  - `textSafeEnvelopeRiskCount` increases
+  - `titleLayerZIndexViolations` increases
   - `frameSharpnessProxy` drops by more than `0.02`
 
 ## 8. Execution Notes

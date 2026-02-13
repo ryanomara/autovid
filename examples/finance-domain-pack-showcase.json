@@ -1,0 +1,140 @@
+{
+  "id": "finance-domain-example",
+  "name": "Finance Domain Example",
+  "config": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "duration": 9000,
+    "backgroundColor": {
+      "r": 14,
+      "g": 18,
+      "b": 30,
+      "a": 1
+    },
+    "outputFormat": "mp4",
+    "quality": "high"
+  },
+  "scenes": [
+    {
+      "id": "finance-domain-kpis",
+      "startTime": 0,
+      "endTime": 9000,
+      "layers": [
+        {
+          "id": "finance-domain-metric-revenue",
+          "type": "text",
+          "text": "Revenue: 307.4B",
+          "fontFamily": "Arial",
+          "fontSize": 54,
+          "typographyPreset": "callout",
+          "color": {
+            "r": 255,
+            "g": 233,
+            "b": 165,
+            "a": 1
+          },
+          "textAlign": "left",
+          "startTime": 0,
+          "endTime": 9000,
+          "position": {
+            "x": 160,
+            "y": 220
+          },
+          "scale": {
+            "x": 1,
+            "y": 1
+          },
+          "rotation": 0,
+          "opacity": 1
+        },
+        {
+          "id": "finance-domain-metric-operatingIncome",
+          "type": "text",
+          "text": "Operating Income: 84.3B",
+          "fontFamily": "Arial",
+          "fontSize": 40,
+          "typographyPreset": "body",
+          "color": {
+            "r": 215,
+            "g": 225,
+            "b": 245,
+            "a": 1
+          },
+          "textAlign": "left",
+          "startTime": 0,
+          "endTime": 9000,
+          "position": {
+            "x": 160,
+            "y": 350
+          },
+          "scale": {
+            "x": 1,
+            "y": 1
+          },
+          "rotation": 0,
+          "opacity": 1
+        },
+        {
+          "id": "finance-domain-metric-netIncome",
+          "type": "text",
+          "text": "Net Income: 73.8B",
+          "fontFamily": "Arial",
+          "fontSize": 40,
+          "typographyPreset": "body",
+          "color": {
+            "r": 215,
+            "g": 225,
+            "b": 245,
+            "a": 1
+          },
+          "textAlign": "left",
+          "startTime": 0,
+          "endTime": 9000,
+          "position": {
+            "x": 160,
+            "y": 480
+          },
+          "scale": {
+            "x": 1,
+            "y": 1
+          },
+          "rotation": 0,
+          "opacity": 1
+        },
+        {
+          "id": "finance-domain-metric-eps",
+          "type": "text",
+          "text": "EPS: $5.80",
+          "fontFamily": "Arial",
+          "fontSize": 40,
+          "typographyPreset": "body",
+          "color": {
+            "r": 215,
+            "g": 225,
+            "b": 245,
+            "a": 1
+          },
+          "textAlign": "left",
+          "startTime": 0,
+          "endTime": 9000,
+          "position": {
+            "x": 160,
+            "y": 610
+          },
+          "scale": {
+            "x": 1,
+            "y": 1
+          },
+          "rotation": 0,
+          "opacity": 1
+        }
+      ],
+      "transition": {
+        "type": "fade",
+        "duration": 700
+      }
+    }
+  ],
+  "audio": []
+}

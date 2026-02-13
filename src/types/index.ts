@@ -146,6 +146,8 @@ export interface BaseLayer {
   rotation: number;
   opacity: number;
   blendMode?: 'normal' | 'multiply' | 'screen' | 'overlay' | 'erase';
+  zIndex?: number;
+  blocksText?: boolean;
   animations?: Animation[];
   visible?: boolean;
 }
@@ -189,6 +191,7 @@ export interface TextLayer extends BaseLayer {
   textMask?: {
     mode: 'cutout' | 'inverse';
   };
+  overlapMode?: 'avoid-text' | 'avoid-all' | 'allow' | 'label' | 'effect';
   typographyPreset?: 'headline' | 'body' | 'callout';
   textLane?: 'top' | 'upper' | 'middle' | 'lower' | 'bottom' | number;
 }

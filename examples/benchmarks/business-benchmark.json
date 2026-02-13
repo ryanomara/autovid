@@ -6,7 +6,12 @@
     "height": 1080,
     "fps": 30,
     "duration": 12000,
-    "backgroundColor": { "r": 18, "g": 20, "b": 30, "a": 1 },
+    "backgroundColor": {
+      "r": 18,
+      "g": 20,
+      "b": 30,
+      "a": 1
+    },
     "outputFormat": "mp4",
     "quality": "high"
   },
@@ -26,16 +31,31 @@
           "fontWeight": "bold",
           "typographyPreset": "headline",
           "textAlign": "center",
-          "color": { "r": 255, "g": 255, "b": 255, "a": 1 },
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1
+          },
           "startTime": 0,
           "endTime": 2500,
-          "position": { "x": 960, "y": 420 },
-          "scale": { "x": 1, "y": 1 },
+          "position": {
+            "x": 960,
+            "y": 420
+          },
+          "scale": {
+            "x": 1,
+            "y": 1
+          },
           "rotation": 0,
-          "opacity": 1
+          "opacity": 1,
+          "zIndex": 900
         }
       ],
-      "transition": { "type": "fade", "duration": 700 }
+      "transition": {
+        "type": "fade",
+        "duration": 700
+      }
     },
     {
       "id": "b-kpi",
@@ -52,13 +72,25 @@
           "fontWeight": "bold",
           "typographyPreset": "callout",
           "textAlign": "left",
-          "color": { "r": 255, "g": 255, "b": 255, "a": 1 },
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1
+          },
           "startTime": 2500,
           "endTime": 5000,
-          "position": { "x": 120, "y": 110 },
-          "scale": { "x": 1, "y": 1 },
+          "position": {
+            "x": 120,
+            "y": 110
+          },
+          "scale": {
+            "x": 1,
+            "y": 1
+          },
           "rotation": 0,
-          "opacity": 1
+          "opacity": 1,
+          "zIndex": 900
         },
         {
           "id": "b-kpi-a",
@@ -69,11 +101,22 @@
           "fontWeight": "bold",
           "typographyPreset": "body",
           "textAlign": "left",
-          "color": { "r": 255, "g": 214, "b": 114, "a": 1 },
+          "color": {
+            "r": 255,
+            "g": 214,
+            "b": 114,
+            "a": 1
+          },
           "startTime": 2600,
           "endTime": 5000,
-          "position": { "x": 140, "y": 300 },
-          "scale": { "x": 1, "y": 1 },
+          "position": {
+            "x": 140,
+            "y": 300
+          },
+          "scale": {
+            "x": 1,
+            "y": 1
+          },
           "rotation": 0,
           "opacity": 1
         },
@@ -86,16 +129,30 @@
           "fontWeight": "bold",
           "typographyPreset": "body",
           "textAlign": "left",
-          "color": { "r": 146, "g": 255, "b": 191, "a": 1 },
+          "color": {
+            "r": 146,
+            "g": 255,
+            "b": 191,
+            "a": 1
+          },
           "startTime": 2800,
           "endTime": 5000,
-          "position": { "x": 140, "y": 420 },
-          "scale": { "x": 1, "y": 1 },
+          "position": {
+            "x": 140,
+            "y": 420
+          },
+          "scale": {
+            "x": 1,
+            "y": 1
+          },
           "rotation": 0,
           "opacity": 1
         }
       ],
-      "transition": { "type": "fade", "duration": 700 }
+      "transition": {
+        "type": "fade",
+        "duration": 700
+      }
     },
     {
       "id": "b-line",
@@ -108,36 +165,77 @@
           "type": "chart",
           "chartType": "line",
           "title": "Monthly Signups",
-          "dimensions": { "width": 1700, "height": 840 },
-          "data": {
-            "labels": ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
-            "values": [1200, 1600, 1450, 2100, 2300, 2600]
+          "dimensions": {
+            "width": 1700,
+            "height": 840
           },
-          "yAxis": { "min": 1000, "max": 2800, "ticks": 6 },
+          "data": {
+            "labels": [
+              "Jan",
+              "Feb",
+              "Mar",
+              "Apr",
+              "May",
+              "Jun"
+            ],
+            "values": [
+              1200,
+              1600,
+              1450,
+              2100,
+              2300,
+              2600
+            ]
+          },
+          "yAxis": {
+            "min": 1000,
+            "max": 2800,
+            "ticks": 6
+          },
           "style": {
-            "lineColor": { "r": 114, "g": 198, "b": 255, "a": 1 },
+            "lineColor": {
+              "r": 114,
+              "g": 198,
+              "b": 255,
+              "a": 1
+            },
             "maxLabels": 6,
             "showValues": true,
             "showPoints": true
           },
           "startTime": 5000,
           "endTime": 9000,
-          "position": { "x": 110, "y": 130 },
-          "scale": { "x": 1, "y": 1 },
+          "position": {
+            "x": 110,
+            "y": 130
+          },
+          "scale": {
+            "x": 1,
+            "y": 1
+          },
           "rotation": 0,
           "opacity": 1,
           "animations": [
             {
               "property": "chartProgress",
               "keyframes": [
-                { "time": 5000, "value": 0 },
-                { "time": 8600, "value": 1 }
+                {
+                  "time": 5000,
+                  "value": 0
+                },
+                {
+                  "time": 8600,
+                  "value": 1
+                }
               ]
             }
           ]
         }
       ],
-      "transition": { "type": "fade", "duration": 700 }
+      "transition": {
+        "type": "fade",
+        "duration": 700
+      }
     },
     {
       "id": "b-bar",
@@ -150,35 +248,72 @@
           "type": "chart",
           "chartType": "bar",
           "title": "Channel Conversion (%)",
-          "dimensions": { "width": 1700, "height": 840 },
-          "data": {
-            "labels": ["Search", "Social", "Email", "Partner"],
-            "values": [7.1, 3.4, 9.2, 5.8]
+          "dimensions": {
+            "width": 1700,
+            "height": 840
           },
-          "yAxis": { "min": 0, "max": 10, "ticks": 6 },
+          "data": {
+            "labels": [
+              "Search",
+              "Social",
+              "Email",
+              "Partner"
+            ],
+            "values": [
+              7.1,
+              3.4,
+              9.2,
+              5.8
+            ]
+          },
+          "yAxis": {
+            "min": 0,
+            "max": 10,
+            "ticks": 6
+          },
           "style": {
-            "barColor": { "r": 146, "g": 255, "b": 191, "a": 1 },
+            "barColor": {
+              "r": 146,
+              "g": 255,
+              "b": 191,
+              "a": 1
+            },
             "showValues": true,
             "valueDecimals": 1
           },
           "startTime": 9000,
           "endTime": 12000,
-          "position": { "x": 110, "y": 130 },
-          "scale": { "x": 1, "y": 1 },
+          "position": {
+            "x": 110,
+            "y": 130
+          },
+          "scale": {
+            "x": 1,
+            "y": 1
+          },
           "rotation": 0,
           "opacity": 1,
           "animations": [
             {
               "property": "chartProgress",
               "keyframes": [
-                { "time": 9000, "value": 0 },
-                { "time": 11400, "value": 1 }
+                {
+                  "time": 9000,
+                  "value": 0
+                },
+                {
+                  "time": 11400,
+                  "value": 1
+                }
               ]
             }
           ]
         }
       ],
-      "transition": { "type": "fade", "duration": 700 }
+      "transition": {
+        "type": "fade",
+        "duration": 700
+      }
     }
   ],
   "audio": []

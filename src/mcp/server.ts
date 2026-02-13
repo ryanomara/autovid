@@ -600,6 +600,13 @@ async function handleAddTextLayer(args: any) {
     throw new Error(`Scene ${sceneId} not found`);
   }
 
+  const maxZIndex = scene.layers.reduce((max, existingLayer, index) => {
+    const existingZ = (existingLayer as { zIndex?: number }).zIndex;
+    const resolved =
+      typeof existingZ === 'number' && Number.isFinite(existingZ) ? existingZ : index;
+    return Math.max(max, resolved);
+  }, 0);
+
   const textLayer: TextLayer = {
     id: `text-${Date.now()}`,
     type: 'text',
@@ -611,6 +618,8 @@ async function handleAddTextLayer(args: any) {
     scale: { x: 1, y: 1 },
     rotation: 0,
     opacity: 1,
+    zIndex: maxZIndex + 1,
+    overlapMode: 'avoid-text',
     startTime: scene.startTime,
     endTime: scene.endTime,
   };
