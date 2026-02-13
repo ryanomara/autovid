@@ -1,0 +1,76 @@
+{
+  "id": "finance-template-valuation-snapshot",
+  "name": "Finance Template: Valuation Snapshot",
+  "config": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "duration": 7000,
+    "backgroundColor": { "r": 12, "g": 20, "b": 32, "a": 1 },
+    "outputFormat": "mp4",
+    "quality": "high"
+  },
+  "scenes": [
+    {
+      "id": "finance-valuation-scene",
+      "name": "Valuation Snapshot",
+      "startTime": 0,
+      "endTime": 7000,
+      "layers": [
+        {
+          "id": "finance-valuation-title",
+          "type": "text",
+          "text": "VALUATION SNAPSHOT",
+          "fontFamily": "Arial",
+          "fontSize": 72,
+          "fontWeight": "bold",
+          "typographyPreset": "headline",
+          "textAlign": "left",
+          "color": { "r": 255, "g": 255, "b": 255, "a": 1 },
+          "startTime": 0,
+          "endTime": 7000,
+          "position": { "x": 120, "y": 120 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "zIndex": 900,
+          "overlapMode": "avoid-text"
+        },
+        {
+          "id": "finance-valuation-chart",
+          "type": "chart",
+          "chartType": "bar",
+          "title": "P/E Multiple vs Sector",
+          "dimensions": { "width": 1680, "height": 760 },
+          "data": {
+            "labels": ["Company", "Peer A", "Peer B", "Peer C"],
+            "values": [28.3, 24.2, 20.8, 18.6]
+          },
+          "yAxis": { "min": 0, "max": 32, "ticks": 5 },
+          "style": {
+            "barColor": { "r": 255, "g": 214, "b": 114, "a": 1 },
+            "showValues": true,
+            "valueDecimals": 1
+          },
+          "startTime": 0,
+          "endTime": 7000,
+          "position": { "x": 120, "y": 210 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "animations": [
+            {
+              "property": "chartProgress",
+              "keyframes": [
+                { "time": 0, "value": 0 },
+                { "time": 6200, "value": 1 }
+              ]
+            }
+          ]
+        }
+      ],
+      "transition": { "type": "fade", "duration": 700 }
+    }
+  ],
+  "audio": []
+}

@@ -1,0 +1,73 @@
+{
+  "id": "business-template-growth-efficiency",
+  "name": "Business Template: Growth Efficiency",
+  "config": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "duration": 7000,
+    "backgroundColor": { "r": 12, "g": 20, "b": 30, "a": 1 },
+    "outputFormat": "mp4",
+    "quality": "high"
+  },
+  "scenes": [
+    {
+      "id": "business-growth-scene",
+      "name": "Growth Efficiency",
+      "startTime": 0,
+      "endTime": 7000,
+      "layers": [
+        {
+          "id": "business-growth-title",
+          "type": "text",
+          "text": "GROWTH EFFICIENCY",
+          "fontFamily": "Arial",
+          "fontSize": 72,
+          "fontWeight": "bold",
+          "typographyPreset": "headline",
+          "textAlign": "left",
+          "color": { "r": 255, "g": 255, "b": 255, "a": 1 },
+          "startTime": 0,
+          "endTime": 7000,
+          "position": { "x": 120, "y": 120 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "zIndex": 900,
+          "overlapMode": "avoid-text"
+        },
+        {
+          "id": "business-growth-chart",
+          "type": "chart",
+          "chartType": "line",
+          "title": "ARR Growth",
+          "dimensions": { "width": 1680, "height": 760 },
+          "data": { "labels": ["Q1", "Q2", "Q3", "Q4", "Q1"], "values": [88, 96, 108, 121, 128] },
+          "yAxis": { "min": 80, "max": 132, "ticks": 6 },
+          "style": {
+            "lineColor": { "r": 164, "g": 240, "b": 195, "a": 1 },
+            "showValues": true,
+            "showPoints": true
+          },
+          "startTime": 0,
+          "endTime": 7000,
+          "position": { "x": 120, "y": 210 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "animations": [
+            {
+              "property": "chartProgress",
+              "keyframes": [
+                { "time": 0, "value": 0 },
+                { "time": 6200, "value": 1 }
+              ]
+            }
+          ]
+        }
+      ],
+      "transition": { "type": "fade", "duration": 700 }
+    }
+  ],
+  "audio": []
+}

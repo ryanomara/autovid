@@ -1,0 +1,73 @@
+{
+  "id": "sports-template-offense-defense-balance",
+  "name": "Sports Template: Offense Defense Balance",
+  "config": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "duration": 7000,
+    "backgroundColor": { "r": 16, "g": 22, "b": 28, "a": 1 },
+    "outputFormat": "mp4",
+    "quality": "high"
+  },
+  "scenes": [
+    {
+      "id": "sports-balance-scene",
+      "name": "Offense Defense Balance",
+      "startTime": 0,
+      "endTime": 7000,
+      "layers": [
+        {
+          "id": "sports-balance-title",
+          "type": "text",
+          "text": "OFFENSE DEFENSE BALANCE",
+          "fontFamily": "Arial",
+          "fontSize": 68,
+          "fontWeight": "bold",
+          "typographyPreset": "headline",
+          "textAlign": "left",
+          "color": { "r": 255, "g": 255, "b": 255, "a": 1 },
+          "startTime": 0,
+          "endTime": 7000,
+          "position": { "x": 120, "y": 120 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "zIndex": 900,
+          "overlapMode": "avoid-text"
+        },
+        {
+          "id": "sports-balance-chart",
+          "type": "chart",
+          "chartType": "bar",
+          "title": "Offensive vs Defensive Rating",
+          "dimensions": { "width": 1680, "height": 760 },
+          "data": { "labels": ["Off Rtg", "Def Rtg", "Net"], "values": [121.3, 109.6, 11.7] },
+          "yAxis": { "min": 0, "max": 130, "ticks": 6 },
+          "style": {
+            "barColor": { "r": 146, "g": 255, "b": 191, "a": 1 },
+            "showValues": true,
+            "valueDecimals": 1
+          },
+          "startTime": 0,
+          "endTime": 7000,
+          "position": { "x": 120, "y": 210 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "animations": [
+            {
+              "property": "chartProgress",
+              "keyframes": [
+                { "time": 0, "value": 0 },
+                { "time": 6200, "value": 1 }
+              ]
+            }
+          ]
+        }
+      ],
+      "transition": { "type": "fade", "duration": 700 }
+    }
+  ],
+  "audio": []
+}

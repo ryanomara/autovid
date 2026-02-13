@@ -1,0 +1,72 @@
+{
+  "id": "finance-template-margin-bridge",
+  "name": "Finance Template: Margin Bridge",
+  "config": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "duration": 7000,
+    "backgroundColor": { "r": 16, "g": 18, "b": 28, "a": 1 },
+    "outputFormat": "mp4",
+    "quality": "high"
+  },
+  "scenes": [
+    {
+      "id": "finance-margin-scene",
+      "name": "Margin Bridge",
+      "startTime": 0,
+      "endTime": 7000,
+      "layers": [
+        {
+          "id": "finance-margin-title",
+          "type": "text",
+          "text": "MARGIN BRIDGE",
+          "fontFamily": "Arial",
+          "fontSize": 72,
+          "fontWeight": "bold",
+          "typographyPreset": "headline",
+          "textAlign": "left",
+          "color": { "r": 255, "g": 255, "b": 255, "a": 1 },
+          "startTime": 0,
+          "endTime": 7000,
+          "position": { "x": 120, "y": 120 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "zIndex": 900,
+          "overlapMode": "avoid-text"
+        },
+        {
+          "id": "finance-margin-chart",
+          "type": "chart",
+          "chartType": "bar",
+          "title": "Gross vs Operating Margin",
+          "dimensions": { "width": 1680, "height": 760 },
+          "data": {
+            "labels": ["FY20", "FY21", "FY22", "FY23", "FY24"],
+            "values": [32, 35, 38, 41, 44]
+          },
+          "yAxis": { "min": 20, "max": 50, "ticks": 6 },
+          "style": { "barColor": { "r": 146, "g": 255, "b": 191, "a": 1 }, "showValues": true },
+          "startTime": 0,
+          "endTime": 7000,
+          "position": { "x": 120, "y": 210 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "animations": [
+            {
+              "property": "chartProgress",
+              "keyframes": [
+                { "time": 0, "value": 0 },
+                { "time": 6200, "value": 1 }
+              ]
+            }
+          ]
+        }
+      ],
+      "transition": { "type": "fade", "duration": 700 }
+    }
+  ],
+  "audio": []
+}

@@ -1,0 +1,76 @@
+{
+  "id": "sports-template-clutch-performance",
+  "name": "Sports Template: Clutch Performance",
+  "config": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "duration": 7000,
+    "backgroundColor": { "r": 16, "g": 18, "b": 28, "a": 1 },
+    "outputFormat": "mp4",
+    "quality": "high"
+  },
+  "scenes": [
+    {
+      "id": "sports-clutch-scene",
+      "name": "Clutch Performance",
+      "startTime": 0,
+      "endTime": 7000,
+      "layers": [
+        {
+          "id": "sports-clutch-title",
+          "type": "text",
+          "text": "CLUTCH PERFORMANCE",
+          "fontFamily": "Arial",
+          "fontSize": 70,
+          "fontWeight": "bold",
+          "typographyPreset": "headline",
+          "textAlign": "left",
+          "color": { "r": 255, "g": 255, "b": 255, "a": 1 },
+          "startTime": 0,
+          "endTime": 7000,
+          "position": { "x": 120, "y": 120 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "zIndex": 900,
+          "overlapMode": "avoid-text"
+        },
+        {
+          "id": "sports-clutch-chart",
+          "type": "chart",
+          "chartType": "line",
+          "title": "Final Five Minutes Scoring",
+          "dimensions": { "width": 1680, "height": 760 },
+          "data": {
+            "labels": ["Game 1", "Game 2", "Game 3", "Game 4", "Game 5"],
+            "values": [9, 11, 8, 13, 12]
+          },
+          "yAxis": { "min": 6, "max": 14, "ticks": 5 },
+          "style": {
+            "lineColor": { "r": 255, "g": 214, "b": 114, "a": 1 },
+            "showValues": true,
+            "showPoints": true
+          },
+          "startTime": 0,
+          "endTime": 7000,
+          "position": { "x": 120, "y": 210 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "animations": [
+            {
+              "property": "chartProgress",
+              "keyframes": [
+                { "time": 0, "value": 0 },
+                { "time": 6200, "value": 1 }
+              ]
+            }
+          ]
+        }
+      ],
+      "transition": { "type": "fade", "duration": 700 }
+    }
+  ],
+  "audio": []
+}

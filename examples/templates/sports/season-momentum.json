@@ -1,0 +1,73 @@
+{
+  "id": "sports-template-season-momentum",
+  "name": "Sports Template: Season Momentum",
+  "config": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "duration": 7000,
+    "backgroundColor": { "r": 14, "g": 24, "b": 32, "a": 1 },
+    "outputFormat": "mp4",
+    "quality": "high"
+  },
+  "scenes": [
+    {
+      "id": "sports-season-scene",
+      "name": "Season Momentum",
+      "startTime": 0,
+      "endTime": 7000,
+      "layers": [
+        {
+          "id": "sports-season-title",
+          "type": "text",
+          "text": "SEASON MOMENTUM",
+          "fontFamily": "Arial",
+          "fontSize": 70,
+          "fontWeight": "bold",
+          "typographyPreset": "headline",
+          "textAlign": "left",
+          "color": { "r": 255, "g": 255, "b": 255, "a": 1 },
+          "startTime": 0,
+          "endTime": 7000,
+          "position": { "x": 120, "y": 120 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "zIndex": 900,
+          "overlapMode": "avoid-text"
+        },
+        {
+          "id": "sports-season-chart",
+          "type": "chart",
+          "chartType": "line",
+          "title": "Win Rate by Month",
+          "dimensions": { "width": 1680, "height": 760 },
+          "data": { "labels": ["Nov", "Dec", "Jan", "Feb", "Mar"], "values": [52, 56, 61, 67, 72] },
+          "yAxis": { "min": 40, "max": 80, "ticks": 5 },
+          "style": {
+            "lineColor": { "r": 114, "g": 198, "b": 255, "a": 1 },
+            "showValues": true,
+            "showPoints": true
+          },
+          "startTime": 0,
+          "endTime": 7000,
+          "position": { "x": 120, "y": 210 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "animations": [
+            {
+              "property": "chartProgress",
+              "keyframes": [
+                { "time": 0, "value": 0 },
+                { "time": 6200, "value": 1 }
+              ]
+            }
+          ]
+        }
+      ],
+      "transition": { "type": "fade", "duration": 700 }
+    }
+  ],
+  "audio": []
+}

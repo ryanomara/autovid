@@ -1,0 +1,77 @@
+{
+  "id": "business-template-retention-health",
+  "name": "Business Template: Retention Health",
+  "config": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "duration": 7000,
+    "backgroundColor": { "r": 10, "g": 24, "b": 26, "a": 1 },
+    "outputFormat": "mp4",
+    "quality": "high"
+  },
+  "scenes": [
+    {
+      "id": "business-retention-scene",
+      "name": "Retention Health",
+      "startTime": 0,
+      "endTime": 7000,
+      "layers": [
+        {
+          "id": "business-retention-title",
+          "type": "text",
+          "text": "RETENTION HEALTH",
+          "fontFamily": "Arial",
+          "fontSize": 72,
+          "fontWeight": "bold",
+          "typographyPreset": "headline",
+          "textAlign": "left",
+          "color": { "r": 255, "g": 255, "b": 255, "a": 1 },
+          "startTime": 0,
+          "endTime": 7000,
+          "position": { "x": 120, "y": 120 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "zIndex": 900,
+          "overlapMode": "avoid-text"
+        },
+        {
+          "id": "business-retention-chart",
+          "type": "chart",
+          "chartType": "line",
+          "title": "Gross vs Net Retention",
+          "dimensions": { "width": 1680, "height": 760 },
+          "data": {
+            "labels": ["Jan", "Feb", "Mar", "Apr", "May"],
+            "values": [91.4, 92.2, 93.1, 94.0, 95.1]
+          },
+          "yAxis": { "min": 88, "max": 98, "ticks": 6 },
+          "style": {
+            "lineColor": { "r": 255, "g": 214, "b": 114, "a": 1 },
+            "showValues": true,
+            "showPoints": true,
+            "valueDecimals": 1
+          },
+          "startTime": 0,
+          "endTime": 7000,
+          "position": { "x": 120, "y": 210 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "animations": [
+            {
+              "property": "chartProgress",
+              "keyframes": [
+                { "time": 0, "value": 0 },
+                { "time": 6200, "value": 1 }
+              ]
+            }
+          ]
+        }
+      ],
+      "transition": { "type": "fade", "duration": 700 }
+    }
+  ],
+  "audio": []
+}
