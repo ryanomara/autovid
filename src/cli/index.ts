@@ -1,15 +1,19 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander';
+import { config as loadEnv } from 'dotenv';
 import { readFile, writeFile, mkdir, rm } from 'fs/promises';
 import { existsSync } from 'fs';
 import { resolve, dirname, basename, extname, join } from 'path';
 import { createLogger } from '../utils/logger.js';
 import { Renderer, renderProject } from '../core/engine/renderer.js';
 import type { VideoProject, VideoConfig, RenderProgress, Template } from '../types/index.js';
+import { HuggingFaceAssetService } from '../core/assets/huggingface.js';
 
 const logger = createLogger('cli');
 const VERSION = '0.1.0';
+
+loadEnv();
 
 let tempDir: string | null = null;
 let isCleaningUp = false;
@@ -39,11 +43,12 @@ function startSpinner(message: string): void {
     logger.info(message);
     return;
   }
-  
+
   progressState.spinnerIndex = 0;
   progressState.spinner = setInterval(() => {
     const char = progressState.spinnerChars[progressState.spinnerIndex];
-    progressState.spinnerIndex = (progressState.spinnerIndex + 1) % progressState.spinnerChars.length;
+    progressState.spinnerIndex =
+      (progressState.spinnerIndex + 1) % progressState.spinnerChars.length;
     clearLine();
     process.stdout.write(`${char} ${message}`);
   }, 80);
@@ -62,12 +67,12 @@ function stopSpinner(finalMessage?: string): void {
 
 function showProgress(progress: RenderProgress): void {
   const { frame, totalFrames, percentage, estimatedTimeRemaining, currentScene } = progress;
-  
+
   const barWidth = 30;
   const filled = Math.round((percentage / 100) * barWidth);
   const empty = barWidth - filled;
   const bar = '█'.repeat(filled) + '░'.repeat(empty);
-  
+
   let eta = '';
   if (estimatedTimeRemaining !== undefined && estimatedTimeRemaining > 0) {
     const seconds = Math.floor(estimatedTimeRemaining / 1000);
@@ -75,10 +80,10 @@ function showProgress(progress: RenderProgress): void {
     const remainingSeconds = seconds % 60;
     eta = ` ETA: ${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   }
-  
+
   const sceneInfo = currentScene ? ` [${currentScene}]` : '';
   const line = `[${bar}] ${percentage.toFixed(1)}% (${frame}/${totalFrames})${eta}${sceneInfo}`;
-  
+
   if (process.stdout.isTTY) {
     clearLine();
     process.stdout.write(line);
@@ -95,73 +100,73 @@ interface ValidationResult {
 
 function validateVideoProject(project: unknown): ValidationResult {
   const errors: string[] = [];
-  
+
   if (!project || typeof project !== 'object') {
     return { valid: false, errors: ['Project must be an object'] };
   }
-  
+
   const p = project as Record<string, unknown>;
-  
+
   if (!p.id || typeof p.id !== 'string') {
     errors.push('Project must have a string "id" field');
   }
-  
+
   if (!p.name || typeof p.name !== 'string') {
     errors.push('Project must have a string "name" field');
   }
-  
+
   if (!p.config || typeof p.config !== 'object') {
     errors.push('Project must have a "config" object');
   } else {
     const config = p.config as Record<string, unknown>;
-    
+
     if (typeof config.width !== 'number' || config.width <= 0) {
       errors.push('Config must have a positive "width"');
     }
-    
+
     if (typeof config.height !== 'number' || config.height <= 0) {
       errors.push('Config must have a positive "height"');
     }
-    
+
     if (typeof config.fps !== 'number' || config.fps <= 0 || config.fps > 120) {
       errors.push('Config must have "fps" between 1 and 120');
     }
-    
+
     if (typeof config.duration !== 'number' || config.duration <= 0) {
       errors.push('Config must have a positive "duration" (in milliseconds)');
     }
-    
+
     const validFormats = ['mp4', 'webm', 'gif', 'frames'];
     if (!validFormats.includes(config.outputFormat as string)) {
       errors.push(`Config "outputFormat" must be one of: ${validFormats.join(', ')}`);
     }
   }
-  
+
   if (!Array.isArray(p.scenes)) {
     errors.push('Project must have a "scenes" array');
   } else if (p.scenes.length === 0) {
     errors.push('Project must have at least one scene');
   }
-  
+
   if (!Array.isArray(p.audio)) {
     errors.push('Project must have an "audio" array (can be empty)');
   }
-  
+
   return { valid: errors.length === 0, errors };
 }
 
 async function loadProjectFile(inputPath: string): Promise<VideoProject> {
   const fullPath = resolve(inputPath);
-  
+
   if (!existsSync(fullPath)) {
     throw new Error(`Input file not found: ${fullPath}`);
   }
-  
+
   const ext = extname(fullPath).toLowerCase();
   const content = await readFile(fullPath, 'utf-8');
-  
+
   let project: unknown;
-  
+
   if (ext === '.json') {
     try {
       project = JSON.parse(content);
@@ -169,25 +174,27 @@ async function loadProjectFile(inputPath: string): Promise<VideoProject> {
       throw new Error(`Invalid JSON in ${inputPath}: ${(e as Error).message}`);
     }
   } else if (ext === '.yaml' || ext === '.yml') {
-    throw new Error('YAML support requires js-yaml package. Please use JSON format or install js-yaml.');
+    throw new Error(
+      'YAML support requires js-yaml package. Please use JSON format or install js-yaml.'
+    );
   } else {
     throw new Error(`Unsupported file format: ${ext}. Use .json or .yaml`);
   }
-  
+
   const validation = validateVideoProject(project);
   if (!validation.valid) {
     throw new Error(`Invalid project file:\n  - ${validation.errors.join('\n  - ')}`);
   }
-  
+
   return project as VideoProject;
 }
 
 async function cleanup(): Promise<void> {
   if (isCleaningUp) return;
   isCleaningUp = true;
-  
+
   stopSpinner();
-  
+
   if (tempDir && existsSync(tempDir)) {
     logger.info({ tempDir }, 'Cleaning up temporary files');
     try {
@@ -196,7 +203,7 @@ async function cleanup(): Promise<void> {
       logger.warn({ error: (e as Error).message }, 'Failed to cleanup temp directory');
     }
   }
-  
+
   isCleaningUp = false;
 }
 
@@ -206,16 +213,16 @@ function setupSignalHandlers(): void {
     await cleanup();
     process.exit(130);
   };
-  
+
   process.on('SIGINT', () => handleSignal('SIGINT'));
   process.on('SIGTERM', () => handleSignal('SIGTERM'));
-  
+
   process.on('uncaughtException', async (error) => {
     logger.error({ error: error.message }, 'Uncaught exception');
     await cleanup();
     process.exit(1);
   });
-  
+
   process.on('unhandledRejection', async (reason) => {
     logger.error({ reason }, 'Unhandled rejection');
     await cleanup();
@@ -233,19 +240,21 @@ async function createCommand(
     width?: string;
     height?: string;
     verbose?: boolean;
+    renderWithoutTts?: boolean;
+    ttsRetries?: string;
   }
 ): Promise<void> {
   if (options.verbose) {
     process.env.LOG_LEVEL = 'debug';
   }
-  
+
   logger.info({ input, output }, 'Starting video creation');
-  
+
   try {
     startSpinner('Loading project file...');
     const project = await loadProjectFile(input);
     stopSpinner('Project loaded successfully');
-    
+
     if (options.fps) {
       const fps = parseInt(options.fps, 10);
       if (fps > 0 && fps <= 120) {
@@ -253,7 +262,7 @@ async function createCommand(
         logger.debug({ fps }, 'Overriding FPS');
       }
     }
-    
+
     if (options.quality) {
       const validQualities = ['low', 'medium', 'high', 'ultra'];
       if (validQualities.includes(options.quality)) {
@@ -261,7 +270,7 @@ async function createCommand(
         logger.debug({ quality: options.quality }, 'Overriding quality');
       }
     }
-    
+
     if (options.format) {
       const validFormats = ['mp4', 'webm', 'gif', 'frames'];
       if (validFormats.includes(options.format)) {
@@ -269,7 +278,7 @@ async function createCommand(
         logger.debug({ format: options.format }, 'Overriding format');
       }
     }
-    
+
     if (options.width) {
       const width = parseInt(options.width, 10);
       if (width > 0) {
@@ -277,7 +286,7 @@ async function createCommand(
         logger.debug({ width }, 'Overriding width');
       }
     }
-    
+
     if (options.height) {
       const height = parseInt(options.height, 10);
       if (height > 0) {
@@ -285,31 +294,35 @@ async function createCommand(
         logger.debug({ height }, 'Overriding height');
       }
     }
-    
+
     tempDir = join(dirname(resolve(output)), '.autovid-temp');
     await mkdir(tempDir, { recursive: true });
-    
-    logger.info({
-      width: project.config.width,
-      height: project.config.height,
-      fps: project.config.fps,
-      duration: project.config.duration,
-      format: project.config.outputFormat,
-    }, 'Starting render');
-    
+
+    logger.info(
+      {
+        width: project.config.width,
+        height: project.config.height,
+        fps: project.config.fps,
+        duration: project.config.duration,
+        format: project.config.outputFormat,
+      },
+      'Starting render'
+    );
+
     const outputPath = await renderProject(project, {
       outputPath: resolve(output),
       outputDir: tempDir,
       onProgress: showProgress,
+      renderWithoutTts: options.renderWithoutTts,
+      ttsMaxRetries: options.ttsRetries ? parseInt(options.ttsRetries, 10) : undefined,
     });
-    
+
     if (process.stdout.isTTY) {
       process.stdout.write('\n');
     }
-    
+
     logger.info({ outputPath }, 'Video created successfully');
     await cleanup();
-    
   } catch (error) {
     stopSpinner();
     logger.error({ error: (error as Error).message }, 'Failed to create video');
@@ -326,14 +339,16 @@ async function renderCommand(
     quality?: string;
     format?: string;
     verbose?: boolean;
+    renderWithoutTts?: boolean;
+    ttsRetries?: string;
   }
 ): Promise<void> {
   if (options.verbose) {
     process.env.LOG_LEVEL = 'debug';
   }
-  
+
   const fullPath = resolve(projectPath);
-  
+
   let projectFile = fullPath;
   if (existsSync(fullPath) && (await readFile(fullPath, 'utf-8').catch(() => null)) === null) {
     const projectJsonPath = join(fullPath, 'project.json');
@@ -344,9 +359,9 @@ async function renderCommand(
       process.exit(1);
     }
   }
-  
+
   const outputPath = options.output || join(dirname(projectFile), 'output.mp4');
-  
+
   await createCommand(projectFile, outputPath, options);
 }
 
@@ -361,37 +376,36 @@ async function previewCommand(
   if (options.verbose) {
     process.env.LOG_LEVEL = 'debug';
   }
-  
+
   logger.info({ projectPath }, 'Generating preview frames');
-  
+
   try {
     const project = await loadProjectFile(projectPath);
     project.config.outputFormat = 'frames';
-    
+
     const outputDir = options.output || join(dirname(resolve(projectPath)), 'preview-frames');
     await mkdir(outputDir, { recursive: true });
-    
+
     const totalDuration = project.config.duration;
     const fps = project.config.fps;
     const totalFrames = Math.floor((totalDuration / 1000) * fps);
-    
+
     const numPreviewFrames = parseInt(options.frames || '5', 10);
-    
+
     logger.info({ numPreviewFrames, totalFrames, outputDir }, 'Rendering preview frames');
-    
+
     const renderer = new Renderer({ outputDir });
-    
+
     await renderer.render(project, {
       outputPath: outputDir,
       onProgress: showProgress,
     });
-    
+
     if (process.stdout.isTTY) {
       process.stdout.write('\n');
     }
-    
+
     logger.info({ outputDir }, 'Preview frames generated');
-    
   } catch (error) {
     stopSpinner();
     logger.error({ error: (error as Error).message }, 'Failed to generate preview');
@@ -403,7 +417,7 @@ async function templatesListCommand(options: { verbose?: boolean }): Promise<voi
   if (options.verbose) {
     process.env.LOG_LEVEL = 'debug';
   }
-  
+
   const builtInTemplates: Template[] = [
     {
       id: 'basic-presentation',
@@ -441,7 +455,12 @@ async function templatesListCommand(options: { verbose?: boolean }): Promise<voi
         { name: 'companyName', type: 'text', description: 'Company name', required: true },
         { name: 'tagline', type: 'text', description: 'Company tagline', required: false },
         { name: 'logo', type: 'image', description: 'Company logo', required: true },
-        { name: 'primaryColor', type: 'color', description: 'Brand primary color', required: false },
+        {
+          name: 'primaryColor',
+          type: 'color',
+          description: 'Brand primary color',
+          required: false,
+        },
       ],
     },
     {
@@ -466,31 +485,39 @@ async function templatesListCommand(options: { verbose?: boolean }): Promise<voi
       requiredInputs: [
         { name: 'productName', type: 'text', description: 'Product name', required: true },
         { name: 'productImage', type: 'image', description: 'Product image', required: true },
-        { name: 'features', type: 'text', description: 'Product features (JSON array)', required: true },
+        {
+          name: 'features',
+          type: 'text',
+          description: 'Product features (JSON array)',
+          required: true,
+        },
         { name: 'price', type: 'text', description: 'Product price', required: false },
       ],
     },
   ];
-  
+
   logger.info('Available templates:\n');
-  
-  const byCategory = builtInTemplates.reduce((acc, t) => {
-    if (!acc[t.category]) acc[t.category] = [];
-    acc[t.category].push(t);
-    return acc;
-  }, {} as Record<string, Template[]>);
-  
+
+  const byCategory = builtInTemplates.reduce(
+    (acc, t) => {
+      if (!acc[t.category]) acc[t.category] = [];
+      acc[t.category].push(t);
+      return acc;
+    },
+    {} as Record<string, Template[]>
+  );
+
   for (const [category, templates] of Object.entries(byCategory)) {
     logger.info(`\n  ${category.toUpperCase()}:`);
     for (const t of templates) {
       logger.info(`    ${t.id.padEnd(20)} - ${t.description}`);
       if (options.verbose) {
         logger.info(`      Resolution: ${t.defaultConfig.width}x${t.defaultConfig.height}`);
-        logger.info(`      Inputs: ${t.requiredInputs.map(i => i.name).join(', ')}`);
+        logger.info(`      Inputs: ${t.requiredInputs.map((i) => i.name).join(', ')}`);
       }
     }
   }
-  
+
   logger.info('\nUse "autovid templates apply <name> <output>" to apply a template');
 }
 
@@ -502,7 +529,7 @@ async function templatesApplyCommand(
   if (options.verbose) {
     process.env.LOG_LEVEL = 'debug';
   }
-  
+
   const baseProject: VideoProject = {
     id: `project-${Date.now()}`,
     name: `New ${templateName} Project`,
@@ -622,7 +649,7 @@ async function templatesApplyCommand(
     ],
     audio: [],
   };
-  
+
   switch (templateName) {
     case 'social-promo':
       baseProject.config.width = 1080;
@@ -638,16 +665,16 @@ async function templatesApplyCommand(
       baseProject.config.quality = 'high';
       break;
   }
-  
+
   const fullOutputPath = resolve(outputPath);
   const outputDir = dirname(fullOutputPath);
-  
+
   if (!existsSync(outputDir)) {
     await mkdir(outputDir, { recursive: true });
   }
-  
+
   await writeFile(fullOutputPath, JSON.stringify(baseProject, null, 2), 'utf-8');
-  
+
   logger.info({ outputPath: fullOutputPath }, 'Project created from template');
   logger.info('Edit the project file to customize your video');
 }
@@ -664,15 +691,15 @@ async function initCommand(options: {
   if (options.verbose) {
     process.env.LOG_LEVEL = 'debug';
   }
-  
+
   const projectName = options.name || basename(process.cwd());
   const outputPath = resolve('project.json');
-  
+
   if (existsSync(outputPath)) {
     logger.error('project.json already exists in this directory');
     process.exit(1);
   }
-  
+
   const project: VideoProject = {
     id: `project-${Date.now()}`,
     name: projectName,
@@ -703,18 +730,94 @@ async function initCommand(options: {
       tags: [],
     },
   };
-  
+
   await writeFile(outputPath, JSON.stringify(project, null, 2), 'utf-8');
-  
+
   const assetsDir = resolve('assets');
   if (!existsSync(assetsDir)) {
     await mkdir(assetsDir, { recursive: true });
   }
-  
+
   logger.info({ projectFile: outputPath, assetsDir }, 'Project initialized');
   logger.info('Edit project.json to add scenes and layers');
   logger.info('Place assets (images, videos) in the assets/ directory');
   logger.info('Run "autovid render ." to render your project');
+}
+
+async function assetsImageCommand(
+  prompt: string,
+  options: {
+    output?: string;
+    resolution?: string;
+    seed?: string;
+    steps?: string;
+    shift?: string;
+    endpoint?: string;
+    token?: string;
+    verbose?: boolean;
+  }
+): Promise<void> {
+  if (options.verbose) {
+    process.env.LOG_LEVEL = 'debug';
+  }
+
+  const output = options.output
+    ? resolve(options.output)
+    : resolve('assets', 'images', `hf-image-${Date.now()}.png`);
+
+  const service = new HuggingFaceAssetService({
+    token: options.token || process.env.HF_TOKEN,
+  });
+
+  logger.info({ output }, 'Generating image asset from Hugging Face space');
+  const metadata = await service.generateImage({
+    prompt,
+    outputPath: output,
+    resolution: options.resolution,
+    seed: options.seed ? parseInt(options.seed, 10) : undefined,
+    steps: options.steps ? parseInt(options.steps, 10) : undefined,
+    shift: options.shift ? parseFloat(options.shift) : undefined,
+    endpointName: options.endpoint,
+  });
+
+  logger.info({ output, metadata }, 'Image asset generated');
+}
+
+async function assetsVideoCommand(
+  image: string,
+  prompt: string,
+  options: {
+    output?: string;
+    seed?: string;
+    frames?: string;
+    endpoint?: string;
+    token?: string;
+    verbose?: boolean;
+  }
+): Promise<void> {
+  if (options.verbose) {
+    process.env.LOG_LEVEL = 'debug';
+  }
+
+  const output = options.output
+    ? resolve(options.output)
+    : resolve('assets', 'videos', `hf-video-${Date.now()}.mp4`);
+
+  const service = new HuggingFaceAssetService({
+    token: options.token || process.env.HF_TOKEN,
+  });
+
+  logger.info({ image, output }, 'Generating image-to-video asset from Hugging Face space');
+  const metadata = await service.generateVideoFromImage({
+    prompt,
+    inputImage: image,
+    outputPath: output,
+    seed: options.seed ? parseInt(options.seed, 10) : undefined,
+    numFrames: options.frames ? parseInt(options.frames, 10) : undefined,
+    endpointName: options.endpoint,
+  });
+
+  logger.info({ output, metadata }, 'Video asset generated');
 }
 
 const program = new Command();
@@ -735,6 +838,8 @@ program
   .option('--format <type>', 'Override output format (mp4, webm, gif, frames)')
   .option('--width <pixels>', 'Override video width')
   .option('--height <pixels>', 'Override video height')
+  .option('--render-without-tts', 'Render without TTS if narration fails')
+  .option('--tts-retries <number>', 'Max retries per TTS snippet (default: 2)')
   .option('-v, --verbose', 'Enable verbose output')
   .action(createCommand);
 
@@ -746,6 +851,8 @@ program
   .option('--fps <number>', 'Override frames per second')
   .option('--quality <level>', 'Override quality level')
   .option('--format <type>', 'Override output format')
+  .option('--render-without-tts', 'Render without TTS if narration fails')
+  .option('--tts-retries <number>', 'Max retries per TTS snippet (default: 2)')
   .option('-v, --verbose', 'Enable verbose output')
   .action(renderCommand);
 
@@ -758,9 +865,7 @@ program
   .option('-v, --verbose', 'Enable verbose output')
   .action(previewCommand);
 
-const templates = program
-  .command('templates')
-  .description('Manage video templates');
+const templates = program.command('templates').description('Manage video templates');
 
 templates
   .command('list')
@@ -787,6 +892,35 @@ program
   .option('--format <type>', 'Output format (default: mp4)')
   .option('-v, --verbose', 'Enable verbose output')
   .action(initCommand);
+
+const assets = program.command('assets').description('Generate and manage external media assets');
+
+assets
+  .command('image')
+  .description('Generate an image asset from Hugging Face image space')
+  .argument('<prompt>', 'Prompt for image generation')
+  .option('-o, --output <path>', 'Output image path (default: assets/images/*.png)')
+  .option('--resolution <value>', 'Image resolution preset from the HF space')
+  .option('--seed <number>', 'Generation seed')
+  .option('--steps <number>', 'Inference steps')
+  .option('--shift <number>', 'Flow shift parameter')
+  .option('--endpoint <name>', 'Override endpoint name')
+  .option('--token <token>', 'HF token override (falls back to HF_TOKEN env var)')
+  .option('-v, --verbose', 'Enable verbose output')
+  .action(assetsImageCommand);
+
+assets
+  .command('video')
+  .description('Generate a video asset from image using Hugging Face image-to-video space')
+  .argument('<image>', 'Input image path or URL')
+  .argument('<prompt>', 'Prompt for image-to-video generation')
+  .option('-o, --output <path>', 'Output video path (default: assets/videos/*.mp4)')
+  .option('--seed <number>', 'Generation seed')
+  .option('--frames <number>', 'Frame count requested from provider')
+  .option('--endpoint <name>', 'Override endpoint name')
+  .option('--token <token>', 'HF token override (falls back to HF_TOKEN env var)')
+  .option('-v, --verbose', 'Enable verbose output')
+  .action(assetsVideoCommand);
 
 setupSignalHandlers();
 

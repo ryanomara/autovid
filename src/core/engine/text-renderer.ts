@@ -28,6 +28,13 @@ export interface TextRenderOptions {
     blur: number;
     color: Color;
   };
+  textStroke?: {
+    color: Color;
+    width: number;
+  };
+  textMask?: {
+    mode: 'cutout' | 'inverse';
+  };
 }
 
 /**
@@ -38,7 +45,7 @@ export function registerCustomFont(path: string, family: string): void {
     logger.warn({ path, family }, 'Font file not found, skipping registration');
     return;
   }
-  
+
   try {
     registerFont(path, { family });
     logger.info({ path, family }, 'Registered custom font');
@@ -60,28 +67,26 @@ function colorToCSS(color: Color): string {
 export function measureText(options: TextRenderOptions): { width: number; height: number } {
   const canvas = createCanvas(1, 1);
   const ctx = canvas.getContext('2d');
-  
+
   const fontWeight = options.fontWeight || 'normal';
   const fontStyle = options.fontStyle || 'normal';
   const fontFamily = options.fontFamily || 'Arial';
   ctx.font = `${fontStyle} ${fontWeight} ${options.fontSize}px ${fontFamily}`;
-  
-  const lines = options.maxWidth 
-    ? wrapText(ctx, options.text, options.maxWidth)
-    : [options.text];
-  
+
+  const lines = options.maxWidth ? wrapText(ctx, options.text, options.maxWidth) : [options.text];
+
   let maxWidth = 0;
   for (const line of lines) {
     const metrics = ctx.measureText(line);
     maxWidth = Math.max(maxWidth, metrics.width);
   }
-  
+
   const lineHeight = options.lineHeight || options.fontSize * 1.2;
   const height = lines.length * lineHeight;
-  
-  return { 
-    width: Math.ceil(maxWidth), 
-    height: Math.ceil(height) 
+
+  return {
+    width: Math.ceil(maxWidth),
+    height: Math.ceil(height),
   };
 }
 
@@ -92,11 +97,11 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number)
   const words = text.split(' ');
   const lines: string[] = [];
   let currentLine = '';
-  
+
   for (const word of words) {
     const testLine = currentLine ? `${currentLine} ${word}` : word;
     const metrics = ctx.measureText(testLine);
-    
+
     if (metrics.width > maxWidth && currentLine) {
       lines.push(currentLine);
       currentLine = word;
@@ -104,11 +109,11 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number)
       currentLine = testLine;
     }
   }
-  
+
   if (currentLine) {
     lines.push(currentLine);
   }
-  
+
   return lines;
 }
 
@@ -121,18 +126,25 @@ export function renderText(options: TextRenderOptions): PixelBuffer {
   const padding = 10;
   const width = dimensions.width + padding * 2;
   const height = dimensions.height + padding * 2;
-  
+
   // Create canvas
   const canvas = createCanvas(width, height);
   const ctx = canvas.getContext('2d');
-  
+
   // Setup font
   const fontWeight = options.fontWeight || 'normal';
   const fontStyle = options.fontStyle || 'normal';
   const fontFamily = options.fontFamily || 'Arial';
   ctx.font = `${fontStyle} ${fontWeight} ${options.fontSize}px ${fontFamily}`;
   ctx.textBaseline = 'top';
-  
+
+  const isMaskMode = !!options.textMask;
+
+  if (isMaskMode && options.textMask?.mode === 'inverse') {
+    ctx.fillStyle = 'rgba(255, 255, 255, 1)';
+    ctx.fillRect(0, 0, width, height);
+  }
+
   // Apply text shadow if specified
   if (options.textShadow) {
     ctx.shadowOffsetX = options.textShadow.offsetX;
@@ -140,25 +152,27 @@ export function renderText(options: TextRenderOptions): PixelBuffer {
     ctx.shadowBlur = options.textShadow.blur;
     ctx.shadowColor = colorToCSS(options.textShadow.color);
   }
-  
+
   // Setup color
-  ctx.fillStyle = colorToCSS(options.color);
-  
+  ctx.fillStyle = isMaskMode ? 'rgba(255, 255, 255, 1)' : colorToCSS(options.color);
+
+  if (isMaskMode && options.textMask?.mode === 'inverse') {
+    ctx.globalCompositeOperation = 'destination-out';
+  }
+
   // Handle text wrapping
-  const lines = options.maxWidth 
-    ? wrapText(ctx, options.text, options.maxWidth)
-    : [options.text];
-  
+  const lines = options.maxWidth ? wrapText(ctx, options.text, options.maxWidth) : [options.text];
+
   const lineHeight = options.lineHeight || options.fontSize * 1.2;
   const textAlign = options.textAlign || 'left';
-  
+
   // Calculate starting Y position
   let y = padding;
-  
+
   // Render each line
   for (const line of lines) {
     let x = padding;
-    
+
     // Handle text alignment
     if (textAlign === 'center') {
       const metrics = ctx.measureText(line);
@@ -167,25 +181,39 @@ export function renderText(options: TextRenderOptions): PixelBuffer {
       const metrics = ctx.measureText(line);
       x = width - metrics.width - padding;
     }
-    
+
     // Apply letter spacing if specified
     if (options.letterSpacing && options.letterSpacing !== 0) {
       let currentX = x;
       for (const char of line) {
+        if (options.textStroke && options.textStroke.width > 0 && !isMaskMode) {
+          ctx.strokeStyle = colorToCSS(options.textStroke.color);
+          ctx.lineWidth = options.textStroke.width;
+          ctx.strokeText(char, currentX, y);
+        }
         ctx.fillText(char, currentX, y);
         const charWidth = ctx.measureText(char).width;
         currentX += charWidth + options.letterSpacing;
       }
     } else {
+      if (options.textStroke && options.textStroke.width > 0 && !isMaskMode) {
+        ctx.strokeStyle = colorToCSS(options.textStroke.color);
+        ctx.lineWidth = options.textStroke.width;
+        ctx.strokeText(line, x, y);
+      }
       ctx.fillText(line, x, y);
     }
-    
+
     y += lineHeight;
   }
-  
+
+  if (isMaskMode) {
+    ctx.globalCompositeOperation = 'source-over';
+  }
+
   // Convert canvas to PixelBuffer
   const imageData = ctx.getImageData(0, 0, width, height);
-  
+
   return {
     data: new Uint8ClampedArray(imageData.data),
     width: width,

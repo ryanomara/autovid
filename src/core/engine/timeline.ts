@@ -68,15 +68,12 @@ export class Timeline {
     return this.isLayerActiveAtTime(layer, time);
   }
 
-  getAnimatedPropertiesAtTime(
-    layer: Layer,
-    time: Timestamp
-  ): AnimatedProperties {
+  getAnimatedPropertiesAtTime(layer: Layer, time: Timestamp): AnimatedProperties {
     const baseProps: AnimatedProperties = {
-      position: { ...layer.position },
-      scale: { ...layer.scale },
-      rotation: layer.rotation,
-      opacity: layer.opacity,
+      position: layer.position ? { ...layer.position } : { x: 0, y: 0 },
+      scale: layer.scale ? { ...layer.scale } : { x: 1, y: 1 },
+      rotation: layer.rotation ?? 0,
+      opacity: layer.opacity ?? 1,
     };
 
     if (!layer.animations || layer.animations.length === 0) {
@@ -93,10 +90,7 @@ export class Timeline {
     return baseProps;
   }
 
-  getAnimatedPropertiesAtFrame(
-    layer: Layer,
-    frame: number
-  ): AnimatedProperties {
+  getAnimatedPropertiesAtFrame(layer: Layer, frame: number): AnimatedProperties {
     return this.getAnimatedPropertiesAtTime(layer, this.frameToTime(frame));
   }
 
@@ -141,12 +135,7 @@ export class Timeline {
     );
   }
 
-  private interpolateValue<T>(
-    from: T,
-    to: T,
-    progress: number,
-    easing: EasingType
-  ): T {
+  private interpolateValue<T>(from: T, to: T, progress: number, easing: EasingType): T {
     if (typeof from === 'number' && typeof to === 'number') {
       return interpolate(from, to, progress, easing) as T;
     }
@@ -182,11 +171,7 @@ export class Timeline {
 
   private isPosition(value: unknown): value is Position {
     return (
-      typeof value === 'object' &&
-      value !== null &&
-      'x' in value &&
-      'y' in value &&
-      !('r' in value)
+      typeof value === 'object' && value !== null && 'x' in value && 'y' in value && !('r' in value)
     );
   }
 
@@ -201,11 +186,7 @@ export class Timeline {
     );
   }
 
-  private setNestedProperty(
-    obj: Record<string, unknown>,
-    path: string,
-    value: unknown
-  ): void {
+  private setNestedProperty(obj: Record<string, unknown>, path: string, value: unknown): void {
     const parts = path.split('.');
     let current: Record<string, unknown> = obj;
 
@@ -220,17 +201,11 @@ export class Timeline {
     current[parts[parts.length - 1]] = value;
   }
 
-  getActiveLayersAtTime<T extends BaseLayer>(
-    layers: T[],
-    time: Timestamp
-  ): T[] {
+  getActiveLayersAtTime<T extends BaseLayer>(layers: T[], time: Timestamp): T[] {
     return layers.filter((layer) => this.isLayerActiveAtTime(layer, time));
   }
 
-  getActiveLayersAtFrame<T extends BaseLayer>(
-    layers: T[],
-    frame: number
-  ): T[] {
+  getActiveLayersAtFrame<T extends BaseLayer>(layers: T[], frame: number): T[] {
     return this.getActiveLayersAtTime(layers, this.frameToTime(frame));
   }
 

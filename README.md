@@ -1,6 +1,6 @@
 # AutoVid - Autonomous Video Generation Platform
 
-🎬 **Status: Production Ready** | ✅ Tests Passing | 🚀 Multi-Platform
+🎬 **Status: Active Development** | ✅ Tests Passing | 🚀 Multi-Platform
 
 AutoVid is a next-generation video creation platform designed for LLM agents and humans. A simpler, more elegant alternative to Remotion.
 
@@ -26,26 +26,33 @@ node dist/mcp/server-simple.js
 ## Features
 
 ### Core Capabilities
+
 - ✅ **Pure JavaScript Rendering** - No native dependencies, runs anywhere
 - ✅ **Professional Animations** - 20+ easing functions, smooth transitions
 - ✅ **Multi-Platform** - CLI, Desktop (Electron), Web, MCP Server
 - ✅ **Agent-First Design** - Built for LLM automation
 - ✅ **Resumable Renders** - mem-o integration for checkpoint/resume
 - ✅ **Zero Native Deps** - Portable across all platforms
+- ✅ **Chart Layers** - Native line/bar chart rendering with animated reveal support
+- ✅ **Text Safety Features** - Collision prevention, text stroke, and text cutout modes
+- ✅ **HF Companion Assets** - CLI generation of image and image-to-video accompaniment assets
 
 ### Animation System
+
 - Keyframe animations with interpolation
 - Scene transitions (fade, slide, zoom, dissolve, wipe)
 - Easing functions (linear, cubic, elastic, bounce, etc.)
 - Property animations (position, scale, rotation, opacity, color)
 
 ### Design System
+
 - Theme support (default, corporate, modern)
 - Template library (title-slide, lower-third)
 - Story structures (hero-journey, problem-solution, feature-benefit)
 - Pacing calculator for different audiences
 
 ### Output Formats
+
 - MP4 (H.264)
 - WebM (VP9)
 - GIF
@@ -66,7 +73,7 @@ autovid/
 │   ├── mcp/               # Model Context Protocol server
 │   ├── types/             # TypeScript definitions
 │   └── utils/             # Logger, memory
-├── tests/                 # Test suites (18/18 passing)
+├── tests/                 # Test suites (19/19 passing)
 ├── examples/              # Example projects
 ├── web/                   # Web frontend
 ├── desktop/               # Electron app
@@ -90,6 +97,12 @@ autovid preview <project-dir>
 
 # List available templates
 autovid templates
+
+# Generate companion image asset (HF)
+autovid assets image "cinematic trading floor background" -o assets/images/bg.png
+
+# Generate companion video asset from image (HF)
+autovid assets video assets/images/bg.png "subtle market motion" -o assets/videos/bg.mp4
 ```
 
 ### As Library
@@ -98,38 +111,38 @@ autovid templates
 import { renderProject } from 'autovid';
 
 const project = {
-  name: "My Video",
+  name: 'My Video',
   config: {
     width: 1920,
     height: 1080,
     fps: 30,
     duration: 5000,
-    outputFormat: "mp4"
+    outputFormat: 'mp4',
   },
   scenes: [
     {
-      id: "scene1",
+      id: 'scene1',
       startTime: 0,
       endTime: 5000,
       layers: [
         {
-          id: "text1",
-          type: "text",
-          text: "Hello AutoVid!",
+          id: 'text1',
+          type: 'text',
+          text: 'Hello AutoVid!',
           fontSize: 96,
-          position: { x: 960, y: 540 }
-        }
-      ]
-    }
+          position: { x: 960, y: 540 },
+        },
+      ],
+    },
   ],
-  audio: []
+  audio: [],
 };
 
 await renderProject(project, {
   outputPath: 'output.mp4',
   onProgress: (progress) => {
     console.log(`${progress.percentage}% complete`);
-  }
+  },
 });
 ```
 
@@ -152,6 +165,7 @@ node dist/mcp/server-simple.js
 ## Agent Skills
 
 AutoVid includes cross-platform skill definitions for:
+
 - **Claude** (`.claude/skills/`)
 - **GitHub Copilot** (`skills/copilot/`)
 - **OpenCode** (`.opencode/skills/`)
@@ -161,28 +175,35 @@ Skills enable LLM agents to generate videos autonomously.
 ## Examples
 
 ### Simple Title Animation
+
 ```json
 {
   "name": "Title Animation",
   "config": { "width": 1920, "height": 1080, "fps": 30, "duration": 5000 },
-  "scenes": [{
-    "id": "title",
-    "startTime": 0,
-    "endTime": 5000,
-    "layers": [{
-      "type": "text",
-      "text": "Welcome to AutoVid",
-      "fontSize": 96,
-      "position": { "x": 960, "y": 540 },
-      "animations": [{
-        "property": "opacity",
-        "keyframes": [
-          { "time": 0, "value": 0 },
-          { "time": 1000, "value": 1, "easing": "easeOut" }
-        ]
-      }]
-    }]
-  }],
+  "scenes": [
+    {
+      "id": "title",
+      "startTime": 0,
+      "endTime": 5000,
+      "layers": [
+        {
+          "type": "text",
+          "text": "Welcome to AutoVid",
+          "fontSize": 96,
+          "position": { "x": 960, "y": 540 },
+          "animations": [
+            {
+              "property": "opacity",
+              "keyframes": [
+                { "time": 0, "value": 0 },
+                { "time": 1000, "value": 1, "easing": "easeOut" }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
   "audio": []
 }
 ```
@@ -208,7 +229,7 @@ See `examples/` directory for more examples.
 
 ## Requirements
 
-- **Node.js** 18+ 
+- **Node.js** 18+
 - **FFmpeg** (must be installed on system)
 - **npm** or **yarn**
 
@@ -225,7 +246,7 @@ npm test -- tests/unit/easing.test.ts
 npm test -- --coverage
 ```
 
-Current test status: **18/18 passing** ✅
+Current test status: **19/19 passing** ✅
 
 ## Development
 
@@ -248,10 +269,12 @@ npm run format
 
 ## Documentation
 
-- **STATUS.md** - Detailed project status and completion report
-- **ARCHITECTURE.md** - System architecture and design decisions
-- **examples/** - Working example projects
-- **skills/** - Agent skill documentation
+- `docs/style-guide.md` - Satori-inspired style rules + agent guardrails
+- `docs/clean-room-commercial-checklist.md` - Commercial-safe clean-room policy
+- `docs/ROADMAP.md` - Near-term milestones and implementation plan
+- `docs/adr/` - Architecture Decision Records
+- `examples/` - Working example projects
+- `skills/` - Agent skill documentation
 
 ## License
 

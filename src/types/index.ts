@@ -130,7 +130,7 @@ export interface SpringConfig {
 /**
  * Layer types
  */
-export type LayerType = 'text' | 'image' | 'video' | 'shape' | 'effect' | 'group' | '3d';
+export type LayerType = 'text' | 'image' | 'video' | 'shape' | 'chart' | 'effect' | 'group' | '3d';
 
 /**
  * Base layer properties
@@ -145,7 +145,7 @@ export interface BaseLayer {
   scale: { x: number; y: number };
   rotation: number;
   opacity: number;
-  blendMode?: 'normal' | 'multiply' | 'screen' | 'overlay';
+  blendMode?: 'normal' | 'multiply' | 'screen' | 'overlay' | 'erase';
   animations?: Animation[];
   visible?: boolean;
 }
@@ -181,6 +181,13 @@ export interface TextLayer extends BaseLayer {
     offsetY: number;
     blur: number;
     color: Color;
+  };
+  textStroke?: {
+    color: Color;
+    width: number;
+  };
+  textMask?: {
+    mode: 'cutout' | 'inverse';
   };
 }
 
@@ -220,6 +227,37 @@ export interface ShapeLayer extends BaseLayer {
   cornerRadius?: number;
 }
 
+export interface ChartLayer extends BaseLayer {
+  type: 'chart';
+  dimensions: Dimensions;
+  chartType: 'line' | 'bar';
+  data: {
+    labels: string[];
+    values: number[];
+  };
+  title?: string;
+  yAxis?: {
+    min?: number;
+    max?: number;
+    ticks?: number;
+  };
+  style?: {
+    axisColor?: Color;
+    gridColor?: Color;
+    labelColor?: Color;
+    valueColor?: Color;
+    lineColor?: Color;
+    barColor?: Color;
+    lineWidth?: number;
+    pointRadius?: number;
+    showGrid?: boolean;
+    showPoints?: boolean;
+    showValues?: boolean;
+    maxLabels?: number;
+    valueDecimals?: number;
+  };
+}
+
 /**
  * Effect layer
  */
@@ -237,7 +275,14 @@ export interface Layer3D extends BaseLayer {
   scene: string;
 }
 
-export type Layer = TextLayer | ImageLayer | VideoLayer | ShapeLayer | EffectLayer | Layer3D;
+export type Layer =
+  | TextLayer
+  | ImageLayer
+  | VideoLayer
+  | ShapeLayer
+  | ChartLayer
+  | EffectLayer
+  | Layer3D;
 
 /**
  * Scene definition
@@ -248,6 +293,12 @@ export interface Scene {
   startTime: Timestamp;
   endTime: Timestamp;
   layers: Layer[];
+  narration?: {
+    text: string;
+    voice?: string;
+    rate?: number;
+    pitch?: number;
+  };
   camera?: CameraConfig;
   transition?: {
     type:
@@ -373,6 +424,8 @@ export interface RenderOptions {
   parallel?: boolean;
   maxThreads?: number;
   resume?: boolean; // Resume from saved state
+  renderWithoutTts?: boolean;
+  ttsMaxRetries?: number;
 }
 
 /**

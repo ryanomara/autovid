@@ -12,7 +12,7 @@ import {
   applyOpacity,
 } from './canvas.js';
 
-export type BlendMode = 'normal' | 'multiply' | 'screen' | 'overlay';
+export type BlendMode = 'normal' | 'multiply' | 'screen' | 'overlay' | 'erase';
 
 interface CompositeLayer {
   buffer: PixelBuffer;
@@ -72,9 +72,23 @@ function blendOverlay(src: Color, dst: Color, opacity: number): Color {
   return blendNormal(blended, dst, opacity);
 }
 
-function getBlendFunction(
-  mode: BlendMode
-): (src: Color, dst: Color, opacity: number) => Color {
+function blendErase(src: Color, dst: Color, opacity: number): Color {
+  const erase = Math.min(1, Math.max(0, src.a * opacity));
+  const outA = dst.a * (1 - erase);
+
+  if (outA <= 0) {
+    return { r: 0, g: 0, b: 0, a: 0 };
+  }
+
+  return {
+    r: Math.round(dst.r * (1 - erase)),
+    g: Math.round(dst.g * (1 - erase)),
+    b: Math.round(dst.b * (1 - erase)),
+    a: outA,
+  };
+}
+
+function getBlendFunction(mode: BlendMode): (src: Color, dst: Color, opacity: number) => Color {
   switch (mode) {
     case 'multiply':
       return blendMultiply;
@@ -82,6 +96,8 @@ function getBlendFunction(
       return blendScreen;
     case 'overlay':
       return blendOverlay;
+    case 'erase':
+      return blendErase;
     default:
       return blendNormal;
   }
@@ -154,9 +170,7 @@ export class Compositor {
     }
   }
 
-  compositeWithPosition(
-    layers: Array<CompositeLayer & { x: number; y: number }>
-  ): PixelBuffer {
+  compositeWithPosition(layers: Array<CompositeLayer & { x: number; y: number }>): PixelBuffer {
     const result = createBuffer(this.width, this.height);
     fillBuffer(result, this.backgroundColor);
 
@@ -166,14 +180,7 @@ export class Compositor {
       if (layer.opacity <= 0) continue;
 
       const blendFn = getBlendFunction(layer.blendMode);
-      this.blendLayerAtPosition(
-        result,
-        layer.buffer,
-        layer.x,
-        layer.y,
-        blendFn,
-        layer.opacity
-      );
+      this.blendLayerAtPosition(result, layer.buffer, layer.x, layer.y, blendFn, layer.opacity);
     }
 
     return result;

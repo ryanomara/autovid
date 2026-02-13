@@ -1,0 +1,267 @@
+{
+  "id": "yahoo-tv-quality-cut-v3",
+  "name": "Yahoo TV Quality Cut V3",
+  "config": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "duration": 16000,
+    "backgroundColor": { "r": 14, "g": 18, "b": 30, "a": 1 },
+    "outputFormat": "mp4",
+    "quality": "high"
+  },
+  "scenes": [
+    {
+      "id": "intro",
+      "name": "Intro",
+      "startTime": 0,
+      "endTime": 2800,
+      "layers": [
+        {
+          "id": "intro-title",
+          "type": "text",
+          "text": "YAHOO PRICE DEVELOPMENT",
+          "fontFamily": "Arial",
+          "fontSize": 94,
+          "fontWeight": "bold",
+          "textAlign": "center",
+          "color": { "r": 255, "g": 255, "b": 255, "a": 1 },
+          "textStroke": {
+            "color": { "r": 18, "g": 22, "b": 40, "a": 1 },
+            "width": 3
+          },
+          "startTime": 0,
+          "endTime": 2800,
+          "position": { "x": 960, "y": 400 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "animations": [
+            {
+              "property": "opacity",
+              "keyframes": [
+                { "time": 0, "value": 0 },
+                { "time": 700, "value": 1 }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "intro-sub",
+          "type": "text",
+          "text": "Animated charts + collision-safe typography",
+          "fontFamily": "Arial",
+          "fontSize": 40,
+          "fontWeight": "bold",
+          "textAlign": "center",
+          "color": { "r": 164, "g": 214, "b": 255, "a": 1 },
+          "startTime": 200,
+          "endTime": 2800,
+          "position": { "x": 960, "y": 560 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "animations": [
+            {
+              "property": "opacity",
+              "keyframes": [
+                { "time": 800, "value": 0 },
+                { "time": 1700, "value": 1 }
+              ]
+            }
+          ]
+        }
+      ],
+      "transition": { "type": "fade", "duration": 700 }
+    },
+    {
+      "id": "line-chart",
+      "name": "Animated Line Chart",
+      "startTime": 2800,
+      "endTime": 9200,
+      "layers": [
+        {
+          "id": "line-layer",
+          "type": "chart",
+          "chartType": "line",
+          "title": "Yahoo Stock Timeline",
+          "dimensions": { "width": 1720, "height": 860 },
+          "data": {
+            "labels": ["1996 IPO", "1998", "2000 Peak", "2001 Crash", "2008", "2015", "2017 Exit"],
+            "values": [13, 62, 118.75, 8.94, 12, 51, 54]
+          },
+          "yAxis": {
+            "min": 0,
+            "max": 130,
+            "ticks": 6
+          },
+          "style": {
+            "lineColor": { "r": 114, "g": 198, "b": 255, "a": 1 },
+            "labelColor": { "r": 210, "g": 220, "b": 240, "a": 1 },
+            "valueColor": { "r": 255, "g": 255, "b": 255, "a": 1 },
+            "lineWidth": 5,
+            "pointRadius": 5,
+            "maxLabels": 5,
+            "valueDecimals": 2,
+            "showValues": true,
+            "showPoints": true,
+            "showGrid": true
+          },
+          "startTime": 2800,
+          "endTime": 9200,
+          "position": { "x": 100, "y": 120 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "animations": [
+            {
+              "property": "chartProgress",
+              "keyframes": [
+                { "time": 2800, "value": 0 },
+                { "time": 8600, "value": 1 }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "line-callout-a",
+          "type": "text",
+          "text": "Peak: $118.75",
+          "fontFamily": "Arial",
+          "fontSize": 38,
+          "fontWeight": "bold",
+          "textAlign": "left",
+          "color": { "r": 255, "g": 233, "b": 165, "a": 1 },
+          "startTime": 8700,
+          "endTime": 9200,
+          "position": { "x": 1320, "y": 250 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "animations": [
+            {
+              "property": "opacity",
+              "keyframes": [
+                { "time": 8700, "value": 0 },
+                { "time": 8900, "value": 1 }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "line-callout-b",
+          "type": "text",
+          "text": "Crash: $8.94",
+          "fontFamily": "Arial",
+          "fontSize": 38,
+          "fontWeight": "bold",
+          "textAlign": "left",
+          "color": { "r": 255, "g": 187, "b": 187, "a": 1 },
+          "startTime": 8700,
+          "endTime": 9200,
+          "position": { "x": 1300, "y": 330 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "animations": [
+            {
+              "property": "opacity",
+              "keyframes": [
+                { "time": 8700, "value": 0 },
+                { "time": 8900, "value": 1 }
+              ]
+            }
+          ]
+        }
+      ],
+      "transition": { "type": "fade", "duration": 700 }
+    },
+    {
+      "id": "bar-chart",
+      "name": "Animated Bar Chart",
+      "startTime": 9200,
+      "endTime": 13800,
+      "layers": [
+        {
+          "id": "bar-layer",
+          "type": "chart",
+          "chartType": "bar",
+          "title": "Milestone Comparison",
+          "dimensions": { "width": 1720, "height": 860 },
+          "data": {
+            "labels": ["IPO", "Peak", "Crash", "Exit"],
+            "values": [13, 118.75, 8.94, 54]
+          },
+          "yAxis": {
+            "min": 0,
+            "max": 130,
+            "ticks": 6
+          },
+          "style": {
+            "barColor": { "r": 146, "g": 255, "b": 191, "a": 1 },
+            "labelColor": { "r": 210, "g": 220, "b": 240, "a": 1 },
+            "valueColor": { "r": 255, "g": 255, "b": 255, "a": 1 },
+            "valueDecimals": 2,
+            "showValues": true,
+            "showGrid": true
+          },
+          "startTime": 9200,
+          "endTime": 13800,
+          "position": { "x": 100, "y": 120 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "animations": [
+            {
+              "property": "chartProgress",
+              "keyframes": [
+                { "time": 9200, "value": 0 },
+                { "time": 12500, "value": 1 }
+              ]
+            }
+          ]
+        }
+      ],
+      "transition": { "type": "fade", "duration": 700 }
+    },
+    {
+      "id": "outro",
+      "name": "Outro",
+      "startTime": 13800,
+      "endTime": 16000,
+      "layers": [
+        {
+          "id": "outro-title",
+          "type": "text",
+          "text": "TV POLISH PASS V3",
+          "fontFamily": "Arial",
+          "fontSize": 82,
+          "fontWeight": "bold",
+          "textAlign": "center",
+          "color": { "r": 255, "g": 255, "b": 255, "a": 1 },
+          "textStroke": {
+            "color": { "r": 20, "g": 24, "b": 42, "a": 1 },
+            "width": 2
+          },
+          "startTime": 13800,
+          "endTime": 16000,
+          "position": { "x": 960, "y": 460 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "animations": [
+            {
+              "property": "opacity",
+              "keyframes": [
+                { "time": 13800, "value": 0 },
+                { "time": 14500, "value": 1 }
+              ]
+            }
+          ]
+        }
+      ],
+      "transition": { "type": "fade", "duration": 700 }
+    }
+  ],
+  "audio": []
+}
