@@ -1,0 +1,181 @@
+{
+  "id": "sports-benchmark",
+  "name": "Sports Benchmark",
+  "config": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "duration": 12000,
+    "backgroundColor": { "r": 16, "g": 22, "b": 28, "a": 1 },
+    "outputFormat": "mp4",
+    "quality": "high"
+  },
+  "scenes": [
+    {
+      "id": "s-intro",
+      "name": "Sports Intro",
+      "startTime": 0,
+      "endTime": 2500,
+      "layers": [
+        {
+          "id": "s-intro-title",
+          "type": "text",
+          "text": "SPORTS BENCHMARK",
+          "fontFamily": "Arial",
+          "fontSize": 90,
+          "fontWeight": "bold",
+          "textAlign": "center",
+          "color": { "r": 255, "g": 255, "b": 255, "a": 1 },
+          "startTime": 0,
+          "endTime": 2500,
+          "position": { "x": 960, "y": 420 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1
+        }
+      ],
+      "transition": { "type": "fade", "duration": 700 }
+    },
+    {
+      "id": "s-kpi",
+      "name": "Sports KPI",
+      "startTime": 2500,
+      "endTime": 5000,
+      "layers": [
+        {
+          "id": "s-kpi-title",
+          "type": "text",
+          "text": "MATCH METRICS",
+          "fontFamily": "Arial",
+          "fontSize": 62,
+          "fontWeight": "bold",
+          "textAlign": "left",
+          "color": { "r": 255, "g": 255, "b": 255, "a": 1 },
+          "startTime": 2500,
+          "endTime": 5000,
+          "position": { "x": 120, "y": 110 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1
+        },
+        {
+          "id": "s-kpi-a",
+          "type": "text",
+          "text": "Possession: 61%",
+          "fontFamily": "Arial",
+          "fontSize": 52,
+          "fontWeight": "bold",
+          "textAlign": "left",
+          "color": { "r": 146, "g": 255, "b": 191, "a": 1 },
+          "startTime": 2600,
+          "endTime": 5000,
+          "position": { "x": 140, "y": 300 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1
+        },
+        {
+          "id": "s-kpi-b",
+          "type": "text",
+          "text": "Shots on Target: 8",
+          "fontFamily": "Arial",
+          "fontSize": 52,
+          "fontWeight": "bold",
+          "textAlign": "left",
+          "color": { "r": 255, "g": 214, "b": 114, "a": 1 },
+          "startTime": 2800,
+          "endTime": 5000,
+          "position": { "x": 140, "y": 420 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1
+        }
+      ],
+      "transition": { "type": "fade", "duration": 700 }
+    },
+    {
+      "id": "s-line",
+      "name": "Sports Line",
+      "startTime": 5000,
+      "endTime": 9000,
+      "layers": [
+        {
+          "id": "s-line-chart",
+          "type": "chart",
+          "chartType": "line",
+          "title": "Expected Goals by Minute",
+          "dimensions": { "width": 1700, "height": 840 },
+          "data": {
+            "labels": ["15'", "30'", "45'", "60'", "75'", "90'"],
+            "values": [0.2, 0.6, 0.9, 1.1, 1.8, 2.3]
+          },
+          "yAxis": { "min": 0, "max": 2.5, "ticks": 6 },
+          "style": {
+            "lineColor": { "r": 114, "g": 198, "b": 255, "a": 1 },
+            "maxLabels": 6,
+            "showValues": true,
+            "showPoints": true,
+            "valueDecimals": 1
+          },
+          "startTime": 5000,
+          "endTime": 9000,
+          "position": { "x": 110, "y": 130 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "animations": [
+            {
+              "property": "chartProgress",
+              "keyframes": [
+                { "time": 5000, "value": 0 },
+                { "time": 8600, "value": 1 }
+              ]
+            }
+          ]
+        }
+      ],
+      "transition": { "type": "fade", "duration": 700 }
+    },
+    {
+      "id": "s-bar",
+      "name": "Sports Bar",
+      "startTime": 9000,
+      "endTime": 12000,
+      "layers": [
+        {
+          "id": "s-bar-chart",
+          "type": "chart",
+          "chartType": "bar",
+          "title": "Team Comparison",
+          "dimensions": { "width": 1700, "height": 840 },
+          "data": {
+            "labels": ["Shots", "Passes", "Duels", "Corners"],
+            "values": [14, 512, 37, 6]
+          },
+          "yAxis": { "min": 0, "max": 560, "ticks": 6 },
+          "style": {
+            "barColor": { "r": 146, "g": 255, "b": 191, "a": 1 },
+            "showValues": true
+          },
+          "startTime": 9000,
+          "endTime": 12000,
+          "position": { "x": 110, "y": 130 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "animations": [
+            {
+              "property": "chartProgress",
+              "keyframes": [
+                { "time": 9000, "value": 0 },
+                { "time": 11400, "value": 1 }
+              ]
+            }
+          ]
+        }
+      ],
+      "transition": { "type": "fade", "duration": 700 }
+    }
+  ],
+  "audio": []
+}

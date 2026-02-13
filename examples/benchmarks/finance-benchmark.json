@@ -1,0 +1,180 @@
+{
+  "id": "finance-benchmark",
+  "name": "Finance Benchmark",
+  "config": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "duration": 12000,
+    "backgroundColor": { "r": 14, "g": 18, "b": 30, "a": 1 },
+    "outputFormat": "mp4",
+    "quality": "high"
+  },
+  "scenes": [
+    {
+      "id": "f-intro",
+      "name": "Finance Intro",
+      "startTime": 0,
+      "endTime": 2500,
+      "layers": [
+        {
+          "id": "f-intro-title",
+          "type": "text",
+          "text": "FINANCE BENCHMARK",
+          "fontFamily": "Arial",
+          "fontSize": 90,
+          "fontWeight": "bold",
+          "textAlign": "center",
+          "color": { "r": 255, "g": 255, "b": 255, "a": 1 },
+          "startTime": 0,
+          "endTime": 2500,
+          "position": { "x": 960, "y": 420 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1
+        }
+      ],
+      "transition": { "type": "fade", "duration": 700 }
+    },
+    {
+      "id": "f-kpi",
+      "name": "Finance KPI",
+      "startTime": 2500,
+      "endTime": 5000,
+      "layers": [
+        {
+          "id": "f-kpi-title",
+          "type": "text",
+          "text": "KEY METRICS",
+          "fontFamily": "Arial",
+          "fontSize": 62,
+          "fontWeight": "bold",
+          "textAlign": "left",
+          "color": { "r": 255, "g": 255, "b": 255, "a": 1 },
+          "startTime": 2500,
+          "endTime": 5000,
+          "position": { "x": 120, "y": 110 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1
+        },
+        {
+          "id": "f-kpi-a",
+          "type": "text",
+          "text": "Revenue: $2.4B",
+          "fontFamily": "Arial",
+          "fontSize": 52,
+          "fontWeight": "bold",
+          "textAlign": "left",
+          "color": { "r": 146, "g": 255, "b": 191, "a": 1 },
+          "startTime": 2600,
+          "endTime": 5000,
+          "position": { "x": 140, "y": 300 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1
+        },
+        {
+          "id": "f-kpi-b",
+          "type": "text",
+          "text": "Net Margin: 18.2%",
+          "fontFamily": "Arial",
+          "fontSize": 52,
+          "fontWeight": "bold",
+          "textAlign": "left",
+          "color": { "r": 255, "g": 214, "b": 114, "a": 1 },
+          "startTime": 2800,
+          "endTime": 5000,
+          "position": { "x": 140, "y": 420 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1
+        }
+      ],
+      "transition": { "type": "fade", "duration": 700 }
+    },
+    {
+      "id": "f-line",
+      "name": "Finance Line",
+      "startTime": 5000,
+      "endTime": 9000,
+      "layers": [
+        {
+          "id": "f-line-chart",
+          "type": "chart",
+          "chartType": "line",
+          "title": "Quarterly Price Trend",
+          "dimensions": { "width": 1700, "height": 840 },
+          "data": {
+            "labels": ["Q1", "Q2", "Q3", "Q4", "Q1"],
+            "values": [42, 58, 51, 76, 69]
+          },
+          "yAxis": { "min": 30, "max": 85, "ticks": 6 },
+          "style": {
+            "lineColor": { "r": 114, "g": 198, "b": 255, "a": 1 },
+            "maxLabels": 5,
+            "showValues": true,
+            "showPoints": true
+          },
+          "startTime": 5000,
+          "endTime": 9000,
+          "position": { "x": 110, "y": 130 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "animations": [
+            {
+              "property": "chartProgress",
+              "keyframes": [
+                { "time": 5000, "value": 0 },
+                { "time": 8600, "value": 1 }
+              ]
+            }
+          ]
+        }
+      ],
+      "transition": { "type": "fade", "duration": 700 }
+    },
+    {
+      "id": "f-bar",
+      "name": "Finance Bar",
+      "startTime": 9000,
+      "endTime": 12000,
+      "layers": [
+        {
+          "id": "f-bar-chart",
+          "type": "chart",
+          "chartType": "bar",
+          "title": "Regional Revenue",
+          "dimensions": { "width": 1700, "height": 840 },
+          "data": {
+            "labels": ["NA", "EMEA", "APAC", "LATAM"],
+            "values": [910, 740, 680, 260]
+          },
+          "yAxis": { "min": 0, "max": 1000, "ticks": 6 },
+          "style": {
+            "barColor": { "r": 146, "g": 255, "b": 191, "a": 1 },
+            "showValues": true
+          },
+          "startTime": 9000,
+          "endTime": 12000,
+          "position": { "x": 110, "y": 130 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "animations": [
+            {
+              "property": "chartProgress",
+              "keyframes": [
+                { "time": 9000, "value": 0 },
+                { "time": 11400, "value": 1 }
+              ]
+            }
+          ]
+        }
+      ],
+      "transition": { "type": "fade", "duration": 700 }
+    }
+  ],
+  "audio": []
+}

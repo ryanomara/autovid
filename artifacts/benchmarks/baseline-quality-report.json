@@ -1,0 +1,65 @@
+{
+  "generatedAt": "2026-02-13T21:04:08.990Z",
+  "fixtures": [
+    {
+      "fixture": "examples/benchmarks/finance-benchmark.json",
+      "exists": true,
+      "scenes": 4,
+      "metrics": {
+        "textOverlapCount": 0,
+        "labelCollisions": 0,
+        "contrastFailures": 0,
+        "frameSharpnessProxy": 1
+      },
+      "errors": [],
+      "warnings": [],
+      "passed": true
+    },
+    {
+      "fixture": "examples/benchmarks/business-benchmark.json",
+      "exists": true,
+      "scenes": 4,
+      "metrics": {
+        "textOverlapCount": 0,
+        "labelCollisions": 0,
+        "contrastFailures": 0,
+        "frameSharpnessProxy": 1
+      },
+      "errors": [],
+      "warnings": [],
+      "passed": true
+    },
+    {
+      "fixture": "examples/benchmarks/sports-benchmark.json",
+      "exists": true,
+      "scenes": 4,
+      "metrics": {
+        "textOverlapCount": 0,
+        "labelCollisions": 0,
+        "contrastFailures": 0,
+        "frameSharpnessProxy": 1
+      },
+      "errors": [],
+      "warnings": [],
+      "passed": true
+    }
+  ],
+  "summary": {
+    "totalFixtures": 3,
+    "totalScenes": 12,
+    "totalErrors": 0,
+    "totalWarnings": 0,
+    "metrics": {
+      "textOverlapCount": 0,
+      "labelCollisions": 0,
+      "contrastFailures": 0,
+      "frameSharpnessProxy": 1
+    },
+    "checks": {
+      "minimumScenesMet": true,
+      "minimumFixturesMet": true
+    },
+    "regressionFailures": [],
+    "passed": true
+  }
+}
