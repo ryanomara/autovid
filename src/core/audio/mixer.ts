@@ -1,7 +1,7 @@
 import { spawn } from 'child_process';
 import { writeFile, unlink } from 'fs/promises';
 import { existsSync } from 'fs';
-import { join } from 'path';
+import { join, basename } from 'path';
 import { createLogger } from '../../utils/logger.js';
 import type { AudioTrack, VideoConfig } from '../../types/index.js';
 import { TTSService, PlaceholderTTSProvider } from './tts.js';
@@ -69,7 +69,7 @@ export class AudioMixer {
       throw new Error('TTS config missing');
     }
 
-    const outputPath = join(this.tempDir, `tts_${index}.mp3`);
+    const outputPath = join(this.tempDir, `tts_${index}.wav`);
 
     logger.info(
       { text: track.tts.text.substring(0, 50), voice: track.tts.voice },
@@ -106,11 +106,22 @@ export class AudioMixer {
 
     const outputPath = join(this.tempDir, `track_${index}.mp3`);
     const duration = config.duration / 1000;
+    const trackDuration = (track.endTime - track.startTime) / 1000;
+    const trackEndTime = track.endTime / 1000;
+    const fileName = basename(track.src);
+    const isSnippet =
+      track.src.startsWith(this.tempDir) &&
+      (fileName.startsWith('narration_') || fileName.startsWith('tts_'));
 
     const filters: string[] = [];
 
     if (track.volume !== 1.0) {
       filters.push(`volume=${track.volume}`);
+    }
+
+    if (isSnippet && track.startTime > 0) {
+      const delay = Math.max(0, Math.round(track.startTime));
+      filters.push(`adelay=${delay}|${delay}`);
     }
 
     if (track.fadeIn) {
@@ -122,14 +133,13 @@ export class AudioMixer {
       filters.push(`afade=t=out:st=${fadeStart}:d=${track.fadeOut / 1000}`);
     }
 
-    const args = [
-      '-i',
-      track.src,
-      '-ss',
-      `${track.startTime / 1000}`,
-      '-t',
-      `${(track.endTime - track.startTime) / 1000}`,
-    ];
+    const args = ['-i', track.src];
+
+    if (isSnippet) {
+      args.push('-t', `${trackEndTime}`);
+    } else {
+      args.push('-ss', `${track.startTime / 1000}`, '-t', `${trackDuration}`);
+    }
 
     if (filters.length > 0) {
       args.push('-af', filters.join(','));

@@ -1,10 +1,11 @@
 import { describe, it, expect } from '../setup.js';
 import { TTSService, PlaceholderTTSProvider } from '../../src/core/audio/tts.js';
+import type { AudioTrack } from '../../src/types/index.js';
 
 describe('TTS Service', () => {
   it('throws when no tts config', async () => {
     const service = new TTSService({ providers: [new PlaceholderTTSProvider()] });
-    const track: any = { id: '1' };
+    const track = { id: '1' } as AudioTrack;
 
     await expect(service.synthesize(track, '/tmp/test.mp3')).rejects.toThrow('TTS config missing');
   });

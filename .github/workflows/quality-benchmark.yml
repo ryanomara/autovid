@@ -30,6 +30,9 @@ jobs:
       - name: Run tests
         run: npm test -- --run
 
+      - name: Run composition contract validation gate
+        run: node scripts/validate-contracts.mjs
+
       - name: Run quality benchmark gate
         run: npm run benchmark:quality -- --ci
 
