@@ -1,0 +1,42 @@
+{
+  "id": "invalid-title-zindex",
+  "name": "Invalid Title ZIndex",
+  "config": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "duration": 2500,
+    "outputFormat": "mp4",
+    "quality": "high",
+    "backgroundColor": { "r": 12, "g": 18, "b": 30, "a": 1 }
+  },
+  "scenes": [
+    {
+      "id": "scene-intro",
+      "name": "Intro",
+      "startTime": 0,
+      "endTime": 2500,
+      "transition": { "type": "fade", "duration": 700 },
+      "layers": [
+        {
+          "id": "title-main",
+          "type": "text",
+          "text": "TITLE SHOULD FAIL",
+          "fontFamily": "Arial",
+          "fontSize": 72,
+          "color": { "r": 255, "g": 255, "b": 255, "a": 1 },
+          "textAlign": "center",
+          "zIndex": 100,
+          "overlapMode": "avoid-text",
+          "startTime": 0,
+          "endTime": 2500,
+          "position": { "x": 960, "y": 520 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1
+        }
+      ]
+    }
+  ],
+  "audio": []
+}

@@ -1,0 +1,22 @@
+{
+  "projectId": "invalid-title-zindex",
+  "mode": "strict",
+  "valid": false,
+  "errors": 1,
+  "warnings": 0,
+  "sceneContracts": [
+    {
+      "sceneId": "scene-intro",
+      "contract": "intro"
+    }
+  ],
+  "issues": [
+    {
+      "code": "title-zindex-too-low",
+      "path": "scenes[0].layers[text:title-main].zIndex",
+      "message": "Title-like text must be in top layer band (>= 900).",
+      "suggestion": "Set zIndex to 900 or higher for title/closing text layers.",
+      "level": "error"
+    }
+  ]
+}

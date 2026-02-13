@@ -1,0 +1,26 @@
+{
+  "projectId": "sports-benchmark",
+  "mode": "strict",
+  "valid": true,
+  "errors": 0,
+  "warnings": 0,
+  "sceneContracts": [
+    {
+      "sceneId": "s-intro",
+      "contract": "intro"
+    },
+    {
+      "sceneId": "s-kpi",
+      "contract": "kpi"
+    },
+    {
+      "sceneId": "s-line",
+      "contract": "line-chart"
+    },
+    {
+      "sceneId": "s-bar",
+      "contract": "bar-chart"
+    }
+  ],
+  "issues": []
+}

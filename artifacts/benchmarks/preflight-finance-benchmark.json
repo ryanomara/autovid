@@ -1,0 +1,26 @@
+{
+  "projectId": "finance-benchmark",
+  "mode": "strict",
+  "valid": true,
+  "errors": 0,
+  "warnings": 0,
+  "sceneContracts": [
+    {
+      "sceneId": "f-intro",
+      "contract": "intro"
+    },
+    {
+      "sceneId": "f-kpi",
+      "contract": "kpi"
+    },
+    {
+      "sceneId": "f-line",
+      "contract": "line-chart"
+    },
+    {
+      "sceneId": "f-bar",
+      "contract": "bar-chart"
+    }
+  ],
+  "issues": []
+}

@@ -1,0 +1,22 @@
+{
+  "projectId": "invalid-line-chart-data",
+  "mode": "strict",
+  "valid": false,
+  "errors": 1,
+  "warnings": 0,
+  "sceneContracts": [
+    {
+      "sceneId": "scene-line",
+      "contract": "line-chart"
+    }
+  ],
+  "issues": [
+    {
+      "code": "chart-data-mismatch",
+      "path": "scenes[0].layers[chart:bad-line-chart].data",
+      "message": "Chart labels (3) and values (2) lengths do not match.",
+      "suggestion": "Ensure labels and values arrays are the same length.",
+      "level": "error"
+    }
+  ]
+}

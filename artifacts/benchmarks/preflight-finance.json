@@ -1,0 +1,55 @@
+{
+  "projectId": "finance-benchmark",
+  "mode": "permissive",
+  "valid": true,
+  "errors": 0,
+  "warnings": 4,
+  "sceneContracts": [
+    {
+      "sceneId": "f-intro",
+      "contract": "intro"
+    },
+    {
+      "sceneId": "f-kpi",
+      "contract": "kpi"
+    },
+    {
+      "sceneId": "f-line",
+      "contract": "line-chart"
+    },
+    {
+      "sceneId": "f-bar",
+      "contract": "bar-chart"
+    }
+  ],
+  "issues": [
+    {
+      "code": "text-overlap-mode-missing",
+      "path": "scenes[0].layers[text:f-intro-title].overlapMode",
+      "message": "Text layer is missing overlapMode policy.",
+      "suggestion": "Set overlapMode to \"avoid-text\" (default) or \"avoid-all\"/\"label\"/\"effect\" intentionally.",
+      "level": "warning"
+    },
+    {
+      "code": "text-overlap-mode-missing",
+      "path": "scenes[1].layers[text:f-kpi-title].overlapMode",
+      "message": "Text layer is missing overlapMode policy.",
+      "suggestion": "Set overlapMode to \"avoid-text\" (default) or \"avoid-all\"/\"label\"/\"effect\" intentionally.",
+      "level": "warning"
+    },
+    {
+      "code": "text-overlap-mode-missing",
+      "path": "scenes[1].layers[text:f-kpi-a].overlapMode",
+      "message": "Text layer is missing overlapMode policy.",
+      "suggestion": "Set overlapMode to \"avoid-text\" (default) or \"avoid-all\"/\"label\"/\"effect\" intentionally.",
+      "level": "warning"
+    },
+    {
+      "code": "text-overlap-mode-missing",
+      "path": "scenes[1].layers[text:f-kpi-b].overlapMode",
+      "message": "Text layer is missing overlapMode policy.",
+      "suggestion": "Set overlapMode to \"avoid-text\" (default) or \"avoid-all\"/\"label\"/\"effect\" intentionally.",
+      "level": "warning"
+    }
+  ]
+}

@@ -9,6 +9,10 @@ import { createLogger } from '../utils/logger.js';
 import { Renderer, renderProject } from '../core/engine/renderer.js';
 import type { VideoProject, VideoConfig, RenderProgress, Template } from '../types/index.js';
 import { HuggingFaceAssetService } from '../core/assets/huggingface.js';
+import {
+  validateCompositionContracts,
+  type ValidationMode,
+} from '../core/validation/composition-contracts.js';
 
 const logger = createLogger('cli');
 const VERSION = '0.1.0';
@@ -409,6 +413,45 @@ async function previewCommand(
   } catch (error) {
     stopSpinner();
     logger.error({ error: (error as Error).message }, 'Failed to generate preview');
+    process.exit(1);
+  }
+}
+
+async function validateCommand(
+  projectPath: string,
+  options: {
+    mode?: ValidationMode;
+    report?: string;
+    verbose?: boolean;
+  }
+): Promise<void> {
+  if (options.verbose) {
+    process.env.LOG_LEVEL = 'debug';
+  }
+
+  const mode: ValidationMode = options.mode === 'permissive' ? 'permissive' : 'strict';
+  const project = await loadProjectFile(projectPath);
+  const report = validateCompositionContracts(project, mode);
+
+  const output = {
+    projectId: project.id,
+    mode: report.mode,
+    valid: report.valid,
+    errors: report.errors,
+    warnings: report.warnings,
+    sceneContracts: report.sceneContracts,
+    issues: report.issues,
+  };
+
+  if (options.report) {
+    const reportPath = resolve(options.report);
+    await writeFile(reportPath, `${JSON.stringify(output, null, 2)}\n`, 'utf-8');
+    logger.info({ reportPath }, 'Validation report written');
+  }
+
+  logger.info(JSON.stringify(output, null, 2));
+
+  if (!report.valid) {
     process.exit(1);
   }
 }
@@ -864,6 +907,15 @@ program
   .option('-o, --output <dir>', 'Output directory for frames')
   .option('-v, --verbose', 'Enable verbose output')
   .action(previewCommand);
+
+program
+  .command('validate')
+  .description('Run composition contract validation and preflight checks')
+  .argument('<project>', 'Project file path')
+  .option('--mode <mode>', 'Validation mode: strict or permissive', 'strict')
+  .option('--report <path>', 'Write JSON validation report to file')
+  .option('-v, --verbose', 'Enable verbose output')
+  .action(validateCommand);
 
 const templates = program.command('templates').description('Manage video templates');
 

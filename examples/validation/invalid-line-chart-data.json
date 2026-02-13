@@ -1,0 +1,46 @@
+{
+  "id": "invalid-line-chart-data",
+  "name": "Invalid Line Chart Data",
+  "config": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "duration": 3200,
+    "outputFormat": "mp4",
+    "quality": "high",
+    "backgroundColor": { "r": 14, "g": 20, "b": 32, "a": 1 }
+  },
+  "scenes": [
+    {
+      "id": "scene-line",
+      "name": "Line",
+      "startTime": 0,
+      "endTime": 3200,
+      "transition": { "type": "fade", "duration": 700 },
+      "layers": [
+        {
+          "id": "bad-line-chart",
+          "type": "chart",
+          "chartType": "line",
+          "title": "Broken Data",
+          "dimensions": { "width": 1600, "height": 760 },
+          "data": {
+            "labels": ["Q1", "Q2", "Q3"],
+            "values": [12, 18]
+          },
+          "style": {
+            "showValues": true,
+            "maxLabels": 3
+          },
+          "startTime": 0,
+          "endTime": 3200,
+          "position": { "x": 140, "y": 140 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1
+        }
+      ]
+    }
+  ],
+  "audio": []
+}

@@ -1,0 +1,26 @@
+{
+  "projectId": "business-benchmark",
+  "mode": "strict",
+  "valid": true,
+  "errors": 0,
+  "warnings": 0,
+  "sceneContracts": [
+    {
+      "sceneId": "b-intro",
+      "contract": "intro"
+    },
+    {
+      "sceneId": "b-kpi",
+      "contract": "kpi"
+    },
+    {
+      "sceneId": "b-line",
+      "contract": "line-chart"
+    },
+    {
+      "sceneId": "b-bar",
+      "contract": "bar-chart"
+    }
+  ],
+  "issues": []
+}
