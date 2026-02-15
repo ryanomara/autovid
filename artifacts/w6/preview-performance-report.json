@@ -1,0 +1,10 @@
+{
+  "generatedAt": "2026-02-14T00:10:16.870Z",
+  "fixture": "examples/benchmarks/finance-benchmark.json",
+  "fullRenderMs": 66272,
+  "fastPreviewMs": 13643,
+  "fasterByMs": 52629,
+  "speedupRatio": 4.858,
+  "materiallyFaster": true,
+  "threshold": "speedupRatio >= 1.5"
+}

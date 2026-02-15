@@ -272,6 +272,8 @@ npm run format
 - `docs/README.md` - Documentation index and navigation
 - `docs/template-packs.md` - W5 template packs (9 domain templates)
 - `docs/style-guide.md` - Satori-inspired style rules + agent guardrails
+- `docs/reproducibility.md` - Determinism policy and reproducibility checks
+- `docs/release-candidate-checklist.md` - W6 release candidate signoff checklist
 - `docs/clean-room-commercial-checklist.md` - Commercial-safe clean-room policy
 - `docs/ROADMAP.md` - Near-term milestones and implementation plan
 - `docs/adr/README.md` - Architecture Decision Record index and process

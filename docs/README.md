@@ -14,6 +14,9 @@ Use this index for fast navigation across contributor and agent docs.
 - `docs/quality-rubric.md`
 - `docs/validation-failure-catalog.md`
 - `docs/agent-validation-snippets.md`
+- `docs/reproducibility.md`
+- `docs/release-candidate-checklist.md`
+- `docs/release-notes-rc1-draft.md`
 
 ## Architecture and Process
 

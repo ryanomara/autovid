@@ -13,6 +13,12 @@ import {
   validateCompositionContracts,
   type ValidationMode,
 } from '../core/validation/composition-contracts.js';
+import {
+  computeProjectHash,
+  computeSceneFingerprints,
+  diffChangedScenes,
+  type PreviewCacheRecord,
+} from './preview-cache.js';
 
 const logger = createLogger('cli');
 const VERSION = '0.1.0';
@@ -415,6 +421,156 @@ async function previewCommand(
     logger.error({ error: (error as Error).message }, 'Failed to generate preview');
     process.exit(1);
   }
+}
+
+function buildFastPreviewProject(project: VideoProject, changedSceneIds: string[]): VideoProject {
+  const selectedScenes =
+    changedSceneIds.length > 0
+      ? project.scenes.filter((scene) => changedSceneIds.includes(scene.id))
+      : project.scenes;
+
+  const sourceScenes = selectedScenes.length > 0 ? selectedScenes : project.scenes;
+  const clippedDuration = 2500;
+  let cursor = 0;
+
+  const remappedScenes = sourceScenes.map((scene) => {
+    const originalDuration = Math.max(500, scene.endTime - scene.startTime);
+    const sceneDuration = Math.min(clippedDuration, originalDuration);
+    const startTime = cursor;
+    const endTime = cursor + sceneDuration;
+    cursor = endTime;
+
+    const layers = scene.layers.map((layer) => {
+      const layerStart = Math.max(scene.startTime, layer.startTime);
+      const layerEnd = Math.min(scene.startTime + sceneDuration, layer.endTime);
+      const startOffset = Math.max(0, layerStart - scene.startTime);
+      const endOffset = Math.max(startOffset + 1, layerEnd - scene.startTime);
+
+      return {
+        ...layer,
+        startTime: startTime + startOffset,
+        endTime: startTime + endOffset,
+      };
+    });
+
+    return {
+      ...scene,
+      startTime,
+      endTime,
+      layers,
+    };
+  });
+
+  return {
+    ...project,
+    id: `${project.id}-fast-preview`,
+    name: `${project.name} (Fast Preview)`,
+    config: {
+      ...project.config,
+      width: Math.min(project.config.width, 1280),
+      height: Math.min(project.config.height, 720),
+      fps: Math.min(project.config.fps, 15),
+      duration: cursor,
+      quality: 'low',
+      outputFormat: 'mp4',
+    },
+    scenes: remappedScenes,
+    audio: [],
+  };
+}
+
+async function previewFastCommand(
+  projectPath: string,
+  options: {
+    output?: string;
+    cacheDir?: string;
+    force?: boolean;
+    verbose?: boolean;
+  }
+): Promise<void> {
+  if (options.verbose) {
+    process.env.LOG_LEVEL = 'debug';
+  }
+
+  const project = await loadProjectFile(projectPath);
+  const cacheRoot = resolve(
+    options.cacheDir || join(dirname(resolve(projectPath)), '.autovid-preview-cache')
+  );
+  const cacheStatePath = join(cacheRoot, 'state.json');
+  const previewOutput = resolve(
+    options.output || join(dirname(resolve(projectPath)), 'preview-fast.mp4')
+  );
+
+  await mkdir(cacheRoot, { recursive: true });
+
+  const projectHash = computeProjectHash(project);
+  const sceneFingerprints = computeSceneFingerprints(project);
+
+  let previousState: PreviewCacheRecord | null = null;
+  if (existsSync(cacheStatePath)) {
+    try {
+      previousState = JSON.parse(await readFile(cacheStatePath, 'utf-8')) as PreviewCacheRecord;
+    } catch {
+      previousState = null;
+    }
+  }
+
+  const changedScenes = previousState
+    ? diffChangedScenes(previousState.sceneFingerprints, sceneFingerprints)
+    : project.scenes.map((scene) => scene.id);
+
+  const canReuse =
+    !options.force &&
+    previousState !== null &&
+    previousState.projectHash === projectHash &&
+    changedScenes.length === 0 &&
+    existsSync(previousState.outputPath);
+
+  if (canReuse && previousState) {
+    logger.info(
+      {
+        outputPath: previousState.outputPath,
+        changedScenes,
+      },
+      'Fast preview cache hit, skipping render'
+    );
+    return;
+  }
+
+  logger.info(
+    {
+      changedScenes,
+      projectHash: projectHash.slice(0, 12),
+      output: previewOutput,
+    },
+    'Rendering fast preview'
+  );
+
+  tempDir = join(cacheRoot, 'frames');
+  await mkdir(tempDir, { recursive: true });
+
+  const fastProject = buildFastPreviewProject(project, changedScenes);
+
+  await renderProject(fastProject, {
+    outputPath: previewOutput,
+    outputDir: tempDir,
+    onProgress: showProgress,
+    renderWithoutTts: true,
+  });
+
+  if (process.stdout.isTTY) {
+    process.stdout.write('\n');
+  }
+
+  const cacheState: PreviewCacheRecord = {
+    projectHash,
+    sceneFingerprints,
+    generatedAt: new Date().toISOString(),
+    outputPath: previewOutput,
+  };
+
+  await writeFile(cacheStatePath, `${JSON.stringify(cacheState, null, 2)}\n`, 'utf-8');
+  logger.info({ outputPath: previewOutput, changedScenes }, 'Fast preview ready');
 }
 
 async function validateCommand(
@@ -907,6 +1063,16 @@ program
   .option('-o, --output <dir>', 'Output directory for frames')
   .option('-v, --verbose', 'Enable verbose output')
   .action(previewCommand);
+
+program
+  .command('preview-fast')
+  .description('Render cache-aware fast preview for changed scenes')
+  .argument('<project>', 'Project file path')
+  .option('-o, --output <path>', 'Output preview video path')
+  .option('--cache-dir <path>', 'Cache directory for scene fingerprints and frame buffers')
+  .option('--force', 'Ignore cache and force preview render')
+  .option('-v, --verbose', 'Enable verbose output')
+  .action(previewFastCommand);
 
 program
   .command('validate')

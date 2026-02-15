@@ -1,0 +1,16 @@
+{
+  "generatedAt": "2026-02-14T00:08:51.403Z",
+  "fixture": "examples/simple-title.json",
+  "firstRun": {
+    "outputPath": "/home/snakkrz/Code/Projects/autovid/artifacts/w6/determinism-run-a.mp4",
+    "durationMs": 25524,
+    "frameDigestSha256": "c8ff3e5c681f5f205d062f3c803d34f1b419b7aa9256c2bb573e6f17d6b61fe5"
+  },
+  "secondRun": {
+    "outputPath": "/home/snakkrz/Code/Projects/autovid/artifacts/w6/determinism-run-b.mp4",
+    "durationMs": 21315,
+    "frameDigestSha256": "c8ff3e5c681f5f205d062f3c803d34f1b419b7aa9256c2bb573e6f17d6b61fe5"
+  },
+  "deterministic": true,
+  "tolerancePolicy": "Exact frame digest match via ffmpeg framemd5 for repeated render of same input"
+}

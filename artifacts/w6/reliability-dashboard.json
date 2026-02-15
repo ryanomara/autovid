@@ -1,0 +1,28 @@
+{
+  "generatedAt": "2026-02-14T00:10:32.210Z",
+  "checks": {
+    "benchmarkGatePassed": true,
+    "deterministic": true,
+    "previewMateriallyFaster": true
+  },
+  "benchmark": {
+    "totalFixtures": 3,
+    "totalScenes": 12,
+    "totalErrors": 0,
+    "frameSharpnessProxy": 1
+  },
+  "determinism": {
+    "fixture": "examples/simple-title.json",
+    "firstRunMs": 25524,
+    "secondRunMs": 21315,
+    "exactHashMatch": true
+  },
+  "previewPerformance": {
+    "fixture": "examples/benchmarks/finance-benchmark.json",
+    "fullRenderMs": 66272,
+    "fastPreviewMs": 13643,
+    "speedupRatio": 4.858,
+    "materiallyFaster": true
+  },
+  "passed": true
+}
