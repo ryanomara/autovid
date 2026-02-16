@@ -16,3 +16,5 @@ export * from './utils/memory.js';
 export * from './domain/finance/index.js';
 export * from './domain/business/index.js';
 export * from './domain/sports/index.js';
+export * from './core/styles/index.js';
+export * from './api/styles.js';

@@ -4,6 +4,8 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import { renderProject } from '../core/engine/renderer.js';
 import { readFile, writeFile } from 'fs/promises';
+import { existsSync } from 'fs';
+import { resolve, dirname, basename, extname, join } from 'path';
 import { createLogger } from '../utils/logger.js';
 import { measureText } from '../core/engine/text-renderer.js';
 import { applyBlur, applyGlow, applyGrayscale, applySharpen } from '../core/effects/visual.js';
@@ -18,6 +20,8 @@ import type {
   Animation,
   AudioTrack,
 } from '../types/index.js';
+import { validateCompositionContracts } from '../core/validation/composition-contracts.js';
+import { initStyleProject, listStylePresets } from '../core/styles/index.js';
 
 const logger = createLogger('mcp-server');
 
@@ -468,6 +472,67 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         required: ['text', 'fontSize'],
       },
     },
+    {
+      name: 'list_styles',
+      description: 'List style presets available to agent workflows',
+      inputSchema: {
+        type: 'object',
+        properties: {},
+      },
+    },
+    {
+      name: 'init_style_project',
+      description: 'Initialize a project JSON from a style template preset',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          styleId: {
+            type: 'string',
+            description: 'Style preset id (e.g. cyberpunk-finance)',
+          },
+          outputPath: {
+            type: 'string',
+            description: 'Output project JSON path',
+          },
+          variables: {
+            type: 'object',
+            description: 'Optional template placeholder replacements',
+          },
+        },
+        required: ['styleId', 'outputPath'],
+      },
+    },
+    {
+      name: 'render_style_pipeline',
+      description:
+        'Run style pipeline end-to-end: init template (if needed), strict validate, and render video',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          styleId: {
+            type: 'string',
+            description: 'Style preset id (e.g. cyberpunk-finance)',
+          },
+          outputPath: {
+            type: 'string',
+            description: 'Output video file path',
+          },
+          projectPath: {
+            type: 'string',
+            description: 'Optional project JSON path to reuse',
+          },
+          variables: {
+            type: 'object',
+            description: 'Optional template placeholder replacements for initialization',
+          },
+          forceInit: {
+            type: 'boolean',
+            description: 'Recreate project JSON from template before rendering',
+          },
+        },
+        required: ['styleId', 'outputPath'],
+      },
+    },
   ],
 }));
 
@@ -522,6 +587,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         return await handleAddVideoLayer(args);
       case 'measure_text':
         return await handleMeasureText(args);
+      case 'list_styles':
+        return await handleListStyles();
+      case 'init_style_project':
+        return await handleInitStyleProject(args);
+      case 'render_style_pipeline':
+        return await handleRenderStylePipeline(args);
       default:
         return errorResponse(`Unknown tool: ${name}`);
     }
@@ -1044,6 +1115,69 @@ async function handleMeasureText(args: any) {
   });
 }
 
+async function handleListStyles() {
+  const styles = listStylePresets();
+  return successResponse({
+    styles,
+    message: 'Style presets listed',
+  });
+}
+
+async function handleInitStyleProject(args: any) {
+  const { styleId, outputPath, variables = {} } = args;
+  const result = await initStyleProject(styleId, outputPath, variables as Record<string, string>);
+  return successResponse({
+    styleId,
+    projectPath: result.projectPath,
+    preset: result.preset,
+    message: 'Style project initialized',
+  });
+}
+
+async function handleRenderStylePipeline(args: any) {
+  const { styleId, outputPath, projectPath, variables = {}, forceInit = false } = args;
+  const fullOutputPath = resolve(outputPath);
+  const resolvedProjectPath = resolve(
+    projectPath ||
+      join(
+        dirname(fullOutputPath),
+        `${basename(fullOutputPath, extname(fullOutputPath))}.project.json`
+      )
+  );
+
+  if (!existsSync(resolvedProjectPath) || forceInit) {
+    await initStyleProject(styleId, resolvedProjectPath, variables as Record<string, string>);
+  }
+
+  const projectData = await readFile(resolvedProjectPath, 'utf-8');
+  const project = JSON.parse(projectData) as VideoProject;
+  const report = validateCompositionContracts(project, 'strict');
+  if (!report.valid) {
+    throw new Error(
+      `Style pipeline validation failed: ${report.issues.map((i) => i.code).join(', ')}`
+    );
+  }
+
+  const rendered = await renderProject(project, {
+    outputPath: fullOutputPath,
+    onProgress: (progress) => {
+      logger.info({ progress: progress.percentage }, 'Rendering style pipeline');
+    },
+  });
+
+  return successResponse({
+    styleId,
+    projectPath: resolvedProjectPath,
+    outputPath: rendered,
+    validation: {
+      valid: report.valid,
+      errors: report.errors,
+      warnings: report.warnings,
+    },
+    message: 'Style pipeline completed',
+  });
+}
+
 function createAnimation(type: string, startTime: number, endTime: number): Animation[] {
   const animDuration = 1000;
 
@@ -1151,7 +1285,7 @@ function errorResponse(message: string) {
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  logger.info('AutoVid MCP Server v2.0 ready with 8 tools');
+  logger.info('AutoVid MCP Server v2.0 ready');
 }
 
 main().catch(logger.error);

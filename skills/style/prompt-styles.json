@@ -1,0 +1,33 @@
+{
+  "version": "1.0.0",
+  "blocks": {
+    "subject": {
+      "cyberpunk_finance_city": "cyberpunk financial district, neon market displays, holographic candlestick overlays",
+      "cyberpunk_analyst_character": "cyberpunk analyst character, chrome details, augmented interface, focused expression",
+      "market_stress_symbolism": "volatile market atmosphere, red selloff flashes, distressed ticker walls"
+    },
+    "shot": {
+      "fullbleed_hero": "epic wide hero framing, dominant center subject, cinematic depth",
+      "halfbleed_split": "split-composition framing with strong side weight, clean negative space for text",
+      "thirdbleed_support": "supporting side portrait panel, stable eye-line, minimal clutter",
+      "quarterbleed_inset": "tight inset framing, high clarity focal subject, edge-anchored composition"
+    },
+    "scene_function": {
+      "hook": "high urgency opening beat, immediate visual impact",
+      "thesis": "clear risk narrative, tension-forward visual language",
+      "data_support": "chart-friendly background, reduced visual noise around labels",
+      "cta": "confident close with premium editorial look"
+    },
+    "style_signature": {
+      "cyberpunk_neon_noir": "neon noir cyberpunk aesthetic, volumetric haze, teal cyan and hot magenta accents, wet reflective surfaces",
+      "premium_finance": "editorial-grade composition, high legibility, cinematic contrast, clean depth layering"
+    },
+    "quality": {
+      "high_detail": "ultra detailed, crisp edges, coherent lighting, cinematic color grading",
+      "motion_video": "smooth camera motion, stable temporal coherence, no flicker, no jitter"
+    },
+    "negative": {
+      "base": "blurry, low quality, bad anatomy, deformed face, watermark, text artifacts, muddy contrast"
+    }
+  }
+}

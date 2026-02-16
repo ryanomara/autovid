@@ -441,6 +441,63 @@ Use generated assets when native primitives are not enough for clarity or appeal
 - Never place high-frequency textures directly under small numeric labels.
 - All externally generated visuals must still obey M-margin and text occupancy rules.
 
+### 13.8.3 Video Bleed Rules (General Placement Contract)
+
+Use these standardized placement modes for video layers so composition stays intentional and repeatable.
+
+- `fullbleed` (`100%`):
+  - Video occupies full frame and acts as the dominant visual plate.
+  - Preferred for intros, dramatic transitions, and closing hero moments.
+- `halfbleed` (`50%`):
+  - Video occupies about half the frame area (left/right split or top/bottom split).
+  - Use when text/chart content must co-exist at equal priority.
+- `thirdbleed` (`33%`):
+  - Video occupies one-third of the frame as a supporting context window.
+  - Use for secondary evidence or narrative support while preserving data readability.
+- `quarterbleed` (`25%`):
+  - Video occupies one-quarter of the frame as an inset/callout.
+  - Use for accent motion only; never the primary metric carrier.
+
+Hard rules:
+
+- Always classify each video layer as one of the four bleed modes above.
+- In scenes with finance charts/KPIs, default to `thirdbleed` or `quarterbleed` unless the chart is absent.
+- If multiple videos appear in one scene, total occupied area should not exceed `50%` unless scene is explicitly visual-first.
+- Keep text and KPI overlays in safe lanes; do not place small numeric labels directly over high-frequency video texture.
+
+### 13.8.4 Cyberpunk Finance Direction (Optional Style Profile)
+
+When a cyberpunk profile is requested, maintain readability while pushing visual distinctiveness.
+
+- Use neon-accent palettes over deep low-key backgrounds (teal/cyan/magenta accents on dark navy/black).
+- Prefer generated character/urban-tech visuals as thematic support, not as replacements for metrics.
+- Keep financial numbers and recommendation claims in clean high-contrast typography.
+- Use one dominant motion plate per scene; avoid stacking multiple aggressive glow/glitch effects.
+- Preserve semantic color mapping for gains/losses even inside stylized palettes.
+
+### 13.8.5 Aspect-First Asset Generation (Required for Bleed Layouts)
+
+When a scene layout is known, generate media for the target slot ratio first, instead of forcing one asset into all slots.
+
+- For a `1920x1080` canvas, use these target slot baselines:
+  - `fullbleed`: `16:9` (e.g. `1920x1080`)
+  - `halfbleed`: `8:9` vertical split slot (e.g. `960x1080`) or `16:4.5` horizontal split slot
+  - `thirdbleed`: `5.33:9` vertical slot (e.g. `640x1080`) or `16:3` horizontal slot
+  - `quarterbleed`: `4:4.5` inset (e.g. `480x540`) or `16:2.25` strip
+
+Generation rules:
+
+- Use one canonical seed per narrative concept, then reuse it for derived aspect-ratio variants.
+- Keep character identity/lighting direction stable by reusing prompt core + seed across variants.
+- If provider supports only fixed output size, generate the highest-quality master first, then derive slot variants with deterministic crop/scale.
+- Avoid scaling tiny assets up for large bleed slots; regenerate at a larger source when needed.
+
+Placement rules for visual impact:
+
+- Each scene must have one dominant plate occupying at least `33%` of frame area.
+- Insets (`quarterbleed`) should anchor to a clear corner/grid intersection and never float near center unless intentionally spotlighted.
+- Do not use decorative micro-video blocks smaller than `18%` of frame width in hero scenes.
+
 ### 13.9 Short Finance Video Composition Template (Agent Default)
 
 - Scene 1: Branded intro (single headline + subhead, no competing labels).

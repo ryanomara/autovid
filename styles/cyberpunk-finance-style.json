@@ -1,0 +1,97 @@
+{
+  "id": "cyberpunk-finance-v1",
+  "name": "Cyberpunk Finance Style Rules",
+  "version": "1.0.0",
+  "canvas": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "durationMs": 15000
+  },
+  "bleedSlots": {
+    "fullbleed": {
+      "areaPercent": 100,
+      "targetSize": "1920x1080",
+      "targetAspect": "16:9"
+    },
+    "halfbleed": {
+      "areaPercent": 50,
+      "targetSize": "960x1080",
+      "targetAspect": "8:9"
+    },
+    "thirdbleed": {
+      "areaPercent": 33,
+      "targetSize": "640x1080",
+      "targetAspect": "640:1080"
+    },
+    "quarterbleed": {
+      "areaPercent": 25,
+      "targetSize": "480x540",
+      "targetAspect": "8:9"
+    }
+  },
+  "generationRules": {
+    "aspectFirst": true,
+    "seedReuse": {
+      "enabled": true,
+      "strategy": "singleConceptSeedAcrossAspectVariants",
+      "example": {
+        "concept": "cyberpunk market panic skyline",
+        "seed": 27,
+        "derivedVariants": ["fullbleed", "halfbleed", "quarterbleed"]
+      }
+    },
+    "promptBlocks": {
+      "coreIdentity": [
+        "cyberpunk finance district",
+        "neon market displays",
+        "holographic candlestick overlays",
+        "high-detail cinematic lighting"
+      ],
+      "styleSignature": [
+        "neon noir",
+        "teal cyan and hot magenta accents",
+        "volumetric haze",
+        "chrome reflections",
+        "filmic contrast"
+      ],
+      "negativePrompt": [
+        "blurry",
+        "low quality",
+        "washed colors",
+        "text watermark",
+        "distorted anatomy"
+      ]
+    }
+  },
+  "placementRules": {
+    "dominantPlateMinAreaPercent": 33,
+    "maxCombinedVideoAreaPercent": 50,
+    "quarterbleedInset": {
+      "anchor": "corner",
+      "forbidden": ["nearCenterFloating"]
+    },
+    "noMicroVideoBlocksUnderPercentWidth": 18
+  },
+  "visualDirection": {
+    "palette": {
+      "background": [6, 8, 14],
+      "accentA": [118, 255, 239],
+      "accentB": [255, 129, 228],
+      "textPrimary": [255, 255, 255],
+      "textSecondary": [187, 228, 255]
+    },
+    "typography": {
+      "headline": {
+        "fontFamily": "Arial",
+        "fontWeight": 700,
+        "fontSizeRange": [64, 92]
+      },
+      "body": {
+        "fontFamily": "Arial",
+        "fontWeight": 600,
+        "fontSizeRange": [30, 36]
+      }
+    }
+  }
+}

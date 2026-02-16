@@ -1,0 +1,352 @@
+{
+  "id": "short-opportunity-advert-cyberpunk-premium",
+  "name": "15s Cyberpunk Financial Short - Premium Cut",
+  "config": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "duration": 15000,
+    "backgroundColor": { "r": 6, "g": 8, "b": 14, "a": 1 },
+    "outputFormat": "mp4",
+    "quality": "high"
+  },
+  "scenes": [
+    {
+      "id": "cp-premium-fullbleed",
+      "name": "Fullbleed Hero",
+      "startTime": 0,
+      "endTime": 3750,
+      "layers": [
+        {
+          "id": "cp-full-video",
+          "type": "video",
+          "src": "assets/layout/cyberpunk/videos/fullbleed-16x9.mp4",
+          "startTime": 0,
+          "endTime": 3750,
+          "position": { "x": 0, "y": 0 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 0.86,
+          "zIndex": 80
+        },
+        {
+          "id": "cp-full-vignette",
+          "type": "shape",
+          "shapeType": "rectangle",
+          "dimensions": { "width": 1920, "height": 1080 },
+          "fill": { "r": 3, "g": 5, "b": 12, "a": 0.36 },
+          "startTime": 0,
+          "endTime": 3750,
+          "position": { "x": 0, "y": 0 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "zIndex": 120
+        },
+        {
+          "id": "cp-full-title",
+          "type": "text",
+          "text": "ARH // SHORT SIGNAL",
+          "fontFamily": "Arial",
+          "fontSize": 92,
+          "fontWeight": "700",
+          "typographyPreset": "headline",
+          "textAlign": "center",
+          "textStroke": {
+            "color": { "r": 12, "g": 0, "b": 22, "a": 1 },
+            "width": 3
+          },
+          "color": { "r": 118, "g": 255, "b": 239, "a": 1 },
+          "overlapMode": "avoid-text",
+          "startTime": 0,
+          "endTime": 3750,
+          "position": { "x": 960, "y": 430 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "zIndex": 960
+        },
+        {
+          "id": "cp-full-sub",
+          "type": "text",
+          "text": "A visual style finance has never seen",
+          "fontFamily": "Arial",
+          "fontSize": 36,
+          "fontWeight": "600",
+          "typographyPreset": "body",
+          "textAlign": "center",
+          "color": { "r": 255, "g": 129, "b": 228, "a": 1 },
+          "overlapMode": "avoid-text",
+          "startTime": 220,
+          "endTime": 3750,
+          "position": { "x": 960, "y": 570 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "zIndex": 950
+        }
+      ],
+      "transition": { "type": "fade", "duration": 700 }
+    },
+    {
+      "id": "cp-premium-halfbleed",
+      "name": "50 Bleed Split",
+      "startTime": 3750,
+      "endTime": 7500,
+      "layers": [
+        {
+          "id": "cp-half-video",
+          "type": "video",
+          "src": "assets/layout/cyberpunk/videos/halfbleed-8x9.mp4",
+          "startTime": 3750,
+          "endTime": 7500,
+          "position": { "x": 960, "y": 0 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 0.92,
+          "zIndex": 180
+        },
+        {
+          "id": "cp-half-leftplate",
+          "type": "image",
+          "src": "assets/layout/cyberpunk/images/halfbleed-8x9.png",
+          "fit": "cover",
+          "startTime": 3750,
+          "endTime": 7500,
+          "position": { "x": 0, "y": 0 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 0.26,
+          "zIndex": 70
+        },
+        {
+          "id": "cp-half-title",
+          "type": "text",
+          "text": "MARGIN CLIFF\nLEVERAGE SPIKE",
+          "fontFamily": "Arial",
+          "fontSize": 64,
+          "fontWeight": "700",
+          "lineHeight": 1.18,
+          "typographyPreset": "headline",
+          "textAlign": "left",
+          "color": { "r": 255, "g": 150, "b": 207, "a": 1 },
+          "overlapMode": "avoid-text",
+          "startTime": 3750,
+          "endTime": 7500,
+          "position": { "x": 120, "y": 300 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "zIndex": 950
+        },
+        {
+          "id": "cp-half-copy",
+          "type": "text",
+          "text": "Balance sheet stress is no longer hidden.",
+          "fontFamily": "Arial",
+          "fontSize": 34,
+          "fontWeight": "600",
+          "typographyPreset": "body",
+          "textAlign": "left",
+          "maxWidth": 760,
+          "color": { "r": 187, "g": 228, "b": 255, "a": 1 },
+          "overlapMode": "avoid-text",
+          "startTime": 4050,
+          "endTime": 7500,
+          "position": { "x": 120, "y": 560 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "zIndex": 940
+        }
+      ],
+      "transition": { "type": "fade", "duration": 700 }
+    },
+    {
+      "id": "cp-premium-thirdbleed",
+      "name": "33 Bleed Data + Character",
+      "startTime": 7500,
+      "endTime": 11250,
+      "layers": [
+        {
+          "id": "cp-third-char",
+          "type": "image",
+          "src": "assets/layout/cyberpunk/images/thirdbleed-640x1080.png",
+          "fit": "cover",
+          "startTime": 7500,
+          "endTime": 11250,
+          "position": { "x": 1280, "y": 0 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 0.95,
+          "zIndex": 140
+        },
+        {
+          "id": "cp-third-chart",
+          "type": "chart",
+          "chartType": "line",
+          "title": "ARH Gross Margin Downtrend",
+          "dimensions": { "width": 1180, "height": 720 },
+          "data": {
+            "labels": ["Q1", "Q2", "Q3", "Q4", "Q1"],
+            "values": [42.1, 39.5, 36.8, 33.6, 30.8]
+          },
+          "yAxis": { "min": 28, "max": 44, "ticks": 5 },
+          "style": {
+            "lineColor": { "r": 255, "g": 112, "b": 160, "a": 1 },
+            "labelColor": { "r": 173, "g": 228, "b": 250, "a": 1 },
+            "valueColor": { "r": 255, "g": 255, "b": 255, "a": 1 },
+            "showGrid": true,
+            "showPoints": true,
+            "showValues": true,
+            "valueDecimals": 1
+          },
+          "startTime": 7500,
+          "endTime": 11250,
+          "position": { "x": 80, "y": 200 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "zIndex": 220,
+          "animations": [
+            {
+              "property": "chartProgress",
+              "keyframes": [
+                { "time": 7500, "value": 0 },
+                { "time": 10850, "value": 1 }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cp-third-callout",
+          "type": "text",
+          "text": "CATALYST // EARNINGS GUIDE-DOWN RISK",
+          "fontFamily": "Arial",
+          "fontSize": 34,
+          "fontWeight": "700",
+          "typographyPreset": "callout",
+          "textAlign": "center",
+          "textLane": "top",
+          "color": { "r": 123, "g": 255, "b": 238, "a": 1 },
+          "overlapMode": "avoid-all",
+          "startTime": 7800,
+          "endTime": 11250,
+          "position": { "x": 960, "y": 130 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "zIndex": 950
+        }
+      ],
+      "transition": { "type": "fade", "duration": 700 }
+    },
+    {
+      "id": "cp-premium-quarterbleed",
+      "name": "25 Bleed Close",
+      "startTime": 11250,
+      "endTime": 15000,
+      "layers": [
+        {
+          "id": "cp-quarter-bg",
+          "type": "image",
+          "src": "assets/layout/cyberpunk/images/fullbleed-16x9.png",
+          "fit": "cover",
+          "startTime": 11250,
+          "endTime": 15000,
+          "position": { "x": 0, "y": 0 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 0.34,
+          "zIndex": 60
+        },
+        {
+          "id": "cp-quarter-inset",
+          "type": "video",
+          "src": "assets/layout/cyberpunk/videos/quarterbleed-480x540.mp4",
+          "startTime": 11250,
+          "endTime": 15000,
+          "position": { "x": 1370, "y": 440 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 0.96,
+          "zIndex": 220
+        },
+        {
+          "id": "cp-quarter-title",
+          "type": "text",
+          "text": "SET ALERTS.\nSIZE RISK.",
+          "fontFamily": "Arial",
+          "fontSize": 74,
+          "fontWeight": "700",
+          "lineHeight": 1.15,
+          "typographyPreset": "headline",
+          "textAlign": "left",
+          "color": { "r": 255, "g": 255, "b": 255, "a": 1 },
+          "overlapMode": "avoid-text",
+          "startTime": 11250,
+          "endTime": 15000,
+          "position": { "x": 120, "y": 430 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "zIndex": 980
+        },
+        {
+          "id": "cp-quarter-disclaimer",
+          "type": "text",
+          "text": "Research demo only - not financial advice",
+          "fontFamily": "Arial",
+          "fontSize": 30,
+          "fontWeight": "500",
+          "typographyPreset": "body",
+          "textAlign": "left",
+          "color": { "r": 189, "g": 205, "b": 228, "a": 1 },
+          "overlapMode": "allow",
+          "startTime": 11600,
+          "endTime": 15000,
+          "position": { "x": 120, "y": 640 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 0.95,
+          "zIndex": 970
+        }
+      ],
+      "transition": { "type": "fade", "duration": 700 }
+    }
+  ],
+  "audio": [
+    {
+      "id": "cp-premium-voice-1",
+      "type": "voice",
+      "src": "assets/audio/cyberpunk-short-1-styled.wav",
+      "startTime": 0,
+      "endTime": 3750,
+      "volume": 1
+    },
+    {
+      "id": "cp-premium-voice-2",
+      "type": "voice",
+      "src": "assets/audio/cyberpunk-short-2-styled.wav",
+      "startTime": 3750,
+      "endTime": 7500,
+      "volume": 1
+    },
+    {
+      "id": "cp-premium-voice-3",
+      "type": "voice",
+      "src": "assets/audio/cyberpunk-short-3-styled.wav",
+      "startTime": 7500,
+      "endTime": 11250,
+      "volume": 1
+    },
+    {
+      "id": "cp-premium-voice-4",
+      "type": "voice",
+      "src": "assets/audio/cyberpunk-short-4-styled.wav",
+      "startTime": 11250,
+      "endTime": 15000,
+      "volume": 1
+    }
+  ]
+}

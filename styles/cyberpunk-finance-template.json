@@ -1,0 +1,239 @@
+{
+  "id": "cyberpunk-finance-template",
+  "name": "Cyberpunk Finance Template (Bleed-Driven)",
+  "config": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "duration": 15000,
+    "backgroundColor": { "r": 6, "g": 8, "b": 14, "a": 1 },
+    "outputFormat": "mp4",
+    "quality": "high"
+  },
+  "scenes": [
+    {
+      "id": "scene-fullbleed-hook",
+      "name": "Scene 1 Fullbleed Hook",
+      "startTime": 0,
+      "endTime": 3750,
+      "layers": [
+        {
+          "id": "fullbleed-video",
+          "type": "video",
+          "src": "assets/layout/cyberpunk/videos/fullbleed-16x9.mp4",
+          "startTime": 0,
+          "endTime": 3750,
+          "position": { "x": 0, "y": 0 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 0.86,
+          "zIndex": 80
+        },
+        {
+          "id": "headline-hook",
+          "type": "text",
+          "text": "{HOOK_HEADLINE}",
+          "fontFamily": "Arial",
+          "fontSize": 88,
+          "fontWeight": "700",
+          "typographyPreset": "headline",
+          "textAlign": "center",
+          "color": { "r": 118, "g": 255, "b": 239, "a": 1 },
+          "overlapMode": "avoid-text",
+          "startTime": 0,
+          "endTime": 3750,
+          "position": { "x": 960, "y": 430 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "zIndex": 960
+        }
+      ],
+      "transition": { "type": "fade", "duration": 700 }
+    },
+    {
+      "id": "scene-halfbleed-thesis",
+      "name": "Scene 2 Halfbleed Thesis",
+      "startTime": 3750,
+      "endTime": 7500,
+      "layers": [
+        {
+          "id": "halfbleed-video",
+          "type": "video",
+          "src": "assets/layout/cyberpunk/videos/halfbleed-8x9.mp4",
+          "startTime": 3750,
+          "endTime": 7500,
+          "position": { "x": 960, "y": 0 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 0.92,
+          "zIndex": 180
+        },
+        {
+          "id": "thesis-heading",
+          "type": "text",
+          "text": "{THESIS_HEADLINE}",
+          "fontFamily": "Arial",
+          "fontSize": 62,
+          "fontWeight": "700",
+          "typographyPreset": "headline",
+          "textAlign": "left",
+          "color": { "r": 255, "g": 150, "b": 207, "a": 1 },
+          "overlapMode": "avoid-text",
+          "startTime": 3750,
+          "endTime": 7500,
+          "position": { "x": 120, "y": 320 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "zIndex": 950
+        },
+        {
+          "id": "thesis-copy",
+          "type": "text",
+          "text": "{THESIS_COPY}",
+          "fontFamily": "Arial",
+          "fontSize": 34,
+          "fontWeight": "600",
+          "typographyPreset": "body",
+          "textAlign": "left",
+          "maxWidth": 760,
+          "color": { "r": 187, "g": 228, "b": 255, "a": 1 },
+          "overlapMode": "avoid-text",
+          "startTime": 3900,
+          "endTime": 7500,
+          "position": { "x": 120, "y": 520 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "zIndex": 940
+        }
+      ],
+      "transition": { "type": "fade", "duration": 700 }
+    },
+    {
+      "id": "scene-thirdbleed-data",
+      "name": "Scene 3 Thirdbleed Data",
+      "startTime": 7500,
+      "endTime": 11250,
+      "layers": [
+        {
+          "id": "thirdbleed-support-image",
+          "type": "image",
+          "src": "assets/layout/cyberpunk/images/thirdbleed-640x1080.png",
+          "fit": "cover",
+          "startTime": 7500,
+          "endTime": 11250,
+          "position": { "x": 1280, "y": 0 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 0.94,
+          "zIndex": 140
+        },
+        {
+          "id": "data-chart",
+          "type": "chart",
+          "chartType": "line",
+          "title": "{CHART_TITLE}",
+          "dimensions": { "width": 1180, "height": 720 },
+          "data": {
+            "labels": ["Q1", "Q2", "Q3", "Q4", "Q1"],
+            "values": [42.1, 39.5, 36.8, 33.6, 30.8]
+          },
+          "yAxis": { "min": 28, "max": 44, "ticks": 5 },
+          "style": {
+            "lineColor": { "r": 255, "g": 112, "b": 160, "a": 1 },
+            "labelColor": { "r": 173, "g": 228, "b": 250, "a": 1 },
+            "valueColor": { "r": 255, "g": 255, "b": 255, "a": 1 },
+            "showGrid": true,
+            "showPoints": true,
+            "showValues": true,
+            "valueDecimals": 1
+          },
+          "startTime": 7500,
+          "endTime": 11250,
+          "position": { "x": 80, "y": 200 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "zIndex": 220
+        }
+      ],
+      "transition": { "type": "fade", "duration": 700 }
+    },
+    {
+      "id": "scene-quarterbleed-close",
+      "name": "Scene 4 Quarterbleed Close",
+      "startTime": 11250,
+      "endTime": 15000,
+      "layers": [
+        {
+          "id": "quarterbleed-inset-video",
+          "type": "video",
+          "src": "assets/layout/cyberpunk/videos/quarterbleed-480x540.mp4",
+          "startTime": 11250,
+          "endTime": 15000,
+          "position": { "x": 1370, "y": 440 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 0.96,
+          "zIndex": 220
+        },
+        {
+          "id": "close-headline",
+          "type": "text",
+          "text": "{CLOSE_HEADLINE}",
+          "fontFamily": "Arial",
+          "fontSize": 72,
+          "fontWeight": "700",
+          "typographyPreset": "headline",
+          "textAlign": "left",
+          "color": { "r": 255, "g": 255, "b": 255, "a": 1 },
+          "overlapMode": "avoid-text",
+          "startTime": 11250,
+          "endTime": 15000,
+          "position": { "x": 120, "y": 430 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "zIndex": 980
+        }
+      ],
+      "transition": { "type": "fade", "duration": 700 }
+    }
+  ],
+  "audio": [
+    {
+      "id": "voice-1",
+      "type": "voice",
+      "src": "assets/audio/cyberpunk-short-1-styled.wav",
+      "startTime": 0,
+      "endTime": 3750,
+      "volume": 1
+    },
+    {
+      "id": "voice-2",
+      "type": "voice",
+      "src": "assets/audio/cyberpunk-short-2-styled.wav",
+      "startTime": 3750,
+      "endTime": 7500,
+      "volume": 1
+    },
+    {
+      "id": "voice-3",
+      "type": "voice",
+      "src": "assets/audio/cyberpunk-short-3-styled.wav",
+      "startTime": 7500,
+      "endTime": 11250,
+      "volume": 1
+    },
+    {
+      "id": "voice-4",
+      "type": "voice",
+      "src": "assets/audio/cyberpunk-short-4-styled.wav",
+      "startTime": 11250,
+      "endTime": 15000,
+      "volume": 1
+    }
+  ]
+}

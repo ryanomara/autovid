@@ -19,6 +19,7 @@ import {
   diffChangedScenes,
   type PreviewCacheRecord,
 } from './preview-cache.js';
+import { initStyleProject, listStylePresets } from '../core/styles/index.js';
 
 const logger = createLogger('cli');
 const VERSION = '0.1.0';
@@ -612,6 +613,112 @@ async function validateCommand(
   }
 }
 
+function collectOption(value: string, previous: string[]): string[] {
+  previous.push(value);
+  return previous;
+}
+
+function parseStyleVariables(values: string[]): Record<string, string> {
+  const variables: Record<string, string> = {};
+  for (const pair of values) {
+    const separator = pair.indexOf('=');
+    if (separator <= 0 || separator === pair.length - 1) {
+      throw new Error(`Invalid --set value '${pair}'. Use KEY=VALUE.`);
+    }
+    const key = pair.slice(0, separator).trim();
+    const value = pair.slice(separator + 1).trim();
+    variables[key] = value;
+  }
+  return variables;
+}
+
+async function stylesListCommand(options: { verbose?: boolean }): Promise<void> {
+  if (options.verbose) {
+    process.env.LOG_LEVEL = 'debug';
+  }
+
+  const presets = listStylePresets();
+  logger.info('Available style presets:\n');
+  for (const preset of presets) {
+    logger.info(`  ${preset.id} - ${preset.description}`);
+    if (options.verbose) {
+      logger.info(`    template: ${preset.templatePath}`);
+      logger.info(`    rules:    ${preset.stylePath}`);
+      logger.info(`    prompts:  ${preset.promptStylePath}`);
+    }
+  }
+}
+
+async function stylesInitCommand(
+  styleId: string,
+  outputPath: string,
+  options: {
+    set?: string[];
+    verbose?: boolean;
+  }
+): Promise<void> {
+  if (options.verbose) {
+    process.env.LOG_LEVEL = 'debug';
+  }
+
+  const variables = parseStyleVariables(options.set ?? []);
+  const result = await initStyleProject(styleId, outputPath, variables);
+  logger.info(
+    {
+      styleId,
+      projectPath: result.projectPath,
+      variables,
+    },
+    'Initialized style project from template'
+  );
+}
+
+async function stylesPipelineCommand(
+  styleId: string,
+  outputVideo: string,
+  options: {
+    project?: string;
+    set?: string[];
+    forceInit?: boolean;
+    renderWithoutTts?: boolean;
+    ttsRetries?: string;
+    verbose?: boolean;
+  }
+): Promise<void> {
+  if (options.verbose) {
+    process.env.LOG_LEVEL = 'debug';
+  }
+
+  const fullOutputVideo = resolve(outputVideo);
+  const projectPath = resolve(
+    options.project ||
+      join(
+        dirname(fullOutputVideo),
+        `${basename(fullOutputVideo, extname(fullOutputVideo))}.project.json`
+      )
+  );
+
+  if (!existsSync(projectPath) || options.forceInit) {
+    const variables = parseStyleVariables(options.set ?? []);
+    await initStyleProject(styleId, projectPath, variables);
+    logger.info({ styleId, projectPath }, 'Created pipeline project from style preset');
+  }
+
+  const project = await loadProjectFile(projectPath);
+  const validation = validateCompositionContracts(project, 'strict');
+  if (!validation.valid) {
+    throw new Error(
+      `Style pipeline project failed strict validation: ${validation.issues.map((issue) => issue.code).join(', ')}`
+    );
+  }
+
+  await createCommand(projectPath, fullOutputVideo, {
+    verbose: options.verbose,
+    renderWithoutTts: options.renderWithoutTts,
+    ttsRetries: options.ttsRetries,
+  });
+}
+
 async function templatesListCommand(options: { verbose?: boolean }): Promise<void> {
   if (options.verbose) {
     process.env.LOG_LEVEL = 'debug';
@@ -1112,6 +1219,36 @@ program
   .action(initCommand);
 
 const assets = program.command('assets').description('Generate and manage external media assets');
+
+const styles = program.command('styles').description('Style-driven templates and render pipelines');
+
+styles
+  .command('list')
+  .description('List available style presets for agents')
+  .option('-v, --verbose', 'Enable verbose output')
+  .action(stylesListCommand);
+
+styles
+  .command('init')
+  .description('Initialize a style template project file')
+  .argument('<styleId>', 'Style preset id')
+  .argument('<outputProject>', 'Output project JSON path')
+  .option('--set <key=value>', 'Template variable replacement (repeatable)', collectOption, [])
+  .option('-v, --verbose', 'Enable verbose output')
+  .action(stylesInitCommand);
+
+styles
+  .command('pipeline')
+  .description('Run style pipeline: init template + strict validate + render')
+  .argument('<styleId>', 'Style preset id')
+  .argument('<outputVideo>', 'Output video path')
+  .option('-p, --project <path>', 'Project path to reuse or initialize')
+  .option('--set <key=value>', 'Template variable replacement (repeatable)', collectOption, [])
+  .option('--force-init', 'Reinitialize project file from template before render')
+  .option('--render-without-tts', 'Render without TTS if narration fails')
+  .option('--tts-retries <number>', 'Max retries per TTS snippet (default: 2)')
+  .option('-v, --verbose', 'Enable verbose output')
+  .action(stylesPipelineCommand);
 
 assets
   .command('image')

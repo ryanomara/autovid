@@ -103,6 +103,15 @@ autovid assets image "cinematic trading floor background" -o assets/images/bg.pn
 
 # Generate companion video asset from image (HF)
 autovid assets video assets/images/bg.png "subtle market motion" -o assets/videos/bg.mp4
+
+# List style presets for agent workflows
+autovid styles list
+
+# Initialize a style template project
+autovid styles init cyberpunk-finance examples/cyberpunk-style-project.json --set HOOK_HEADLINE="ARH // SHORT SIGNAL"
+
+# Run one-command style pipeline (init + strict validate + render)
+autovid styles pipeline cyberpunk-finance outputs/cyberpunk-finance.mp4 --set THESIS_HEADLINE="MARGIN CLIFF"
 ```
 
 ### As Library
@@ -160,6 +169,10 @@ node dist/mcp/server-simple.js
     "outputPath": "output.mp4"
   }
 }
+
+# Tool: list_styles
+# Tool: init_style_project
+# Tool: render_style_pipeline
 ```
 
 ## Agent Skills
@@ -278,6 +291,7 @@ npm run format
 - `docs/ROADMAP.md` - Near-term milestones and implementation plan
 - `docs/adr/README.md` - Architecture Decision Record index and process
 - `docs/collaborator-handoff.md` - Milestone pickup/closure handoff guide
+- `styles/` - Codified style rules + reusable style templates
 - `examples/` - Working example projects
 - `skills/` - Agent skill documentation
 
