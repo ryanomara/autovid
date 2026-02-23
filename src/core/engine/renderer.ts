@@ -262,6 +262,8 @@ export class Renderer {
     const occupiedTextBounds: TextBounds[] = [];
     const occupiedObjectBounds: TextBounds[] = [];
 
+    const effectiveZBand = this.computeEffectiveZBand(activeLayers);
+
     for (let i = 0; i < activeLayers.length; i++) {
       const layer = activeLayers[i];
       const props = timeline.getAnimatedPropertiesAtTime(layer, time);
@@ -364,7 +366,9 @@ export class Renderer {
               }
             }
 
-            occupiedTextBounds.push({ x, y, width: transformed.width, height: transformed.height });
+            occupiedTextBounds.push(
+              this.getExpandedTextCollisionBounds(x, y, transformed.width, transformed.height)
+            );
           } else {
             occupiedObjectBounds.push({
               x,
@@ -375,16 +379,10 @@ export class Renderer {
           }
 
           const blendMode = this.getEffectiveBlendMode(layer);
+          const effectiveZIndex = effectiveZBand[i] ?? this.getLayerZIndex(layer, i);
 
           compositorLayers.push(
-            createPositionedLayer(
-              transformed,
-              x,
-              y,
-              this.getLayerZIndex(layer, i),
-              blendMode,
-              props.opacity
-            )
+            createPositionedLayer(transformed, x, y, effectiveZIndex, blendMode, props.opacity)
           );
         }
       } catch (error) {
@@ -532,14 +530,18 @@ export class Renderer {
 
   private async renderImageLayer(
     layer: ImageLayer,
-    props: AnimatedProperties
+    _props: AnimatedProperties
   ): Promise<PixelBuffer | null> {
     if (this.config.cacheEnabled && this.imageCache.has(layer.src)) {
       return this.imageCache.get(layer.src)!;
     }
 
     try {
-      const buffer = await this.loadImage(layer.src);
+      const buffer = await this.loadImage(layer.src, {
+        width: layer.dimensions?.width,
+        height: layer.dimensions?.height,
+        fit: layer.fit === 'none' ? 'contain' : layer.fit,
+      });
 
       if (this.config.cacheEnabled && buffer) {
         this.imageCache.set(layer.src, buffer);
@@ -617,9 +619,14 @@ export class Renderer {
 
     logger.debug({ videoTime, src: layer.src }, 'Video layer rendering');
 
-    const size = props.size as { width: number; height: number } | undefined;
-    const width = size?.width ?? 320;
-    const height = size?.height ?? 240;
+    const animatedSize = props.size as { width: number; height: number } | undefined;
+    const explicitSize =
+      layer.dimensions ||
+      (typeof layer.width === 'number' && typeof layer.height === 'number'
+        ? { width: layer.width, height: layer.height }
+        : undefined);
+    const width = Math.max(1, Math.round(explicitSize?.width ?? animatedSize?.width ?? 320));
+    const height = Math.max(1, Math.round(explicitSize?.height ?? animatedSize?.height ?? 240));
 
     return await extractVideoFrame({
       src: layer.src,
@@ -629,12 +636,40 @@ export class Renderer {
     });
   }
 
-  private async loadImage(src: string): Promise<PixelBuffer | null> {
+  private async loadImage(
+    src: string,
+    options?: {
+      width?: number;
+      height?: number;
+      fit?: 'cover' | 'contain' | 'fill' | 'none';
+    }
+  ): Promise<PixelBuffer | null> {
     try {
+      const fit = options?.fit === 'none' ? 'contain' : options?.fit;
+      const hasResize = typeof options?.width === 'number' && typeof options?.height === 'number';
+
       if (src.startsWith('http://') || src.startsWith('https://')) {
-        return await loadImageFromURL(src);
+        return await loadImageFromURL(
+          src,
+          hasResize
+            ? {
+                width: Math.max(1, Math.round(options!.width!)),
+                height: Math.max(1, Math.round(options!.height!)),
+                fit,
+              }
+            : undefined
+        );
       } else {
-        return await loadImageToBuffer(src);
+        return await loadImageToBuffer(
+          src,
+          hasResize
+            ? {
+                width: Math.max(1, Math.round(options!.width!)),
+                height: Math.max(1, Math.round(options!.height!)),
+                fit,
+              }
+            : undefined
+        );
       }
     } catch (error) {
       logger.warn({ src, error }, 'Image load failed');
@@ -674,7 +709,11 @@ export class Renderer {
   }
 
   private getEffectiveBlendMode(layer: Layer): BlendMode {
-    if (layer.type === 'text' && (layer as TextLayer).textMask?.mode) {
+    if (layer.type === 'text' && this.isTitleLikeTextLayer(layer as TextLayer)) {
+      return 'normal';
+    }
+
+    if (layer.type === 'text' && (layer as TextLayer).textMask?.mode === 'cutout') {
       return 'erase';
     }
 
@@ -690,6 +729,53 @@ export class Renderer {
     return fallbackIndex;
   }
 
+  private isTitleLikeTextLayer(layer: TextLayer): boolean {
+    const id = String(layer.id ?? '');
+    const name = String(layer.name ?? '');
+    const text = String(layer.text ?? '');
+    return (
+      layer.fontSize >= 56 ||
+      /(title|headline|intro|outro|summary|closing)/i.test(`${id} ${name} ${text}`)
+    );
+  }
+
+  private computeEffectiveZBand(layers: Layer[]): number[] {
+    const baseZ = layers.map((layer, index) => this.getLayerZIndex(layer, index));
+    const titleEntries = layers
+      .map((layer, index) => ({ layer, index }))
+      .filter(
+        ({ layer }) => layer.type === 'text' && this.isTitleLikeTextLayer(layer as TextLayer)
+      );
+
+    if (titleEntries.length === 0) {
+      return baseZ;
+    }
+
+    const maxObjectZ = layers.reduce((max, layer, index) => {
+      if (layer.type === 'text' && this.isTitleLikeTextLayer(layer as TextLayer)) {
+        return max;
+      }
+      return Math.max(max, baseZ[index]);
+    }, Number.NEGATIVE_INFINITY);
+
+    const titleStartZ = Math.max(1400, Number.isFinite(maxObjectZ) ? maxObjectZ + 1 : 1400);
+
+    titleEntries
+      .slice()
+      .sort((a, b) => {
+        const zDiff = baseZ[a.index] - baseZ[b.index];
+        if (zDiff !== 0) {
+          return zDiff;
+        }
+        return a.index - b.index;
+      })
+      .forEach(({ index }, rank) => {
+        baseZ[index] = Math.max(baseZ[index], titleStartZ + rank);
+      });
+
+    return baseZ;
+  }
+
   private resolveTextCollision(
     x: number,
     y: number,
@@ -703,7 +789,7 @@ export class Renderer {
     const spacing = Math.max(12, Math.round(height * 0.15));
 
     const collides = (candidateY: number): boolean => {
-      const a: TextBounds = { x, y: candidateY, width, height };
+      const a = this.getExpandedTextCollisionBounds(x, candidateY, width, height);
       return occupied.some((b) => this.rectanglesOverlap(a, b));
     };
 
@@ -741,7 +827,7 @@ export class Renderer {
     const spacing = Math.max(12, Math.round(width * 0.08));
 
     const collides = (candidateX: number): boolean => {
-      const a: TextBounds = { x: candidateX, y, width, height };
+      const a = this.getExpandedTextCollisionBounds(candidateX, y, width, height);
       return occupied.some((b) => this.rectanglesOverlap(a, b));
     };
 
@@ -804,6 +890,21 @@ export class Renderer {
       a.y + a.height <= b.y ||
       b.y + b.height <= a.y
     );
+  }
+
+  private getExpandedTextCollisionBounds(
+    x: number,
+    y: number,
+    width: number,
+    height: number
+  ): TextBounds {
+    const extraHeight = Math.max(16, Math.round(height * 0.2));
+    return {
+      x,
+      y: y - Math.round(extraHeight / 2),
+      width,
+      height: height + extraHeight,
+    };
   }
 
   private getMainTextLayout(

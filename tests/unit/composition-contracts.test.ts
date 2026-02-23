@@ -1,6 +1,6 @@
 import { describe, it, expect } from '../setup.js';
 import { validateCompositionContracts } from '../../src/core/validation/composition-contracts.js';
-import type { VideoProject } from '../../src/types/index.js';
+import type { VideoProject, TextLayer } from '../../src/types/index.js';
 
 function makeProject(): VideoProject {
   return {
@@ -30,8 +30,12 @@ function makeProject(): VideoProject {
             fontFamily: 'Arial',
             fontSize: 72,
             color: { r: 255, g: 255, b: 255, a: 1 },
+            textStroke: {
+              color: { r: 12, g: 14, b: 24, a: 1 },
+              width: 2,
+            },
             textAlign: 'center',
-            zIndex: 900,
+            zIndex: 1410,
             overlapMode: 'avoid-text',
             startTime: 0,
             endTime: 4000,
@@ -56,7 +60,7 @@ describe('Composition contracts', () => {
 
   it('fails strict mode when title zIndex is too low', () => {
     const project = makeProject();
-    const title = project.scenes[0].layers[0] as any;
+    const title = project.scenes[0].layers[0] as TextLayer;
     title.zIndex = 100;
 
     const report = validateCompositionContracts(project, 'strict');
@@ -66,7 +70,7 @@ describe('Composition contracts', () => {
 
   it('includes path and suggestion for actionable fixes', () => {
     const project = makeProject();
-    const title = project.scenes[0].layers[0] as any;
+    const title = project.scenes[0].layers[0] as TextLayer;
     delete title.overlapMode;
 
     const report = validateCompositionContracts(project, 'strict');
@@ -81,7 +85,7 @@ describe('Composition contracts', () => {
 
   it('downgrades overlap policy missing to warning in permissive mode', () => {
     const project = makeProject();
-    const title = project.scenes[0].layers[0] as any;
+    const title = project.scenes[0].layers[0] as TextLayer;
     delete title.overlapMode;
 
     const report = validateCompositionContracts(project, 'permissive');

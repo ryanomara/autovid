@@ -21,6 +21,7 @@
           "id": "fullbleed-video",
           "type": "video",
           "src": "assets/layout/cyberpunk/videos/fullbleed-16x9.mp4",
+          "dimensions": { "width": 1920, "height": 1080 },
           "startTime": 0,
           "endTime": 3750,
           "position": { "x": 0, "y": 0 },
@@ -28,6 +29,21 @@
           "rotation": 0,
           "opacity": 0.86,
           "zIndex": 80
+        },
+        {
+          "id": "headline-backdrop",
+          "type": "shape",
+          "shapeType": "rectangle",
+          "dimensions": { "width": 1500, "height": 280 },
+          "fill": { "r": 8, "g": 10, "b": 20, "a": 0.62 },
+          "cornerRadius": 16,
+          "startTime": 0,
+          "endTime": 3750,
+          "position": { "x": 210, "y": 300 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "zIndex": 900
         },
         {
           "id": "headline-hook",
@@ -38,6 +54,16 @@
           "fontWeight": "700",
           "typographyPreset": "headline",
           "textAlign": "center",
+          "textStroke": {
+            "color": { "r": 12, "g": 14, "b": 24, "a": 1 },
+            "width": 3
+          },
+          "textShadow": {
+            "color": { "r": 0, "g": 0, "b": 0, "a": 0.65 },
+            "blur": 12,
+            "offsetX": 0,
+            "offsetY": 4
+          },
           "color": { "r": 118, "g": 255, "b": 239, "a": 1 },
           "overlapMode": "avoid-text",
           "startTime": 0,
@@ -46,7 +72,7 @@
           "scale": { "x": 1, "y": 1 },
           "rotation": 0,
           "opacity": 1,
-          "zIndex": 960
+          "zIndex": 1410
         }
       ],
       "transition": { "type": "fade", "duration": 700 }
@@ -61,6 +87,7 @@
           "id": "halfbleed-video",
           "type": "video",
           "src": "assets/layout/cyberpunk/videos/halfbleed-8x9.mp4",
+          "dimensions": { "width": 960, "height": 1080 },
           "startTime": 3750,
           "endTime": 7500,
           "position": { "x": 960, "y": 0 },
@@ -70,23 +97,49 @@
           "zIndex": 180
         },
         {
+          "id": "halfbleed-text-panel",
+          "type": "shape",
+          "shapeType": "rectangle",
+          "dimensions": { "width": 960, "height": 1080 },
+          "fill": { "r": 8, "g": 12, "b": 24, "a": 0.94 },
+          "startTime": 3750,
+          "endTime": 7500,
+          "position": { "x": 0, "y": 0 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "zIndex": 620
+        },
+        {
           "id": "thesis-heading",
           "type": "text",
           "text": "{THESIS_HEADLINE}",
           "fontFamily": "Arial",
-          "fontSize": 62,
+          "fontSize": 58,
           "fontWeight": "700",
           "typographyPreset": "headline",
           "textAlign": "left",
+          "maxWidth": 580,
+          "lineHeight": 1.12,
+          "textStroke": {
+            "color": { "r": 16, "g": 10, "b": 26, "a": 1 },
+            "width": 2
+          },
+          "textShadow": {
+            "color": { "r": 0, "g": 0, "b": 0, "a": 0.45 },
+            "blur": 8,
+            "offsetX": 0,
+            "offsetY": 2
+          },
           "color": { "r": 255, "g": 150, "b": 207, "a": 1 },
           "overlapMode": "avoid-text",
           "startTime": 3750,
           "endTime": 7500,
-          "position": { "x": 120, "y": 320 },
+          "position": { "x": 120, "y": 305 },
           "scale": { "x": 1, "y": 1 },
           "rotation": 0,
           "opacity": 1,
-          "zIndex": 950
+          "zIndex": 1410
         },
         {
           "id": "thesis-copy",
@@ -97,7 +150,7 @@
           "fontWeight": "600",
           "typographyPreset": "body",
           "textAlign": "left",
-          "maxWidth": 760,
+          "maxWidth": 620,
           "color": { "r": 187, "g": 228, "b": 255, "a": 1 },
           "overlapMode": "avoid-text",
           "startTime": 3900,
@@ -106,7 +159,7 @@
           "scale": { "x": 1, "y": 1 },
           "rotation": 0,
           "opacity": 1,
-          "zIndex": 940
+          "zIndex": 1310
         }
       ],
       "transition": { "type": "fade", "duration": 700 }
@@ -118,10 +171,10 @@
       "endTime": 11250,
       "layers": [
         {
-          "id": "thirdbleed-support-image",
-          "type": "image",
-          "src": "assets/layout/cyberpunk/images/thirdbleed-640x1080.png",
-          "fit": "cover",
+          "id": "thirdbleed-support-video",
+          "type": "video",
+          "src": "assets/layout/cyberpunk/videos/thirdbleed-640x1080.mp4",
+          "dimensions": { "width": 640, "height": 1080 },
           "startTime": 7500,
           "endTime": 11250,
           "position": { "x": 1280, "y": 0 },
@@ -170,33 +223,60 @@
         {
           "id": "quarterbleed-inset-video",
           "type": "video",
-          "src": "assets/layout/cyberpunk/videos/quarterbleed-480x540.mp4",
+          "src": "assets/layout/cyberpunk/videos/quarterbleed-480x1080.mp4",
+          "dimensions": { "width": 480, "height": 1080 },
           "startTime": 11250,
           "endTime": 15000,
-          "position": { "x": 1370, "y": 440 },
+          "position": { "x": 1440, "y": 0 },
           "scale": { "x": 1, "y": 1 },
           "rotation": 0,
           "opacity": 0.96,
           "zIndex": 220
         },
         {
+          "id": "quarterbleed-left-panel",
+          "type": "shape",
+          "shapeType": "rectangle",
+          "dimensions": { "width": 1440, "height": 1080 },
+          "fill": { "r": 7, "g": 11, "b": 22, "a": 0.82 },
+          "startTime": 11250,
+          "endTime": 15000,
+          "position": { "x": 0, "y": 0 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "zIndex": 700
+        },
+        {
           "id": "close-headline",
           "type": "text",
           "text": "{CLOSE_HEADLINE}",
           "fontFamily": "Arial",
-          "fontSize": 72,
+          "fontSize": 64,
           "fontWeight": "700",
           "typographyPreset": "headline",
           "textAlign": "left",
+          "maxWidth": 840,
+          "lineHeight": 1.12,
+          "textStroke": {
+            "color": { "r": 10, "g": 12, "b": 20, "a": 1 },
+            "width": 2
+          },
+          "textShadow": {
+            "color": { "r": 0, "g": 0, "b": 0, "a": 0.5 },
+            "blur": 8,
+            "offsetX": 0,
+            "offsetY": 2
+          },
           "color": { "r": 255, "g": 255, "b": 255, "a": 1 },
           "overlapMode": "avoid-text",
           "startTime": 11250,
           "endTime": 15000,
-          "position": { "x": 120, "y": 430 },
+          "position": { "x": 120, "y": 390 },
           "scale": { "x": 1, "y": 1 },
           "rotation": 0,
           "opacity": 1,
-          "zIndex": 980
+          "zIndex": 1420
         }
       ],
       "transition": { "type": "fade", "duration": 700 }

@@ -85,15 +85,66 @@ function validateTextLayerPolicies(
     const layer = textLayers[textIndex];
     const pathBase = `scenes[${sceneIndex}].layers[text:${layer.id ?? textIndex}]`;
 
-    if (isTitleLikeText(layer) && (typeof layer.zIndex !== 'number' || layer.zIndex < 900)) {
+    if (isTitleLikeText(layer) && (typeof layer.zIndex !== 'number' || layer.zIndex < 1400)) {
       addIssue(
         issues,
         mode,
         {
           code: 'title-zindex-too-low',
           path: `${pathBase}.zIndex`,
-          message: 'Title-like text must be in top layer band (>= 900).',
-          suggestion: 'Set zIndex to 900 or higher for title/closing text layers.',
+          message: 'Title-like text must be in top layer band (>= 1400).',
+          suggestion: 'Set zIndex to 1400 or higher for title/closing text layers.',
+        },
+        true
+      );
+    }
+
+    if (isTitleLikeText(layer) && layer.blendMode && layer.blendMode !== 'normal') {
+      addIssue(
+        issues,
+        mode,
+        {
+          code: 'title-blendmode-not-normal',
+          path: `${pathBase}.blendMode`,
+          message:
+            'Title-like text must use normal blend mode to avoid visual cutout/erase artifacts.',
+          suggestion:
+            'Set title layer blendMode to "normal" or remove blendMode to use default normal.',
+        },
+        true
+      );
+    }
+
+    if (
+      isTitleLikeText(layer) &&
+      (!layer.textStroke ||
+        typeof layer.textStroke.width !== 'number' ||
+        !Number.isFinite(layer.textStroke.width) ||
+        layer.textStroke.width < 2)
+    ) {
+      addIssue(
+        issues,
+        mode,
+        {
+          code: 'title-stroke-missing',
+          path: `${pathBase}.textStroke`,
+          message:
+            'Title-like text should include stroke width >= 2 for readability over motion layers.',
+          suggestion: 'Set textStroke with contrasting color and width of at least 2.',
+        },
+        mode === 'strict'
+      );
+    }
+
+    if (isTitleLikeText(layer) && layer.textMask?.mode) {
+      addIssue(
+        issues,
+        mode,
+        {
+          code: 'title-mask-not-allowed',
+          path: `${pathBase}.textMask`,
+          message: 'Title-like text cannot use text masking because it risks readability loss.',
+          suggestion: 'Remove textMask from title layers and keep blend mode normal.',
         },
         true
       );
@@ -288,7 +339,7 @@ function validateContract(
         path: `${pathBase}.layers`,
         message: `${contract} scene is missing a title-like text layer.`,
         suggestion:
-          'Add a text layer with fontSize >= 56 (or explicit title naming) and zIndex >= 900.',
+          'Add a text layer with fontSize >= 56 (or explicit title naming) and zIndex >= 1400.',
       },
       true
     );

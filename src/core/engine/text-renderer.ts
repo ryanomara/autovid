@@ -81,7 +81,7 @@ export function measureText(options: TextRenderOptions): { width: number; height
     maxWidth = Math.max(maxWidth, metrics.width);
   }
 
-  const lineHeight = options.lineHeight || options.fontSize * 1.2;
+  const lineHeight = resolveLineHeightPx(options.fontSize, options.lineHeight);
   const height = lines.length * lineHeight;
 
   return {
@@ -115,6 +115,18 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number)
   }
 
   return lines;
+}
+
+function resolveLineHeightPx(fontSize: number, lineHeight?: number): number {
+  if (typeof lineHeight !== 'number' || !Number.isFinite(lineHeight) || lineHeight <= 0) {
+    return fontSize * 1.2;
+  }
+
+  if (lineHeight <= 4) {
+    return fontSize * lineHeight;
+  }
+
+  return lineHeight;
 }
 
 /**
@@ -165,7 +177,7 @@ export function renderText(options: TextRenderOptions): PixelBuffer {
   // Handle text wrapping
   const lines = options.maxWidth ? wrapText(ctx, options.text, options.maxWidth) : [options.text];
 
-  const lineHeight = options.lineHeight || options.fontSize * 1.2;
+  const lineHeight = resolveLineHeightPx(options.fontSize, options.lineHeight);
   const textAlign = options.textAlign || 'left';
 
   // Calculate starting Y position

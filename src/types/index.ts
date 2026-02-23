@@ -203,6 +203,7 @@ export interface ImageLayer extends BaseLayer {
   type: 'image';
   src: string; // Local path or URL
   fit?: 'cover' | 'contain' | 'fill' | 'none';
+  dimensions?: Dimensions;
 }
 
 /**
@@ -213,6 +214,7 @@ export interface VideoLayer extends BaseLayer {
   src: string;
   playbackRate?: number;
   volume?: number;
+  dimensions?: Dimensions;
   width?: number;
   height?: number;
 }
