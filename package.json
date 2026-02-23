@@ -1,6 +1,6 @@
 {
   "name": "autovid",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Autonomous video generation platform for LLM agents and humans",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

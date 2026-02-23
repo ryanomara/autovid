@@ -483,7 +483,7 @@ When a scene layout is known, generate media for the target slot ratio first, in
   - `fullbleed`: `16:9` (e.g. `1920x1080`)
   - `halfbleed`: `8:9` vertical split slot (e.g. `960x1080`) or `16:4.5` horizontal split slot
   - `thirdbleed`: `5.33:9` vertical slot (e.g. `640x1080`) or `16:3` horizontal slot
-  - `quarterbleed`: `4:4.5` inset (e.g. `480x540`) or `16:2.25` strip
+- `quarterbleed`: `4:9` vertical strip (e.g. `480x1080`)
 
 Generation rules:
 
@@ -495,8 +495,11 @@ Generation rules:
 Placement rules for visual impact:
 
 - Each scene must have one dominant plate occupying at least `33%` of frame area.
-- Insets (`quarterbleed`) should anchor to a clear corner/grid intersection and never float near center unless intentionally spotlighted.
+- Vertical strips (`quarterbleed`) should anchor flush to a frame edge (left or right), not float near center.
 - Do not use decorative micro-video blocks smaller than `18%` of frame width in hero scenes.
+- In split-layout scenes, headline/body text must declare `maxWidth` so copy stays inside its non-video panel.
+- For `halfbleed` left text panel on `1920x1080`, keep title/copy `maxWidth <= 700` with left margin `>= 120`.
+- For `quarterbleed` right strip layouts, keep CTA title/copy inside left content panel using `maxWidth <= 1120`.
 
 ### 13.9 Short Finance Video Composition Template (Agent Default)
 
@@ -543,6 +546,21 @@ For non-chart, non-text accompaniment assets:
   - `autovid assets video assets/images/scene-bg.png "prompt" -o assets/videos/scene-bg.mp4`
 
 These commands generate local media + sidecar metadata files (`*.asset.json`) that can be used in `image` and `video` layers.
+
+### 13.12 Lessons Learned: Line Height Semantics (Critical)
+
+This bug caused headline rows to visually overlap and appear clipped in production renders.
+
+- `lineHeight` values in the `0.8-2.0` range must be treated as **multipliers**, not pixels.
+  - Example: `fontSize: 58` with `lineHeight: 1.12` means `64.96px` line spacing.
+- Absolute pixel line heights should only be used for larger numeric values.
+  - Engine rule: values `<= 4` are multiplier mode; values `> 4` are pixel mode.
+- Why this matters:
+  - treating `1.12` as `1.12px` collapses multi-line titles into near-overlap,
+  - creates thin top-edge artifacts and false "title occlusion" reports.
+- QA check (required for title scenes):
+  - For any wrapped title, verify expected line count and row separation on a single-frame render before full export.
+  - If title is wrapped, inspect at least one mid-scene frame and confirm there is clear vertical separation between rows.
 
 ---
 
@@ -595,4 +613,4 @@ These commands generate local media + sidecar metadata files (`*.asset.json`) th
 ---
 
 _Style guide inspired by Satori Graphics' professional design principles_
-_AutoVid v0.1.0 Compatible_
+_AutoVid v0.1.1 Compatible_
