@@ -4,13 +4,22 @@ import {
   drawRect,
   drawLine,
   drawCircle,
+  drawLineAA,
+  drawCircleAA,
   blitBuffer,
   type PixelBuffer,
 } from './canvas.js';
 import { renderText } from './text-renderer.js';
+import { formatAxisValue, inferAxisFormat } from './format-axis.js';
+import { calculateLabelDensity, getPacingPreset } from '../storytelling/pacing.js';
+import type { PacingPreset } from '../storytelling/pacing.js';
 
 interface ChartRenderOptions {
   progress?: number;
+  /** Scene duration in ms - used for label density calculation */
+  sceneDuration?: number;
+  /** Pacing preset - used to determine label density */
+  pacingPreset?: PacingPreset;
 }
 
 interface ChartPalette {
@@ -94,8 +103,25 @@ export function renderChartLayer(layer: ChartLayer, options: ChartRenderOptions 
   const showPoints = layer.style?.showPoints ?? true;
   const showValues = layer.style?.showValues ?? true;
   const labelLimit = Math.max(2, layer.style?.maxLabels ?? 6);
+  // M1: Anti-aliasing and smart label placement
+  const antiAlias = layer.style?.antiAlias ?? true;
+  const smartLabels = layer.style?.smartLabels ?? true;
+
+  // M2: Calculate label density based on pacing if provided
+  let effectiveLabelLimit = labelLimit;
+  if (options.sceneDuration && options.pacingPreset && smartLabels) {
+    const labelDensity = calculateLabelDensity(
+      values.length,
+      options.sceneDuration,
+      { name: options.pacingPreset, ...getPacingPreset(options.pacingPreset) }
+    );
+    effectiveLabelLimit = Math.min(labelDensity.recommendedLabels, labelLimit);
+  }
   const valueDecimals = Math.max(0, layer.style?.valueDecimals ?? 2);
   const progress = Math.max(0, Math.min(1, options.progress ?? 1));
+
+  // M1: Financial axis formatting
+  const axisFormat = layer.yAxis?.format ?? inferAxisFormat(values);
 
   for (let i = 0; i < ticks; i++) {
     const t = i / (ticks - 1);
@@ -106,7 +132,7 @@ export function renderChartLayer(layer: ChartLayer, options: ChartRenderOptions 
 
     const value = max - t * safeRange;
     const labelBuffer = renderText({
-      text: Number.isInteger(value) ? String(value) : value.toFixed(2),
+      text: formatAxisValue(value, { type: axisFormat, decimals: valueDecimals }),
       fontSize: 20,
       fontFamily: 'Arial',
       fontWeight: 'bold',
@@ -156,7 +182,11 @@ export function renderChartLayer(layer: ChartLayer, options: ChartRenderOptions 
     const partialProgress = animatedSegments - fullSegments;
 
     for (let i = 0; i < fullSegments; i++) {
-      drawLine(buffer, points[i], points[i + 1], palette.line, lineWidth);
+      if (antiAlias) {
+        drawLineAA(buffer, points[i], points[i + 1], palette.line, lineWidth);
+      } else {
+        drawLine(buffer, points[i], points[i + 1], palette.line, lineWidth);
+      }
     }
 
     if (fullSegments < segmentCount && partialProgress > 0) {
@@ -166,12 +196,16 @@ export function renderChartLayer(layer: ChartLayer, options: ChartRenderOptions 
         x: start.x + (end.x - start.x) * partialProgress,
         y: start.y + (end.y - start.y) * partialProgress,
       };
-      drawLine(buffer, start, partialPoint, palette.line, lineWidth);
+      if (antiAlias) {
+        drawLineAA(buffer, start, partialPoint, palette.line, lineWidth);
+      } else {
+        drawLine(buffer, start, partialPoint, palette.line, lineWidth);
+      }
     }
 
     const visiblePointCount = Math.max(1, Math.ceil(progress * points.length));
     const visiblePoints = points.slice(0, visiblePointCount);
-    const labelStride = Math.max(1, Math.ceil(points.length / labelLimit));
+    const labelStride = Math.max(1, Math.ceil(points.length / effectiveLabelLimit));
     const occupiedRects: Rect[] = [];
 
     for (const point of visiblePoints) {
@@ -188,7 +222,11 @@ export function renderChartLayer(layer: ChartLayer, options: ChartRenderOptions 
     for (let index = 0; index < visiblePoints.length; index++) {
       const point = visiblePoints[index];
       if (showPoints) {
-        drawCircle(buffer, point, pointRadius, palette.line);
+        if (antiAlias) {
+          drawCircleAA(buffer, point, pointRadius, palette.line);
+        } else {
+          drawCircle(buffer, point, pointRadius, palette.line);
+        }
       }
 
       const shouldDrawLabel =
@@ -214,9 +252,7 @@ export function renderChartLayer(layer: ChartLayer, options: ChartRenderOptions 
 
       if (showValues) {
         const valueBuffer = renderText({
-          text: Number.isInteger(point.value)
-            ? String(point.value)
-            : point.value.toFixed(valueDecimals),
+          text: formatAxisValue(point.value, { type: axisFormat, decimals: valueDecimals }),
           fontSize: 18,
           fontFamily: 'Arial',
           fontWeight: 'bold',
@@ -279,7 +315,7 @@ export function renderChartLayer(layer: ChartLayer, options: ChartRenderOptions 
 
       if (showValues && perBarProgress > 0.55) {
         const valueBuffer = renderText({
-          text: Number.isInteger(value) ? String(value) : value.toFixed(valueDecimals),
+          text: formatAxisValue(value, { type: axisFormat, decimals: valueDecimals }),
           fontSize: 18,
           fontFamily: 'Arial',
           fontWeight: 'bold',

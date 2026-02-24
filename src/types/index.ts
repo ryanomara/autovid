@@ -247,6 +247,8 @@ export interface ChartLayer extends BaseLayer {
     min?: number;
     max?: number;
     ticks?: number;
+    /** Axis value format: number, currency, percentage, or compact */
+    format?: 'number' | 'currency' | 'percentage' | 'compact';
   };
   style?: {
     axisColor?: Color;
@@ -262,6 +264,10 @@ export interface ChartLayer extends BaseLayer {
     showValues?: boolean;
     maxLabels?: number;
     valueDecimals?: number;
+    /** Enable anti-aliased rendering for lines and points (default: true) */
+    antiAlias?: boolean;
+    /** Enable smart label placement with better collision avoidance (default: true) */
+    smartLabels?: boolean;
   };
 }
 
