@@ -1,0 +1,149 @@
+{
+  "name": "M1 Chart Fidelity Demo",
+  "config": {
+    "width": 1280,
+    "height": 720,
+    "fps": 30,
+    "duration": 5000
+  },
+  "scenes": [
+    {
+      "id": "line-chart-aa",
+      "startTime": 0,
+      "endTime": 5000,
+      "layers": [
+        {
+          "id": "title",
+          "type": "text",
+          "text": "Revenue Growth - Q4 2025",
+          "fontSize": 48,
+          "position": { "x": 640, "y": 60 },
+          "textAlign": "center"
+        },
+        {
+          "id": "revenue-chart",
+          "type": "chart",
+          "chartType": "line",
+          "dimensions": { "width": 1280, "height": 500 },
+          "position": { "x": 0, "y": 100 },
+          "title": "",
+          "data": {
+            "labels": ["Oct", "Nov", "Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+            "values": [1.2, 1.5, 1.8, 2.1, 2.4, 2.2, 2.8, 3.2, 3.5]
+          },
+          "yAxis": {
+            "min": 0,
+            "max": 4,
+            "ticks": 5,
+            "format": "currency"
+          },
+          "style": {
+            "lineColor": { "r": 0, "g": 180, "b": 255, "a": 1 },
+            "lineWidth": 5,
+            "pointRadius": 8,
+            "showPoints": true,
+            "showValues": true,
+            "showGrid": true,
+            "valueDecimals": 1,
+            "maxLabels": 5,
+            "antiAlias": true,
+            "smartLabels": true
+          }
+        }
+      ],
+      "transition": {
+        "type": "fade",
+        "duration": 700
+      }
+    },
+    {
+      "id": "bar-chart-aa",
+      "startTime": 5000,
+      "endTime": 10000,
+      "layers": [
+        {
+          "id": "title-2",
+          "type": "text",
+          "text": "Market Share by Region",
+          "fontSize": 48,
+          "position": { "x": 640, "y": 60 },
+          "textAlign": "center"
+        },
+        {
+          "id": "market-chart",
+          "type": "chart",
+          "chartType": "bar",
+          "dimensions": { "width": 1280, "height": 500 },
+          "position": { "x": 0, "y": 100 },
+          "title": "",
+          "data": {
+            "labels": ["North America", "Europe", "Asia Pacific", "Latin America", "Middle East"],
+            "values": [35, 28, 22, 10, 5]
+          },
+          "yAxis": {
+            "min": 0,
+            "max": 40,
+            "ticks": 5,
+            "format": "percentage"
+          },
+          "style": {
+            "barColor": { "r": 100, "g": 200, "b": 100, "a": 1 },
+            "showValues": true,
+            "showGrid": true,
+            "maxLabels": 5,
+            "antiAlias": true,
+            "smartLabels": true
+          }
+        }
+      ],
+      "transition": {
+        "type": "slide",
+        "duration": 700
+      }
+    },
+    {
+      "id": "compact-numbers",
+      "startTime": 10000,
+      "endTime": 15000,
+      "layers": [
+        {
+          "id": "title-3",
+          "type": "text",
+          "text": "Total Users (Millions)",
+          "fontSize": 48,
+          "position": { "x": 640, "y": 60 },
+          "textAlign": "center"
+        },
+        {
+          "id": "users-chart",
+          "type": "chart",
+          "chartType": "line",
+          "dimensions": { "width": 1280, "height": 500 },
+          "position": { "x": 0, "y": 100 },
+          "title": "",
+          "data": {
+            "labels": ["2020", "2021", "2022", "2023", "2024", "2025"],
+            "values": [500000, 1200000, 3500000, 8000000, 15000000, 28000000]
+          },
+          "yAxis": {
+            "min": 0,
+            "format": "compact"
+          },
+          "style": {
+            "lineColor": { "r": 255, "g": 150, "b": 50, "a": 1 },
+            "lineWidth": 4,
+            "pointRadius": 6,
+            "showPoints": true,
+            "showValues": true,
+            "antiAlias": true
+          }
+        }
+      ],
+      "transition": {
+        "type": "dissolve",
+        "duration": 700
+      }
+    }
+  ],
+  "audio": []
+}

@@ -702,6 +702,129 @@ export function drawLine(
 }
 
 /**
+ * Draw an anti-aliased line using Wu's algorithm
+ * Provides smooth edges compared to Bresenham's algorithm
+ */
+export function drawLineAA(
+  buffer: PixelBuffer,
+  from: Position,
+  to: Position,
+  color: Color,
+  thickness: number = 1,
+  opacity: number = 1
+): void {
+  const x0 = from.x;
+  const y0 = from.y;
+  const x1 = to.x;
+  const y1 = to.y;
+
+  const absDx = Math.abs(x1 - x0);
+  const absDy = Math.abs(y1 - y0);
+
+  // Use regular drawLine for very short lines (avoid AA overhead)
+  if (absDx < 2 && absDy < 2) {
+    drawLine(buffer, from, to, color, thickness, opacity);
+    return;
+  }
+
+  const steep = absDy > absDx;
+
+  let sx = -1, sy = -1;
+  let xa = x0, ya = y0, xb = x1, yb = y1;
+
+  if (steep) {
+    // Swap x and y
+    [xa, ya] = [ya, xa];
+    [xb, yb] = [yb, xb];
+  }
+  if (xa > xb) {
+    sx = 1;
+    xa = xb;
+    ya = yb;
+  }
+
+  const dx = xb - xa;
+  const dy = yb - ya;
+  const gradient = dy / dx;
+
+  // Handle thickness by drawing multiple passes
+  const halfThick = Math.floor(thickness / 2);
+
+  for (let pass = -halfThick; pass <= halfThick; pass++) {
+    const offset = pass * 0.7;
+
+    let y = ya;
+
+    for (let x = xa; x <= xb; x++) {
+      const targetY = ya + gradient * (x - xa);
+      const yPos = targetY + offset;
+      const xPos = steep ? targetY + offset : x + offset;
+
+      // Calculate intensity based on distance from ideal line
+      const intensity = Math.max(0, 1 - Math.abs(yPos - Math.round(yPos)));
+      
+      if (steep) {
+        setPixel(buffer, Math.round(yPos), Math.round(xPos), color, opacity * intensity);
+        if (intensity < 0.9) {
+          setPixel(buffer, Math.round(yPos) + (yPos > Math.round(yPos) ? 1 : -1), Math.round(xPos), color, opacity * (1 - intensity));
+        }
+      } else {
+        setPixel(buffer, Math.round(xPos), Math.round(yPos), color, opacity * intensity);
+        if (intensity < 0.9) {
+          setPixel(buffer, Math.round(xPos), Math.round(yPos) + (yPos > Math.round(yPos) ? 1 : -1), color, opacity * (1 - intensity));
+        }
+      }
+    }
+  }
+
+  // Also draw the core line for better visibility
+  drawLine(buffer, from, to, color, Math.max(1, thickness - 2), opacity);
+}
+
+/**
+ * Draw an anti-aliased filled circle
+ * Uses distance-based alpha for smooth edges
+ */
+export function drawCircleAA(
+  buffer: PixelBuffer,
+  center: Position,
+  radius: number,
+  color: Color,
+  opacity: number = 1
+): void {
+  const { x: cx, y: cy } = center;
+  const r = Math.round(radius);
+  const r2 = radius * radius;
+
+  // For small radii, use regular drawCircle
+  if (radius < 3) {
+    drawCircle(buffer, center, radius, color, opacity);
+    return;
+  }
+
+  // Draw anti-aliased circle
+  for (let dy = -r; dy <= r; dy++) {
+    for (let dx = -r; dx <= r; dx++) {
+      const dist2 = dx * dx + dy * dy;
+      
+      if (dist2 <= r2) {
+        const dist = Math.sqrt(dist2);
+        let alpha = 1;
+
+        // Anti-aliasing at edges
+        if (dist > radius - 1) {
+          alpha = Math.max(0, 1 - (dist - (radius - 1)));
+        }
+
+        if (alpha > 0) {
+          setPixel(buffer, cx + dx, cy + dy, color, opacity * alpha);
+        }
+      }
+    }
+  }
+}
+
+/**
  * Draw a rectangle stroke (outline)
  */
 export function drawRectStroke(
