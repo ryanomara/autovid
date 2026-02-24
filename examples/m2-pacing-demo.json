@@ -1,0 +1,122 @@
+{
+  "name": "M2 Pacing System Demo",
+  "config": {
+    "width": 1280,
+    "height": 720,
+    "fps": 30,
+    "duration": 30000
+  },
+  "_pacing": {
+    "preset": "broadcast",
+    "description": "Fast-paced TV broadcast style with quick cuts"
+  },
+  "scenes": [
+    {
+      "id": "intro",
+      "startTime": 0,
+      "endTime": 3500,
+      "layers": [
+        {
+          "id": "intro-title",
+          "type": "text",
+          "text": "Q4 Financial Results",
+          "fontSize": 72,
+          "position": { "x": 640, "y": 360 },
+          "textAlign": "center"
+        }
+      ],
+      "transition": {
+        "type": "fade",
+        "duration": 650
+      }
+    },
+    {
+      "id": "kpi-revenue",
+      "startTime": 3500,
+      "endTime": 7000,
+      "layers": [
+        {
+          "id": "chart-1",
+          "type": "chart",
+          "chartType": "line",
+          "dimensions": { "width": 1280, "height": 600 },
+          "position": { "x": 0, "y": 60 },
+          "data": {
+            "labels": ["Q1", "Q2", "Q3", "Q4"],
+            "values": [10, 15, 22, 28]
+          },
+          "yAxis": {
+            "format": "currency",
+            "ticks": 4
+          },
+          "style": {
+            "maxLabels": 4,
+            "showValues": true,
+            "antiAlias": true,
+            "smartLabels": true
+          }
+        }
+      ],
+      "_pacing": {
+        "sceneDuration": 3500,
+        "complexity": "moderate",
+        "expectedPacingScore": 85
+      },
+      "transition": {
+        "type": "slide",
+        "duration": 650
+      }
+    },
+    {
+      "id": "kpi-users",
+      "startTime": 7000,
+      "endTime": 10500,
+      "layers": [
+        {
+          "id": "chart-2",
+          "type": "chart",
+          "chartType": "bar",
+          "dimensions": { "width": 1280, "height": 600 },
+          "position": { "x": 0, "y": 60 },
+          "data": {
+            "labels": ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+            "values": [120, 145, 168, 192, 210, 245]
+          },
+          "yAxis": {
+            "format": "compact",
+            "ticks": 5
+          },
+          "style": {
+            "maxLabels": 6,
+            "showValues": true,
+            "antiAlias": true
+          }
+        }
+      ],
+      "transition": {
+        "type": "fade",
+        "duration": 650
+      }
+    },
+    {
+      "id": "outro",
+      "startTime": 10500,
+      "endTime": 14000,
+      "layers": [
+        {
+          "id": "outro-text",
+          "type": "text",
+          "text": "Thank You",
+          "fontSize": 72,
+          "position": { "x": 640, "y": 360 },
+          "textAlign": "center"
+        }
+      ],
+      "transition": {
+        "type": "dissolve",
+        "duration": 650
+      }
+    }
+  ],
+  "audio": []
+}

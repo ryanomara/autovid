@@ -11,19 +11,34 @@ AutoVid is optimizing for TV-quality short-form financial storytelling with:
 
 ## Milestones
 
-### M1: Chart Fidelity Upgrade
+### M1: Chart Fidelity Upgrade ✅ COMPLETED
 
-- Anti-aliased chart lines and point rendering improvements
-- Smart label placement and avoidance in dense charts
-- Axis/tick formatting presets for financial units
-- Visual regression fixtures for line and bar charts
+- ✅ Anti-aliased chart lines and point rendering improvements
+- ✅ Smart label placement and avoidance in dense charts
+- ✅ Axis/tick formatting presets for financial units (currency, percentage, compact)
+- ✅ Visual regression fixtures for line and bar charts
 
-### M2: Pacing and Readability System
+**Implementation:**
+- Added `drawLineAA()` and `drawCircleAA()` in `src/core/engine/canvas.ts`
+- Added `format-axis.ts` module with financial formatting utilities
+- Updated `ChartLayer` type with `antiAlias`, `smartLabels`, and `format` options
+- Integrated AA rendering into chart-renderer.ts line and bar charts
+- Added 7 new tests for AA and financial formatting (27 total tests passing)
 
-- Scene pacing presets (broadcast, social, explainer)
-- Automatic callout delay until chart draw stabilization
-- Label density heuristics tied to scene duration and motion intensity
-- Transition consistency validation checks
+### M2: Pacing and Readability System ✅ COMPLETED
+
+- ✅ Scene pacing presets (broadcast, social, explainer)
+- ✅ Automatic callout delay until chart draw stabilization
+- ✅ Label density heuristics tied to scene duration and motion intensity
+- ✅ Transition consistency validation checks
+
+**Implementation:**
+- Added `pacing.ts` module with 4 presets (broadcast, social, explainer, custom)
+- Added `calculateCalloutTiming()` for chart animation synchronization
+- Added `calculateLabelDensity()` for intelligent label display
+- Added `validateTransitionDuration()` and `calculatePacingScore()` for validation
+- Integrated pacing into chart-renderer.ts with `sceneDuration` and `pacingPreset` options
+- Added 25 new pacing tests (52 total tests passing)
 
 ### M3: Color and Swatch Enforcement
 

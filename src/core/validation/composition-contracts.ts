@@ -1,4 +1,5 @@
 import type { Layer, Scene, TextLayer, VideoProject } from '../../types/index.js';
+import { validateTransitionDuration, getPacingPreset, calculatePacingScore } from '../storytelling/pacing.js';
 
 export type ValidationMode = 'strict' | 'permissive';
 type SceneContractType = 'intro' | 'kpi' | 'line-chart' | 'bar-chart' | 'outro' | 'unknown';
@@ -204,6 +205,70 @@ function validateTransitionPolicy(
   }
 }
 
+/**
+ * M2: Validate scene pacing consistency
+ */
+function validateScenePacing(
+  scene: Scene,
+  sceneIndex: number,
+  mode: ValidationMode,
+  issues: CompositionIssue[],
+  pacingPreset?: string
+): void {
+  const sceneDuration = scene.endTime - scene.startTime;
+  const transitionDuration = scene.transition?.duration ?? 700;
+  
+  // Get chart and label info
+  const chartLayers = scene.layers.filter((l) => l.type === 'chart');
+  let labelCount = 0;
+  if (chartLayers.length > 0 && 'data' in chartLayers[0]) {
+    const chartData = chartLayers[0].data as { values?: number[]; labels?: string[] };
+    labelCount = chartData.labels?.length ?? chartData.values?.length ?? 0;
+  }
+  
+  // Use provided preset or default to broadcast
+  const preset = getPacingPreset(pacingPreset ?? 'broadcast');
+  
+  // Calculate pacing score
+  const pacingResult = calculatePacingScore(
+    sceneDuration,
+    transitionDuration,
+    labelCount,
+    labelCount,
+    preset
+  );
+  
+  // Add issues for recommendations
+  for (const recommendation of pacingResult.recommendations) {
+    addIssue(
+      issues,
+      mode,
+      {
+        code: 'pacing-recommendation',
+        path: `scenes[${sceneIndex}]`,
+        message: recommendation,
+        suggestion: `Pacing score: ${pacingResult.score}/100`,
+      },
+      false // not blocking
+    );
+  }
+  
+  // Warn if score is low
+  if (pacingResult.score < 70) {
+    addIssue(
+      issues,
+      mode,
+      {
+        code: 'pacing-score-low',
+        path: `scenes[${sceneIndex}]`,
+        message: `Low pacing score (${pacingResult.score}/100) may affect viewer engagement.`,
+        suggestion: `Duration: ${pacingResult.breakdown.durationScore}, Transition: ${pacingResult.breakdown.transitionScore}, Labels: ${pacingResult.breakdown.labelScore}`,
+      },
+      mode === 'strict'
+    );
+  }
+}
+
 function validateChartLayerData(
   scene: Scene,
   sceneIndex: number,
@@ -393,6 +458,9 @@ export function validateCompositionContracts(
     validateTextLayerPolicies(scene, sceneIndex, mode, issues);
     validateTransitionPolicy(scene, sceneIndex, mode, issues);
     validateChartLayerData(scene, sceneIndex, mode, issues);
+    
+    // M2: Validate pacing
+    validateScenePacing(scene, sceneIndex, mode, issues);
   }
 
   const errors = issues.filter((issue) => issue.level === 'error').length;
