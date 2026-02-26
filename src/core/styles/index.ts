@@ -20,6 +20,15 @@ const STYLE_PRESETS: StylePreset[] = [
     templatePath: 'styles/cyberpunk-finance-template.json',
     promptStylePath: 'skills/style/cyberpunk-finance-scenes.md',
   },
+  {
+    id: 'foodie-magazine',
+    name: 'Foodie Magazine',
+    description:
+      'Editorial foodie style with premium food photography motion, soft palettes, and panel-safe typography.',
+    stylePath: 'styles/foodie-magazine-style.json',
+    templatePath: 'styles/foodie-magazine-template.json',
+    promptStylePath: 'skills/style/foodie-magazine-scenes.md',
+  },
 ];
 
 export function listStylePresets(): StylePreset[] {

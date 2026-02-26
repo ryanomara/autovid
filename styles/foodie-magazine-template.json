@@ -1,0 +1,350 @@
+{
+  "id": "foodie-magazine-template",
+  "name": "Foodie Magazine Template (Bleed-Driven)",
+  "config": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "duration": 16000,
+    "backgroundColor": { "r": 250, "g": 244, "b": 236, "a": 1 },
+    "outputFormat": "mp4",
+    "quality": "high"
+  },
+  "scenes": [
+    {
+      "id": "scene-fullbleed-hero",
+      "name": "Scene 1 Fullbleed Hero",
+      "startTime": 0,
+      "endTime": 4000,
+      "layers": [
+        {
+          "id": "fullbleed-video",
+          "type": "video",
+          "src": "assets/videos/{HERO_VIDEO}",
+          "dimensions": { "width": 1920, "height": 1080 },
+          "startTime": 0,
+          "endTime": 4000,
+          "position": { "x": 0, "y": 0 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 0.92,
+          "zIndex": 90
+        },
+        {
+          "id": "hero-overlay",
+          "type": "shape",
+          "shapeType": "rectangle",
+          "dimensions": { "width": 1920, "height": 1080 },
+          "fill": { "r": 56, "g": 42, "b": 38, "a": 0.28 },
+          "startTime": 0,
+          "endTime": 4000,
+          "position": { "x": 0, "y": 0 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "zIndex": 120
+        },
+        {
+          "id": "hero-title",
+          "type": "text",
+          "text": "{HOOK_HEADLINE}",
+          "fontFamily": "Arial",
+          "fontSize": 82,
+          "fontWeight": "700",
+          "typographyPreset": "headline",
+          "textAlign": "center",
+          "maxWidth": 1560,
+          "lineHeight": 1.1,
+          "textStroke": {
+            "color": { "r": 58, "g": 34, "b": 30, "a": 1 },
+            "width": 3
+          },
+          "textShadow": {
+            "color": { "r": 0, "g": 0, "b": 0, "a": 0.42 },
+            "blur": 8,
+            "offsetX": 0,
+            "offsetY": 2
+          },
+          "color": { "r": 255, "g": 250, "b": 246, "a": 1 },
+          "overlapMode": "avoid-text",
+          "startTime": 0,
+          "endTime": 4000,
+          "position": { "x": 960, "y": 430 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "zIndex": 1450
+        }
+      ],
+      "transition": { "type": "fade", "duration": 700 }
+    },
+    {
+      "id": "scene-halfbleed-editorial",
+      "name": "Scene 2 Halfbleed Editorial",
+      "startTime": 4000,
+      "endTime": 8500,
+      "layers": [
+        {
+          "id": "halfbleed-video",
+          "type": "video",
+          "src": "assets/videos/{HALF_VIDEO}",
+          "dimensions": { "width": 960, "height": 1080 },
+          "startTime": 4000,
+          "endTime": 8500,
+          "position": { "x": 960, "y": 0 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 0.9,
+          "zIndex": 180
+        },
+        {
+          "id": "half-panel",
+          "type": "shape",
+          "shapeType": "rectangle",
+          "dimensions": { "width": 960, "height": 1080 },
+          "fill": { "r": 250, "g": 241, "b": 230, "a": 0.96 },
+          "startTime": 4000,
+          "endTime": 8500,
+          "position": { "x": 0, "y": 0 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "zIndex": 620
+        },
+        {
+          "id": "half-title",
+          "type": "text",
+          "text": "{THESIS_HEADLINE}",
+          "fontFamily": "Arial",
+          "fontSize": 58,
+          "fontWeight": "700",
+          "typographyPreset": "headline",
+          "textAlign": "left",
+          "maxWidth": 700,
+          "lineHeight": 1.1,
+          "textStroke": {
+            "color": { "r": 86, "g": 58, "b": 46, "a": 1 },
+            "width": 2
+          },
+          "color": { "r": 64, "g": 46, "b": 38, "a": 1 },
+          "overlapMode": "avoid-text",
+          "startTime": 4000,
+          "endTime": 8500,
+          "position": { "x": 120, "y": 260 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "zIndex": 1450
+        },
+        {
+          "id": "half-copy",
+          "type": "text",
+          "text": "{THESIS_COPY}",
+          "fontFamily": "Arial",
+          "fontSize": 34,
+          "fontWeight": "600",
+          "typographyPreset": "body",
+          "textAlign": "left",
+          "maxWidth": 690,
+          "lineHeight": 1.2,
+          "color": { "r": 88, "g": 70, "b": 59, "a": 1 },
+          "overlapMode": "avoid-text",
+          "startTime": 4200,
+          "endTime": 8500,
+          "position": { "x": 120, "y": 470 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "zIndex": 1330
+        }
+      ],
+      "transition": { "type": "fade", "duration": 700 }
+    },
+    {
+      "id": "scene-thirdbleed-data",
+      "name": "Scene 3 Thirdbleed Data",
+      "startTime": 8500,
+      "endTime": 12800,
+      "layers": [
+        {
+          "id": "third-video",
+          "type": "video",
+          "src": "assets/videos/{THIRD_VIDEO}",
+          "dimensions": { "width": 640, "height": 1080 },
+          "startTime": 8500,
+          "endTime": 12800,
+          "position": { "x": 1280, "y": 0 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 0.92,
+          "zIndex": 180
+        },
+        {
+          "id": "third-left-panel",
+          "type": "shape",
+          "shapeType": "rectangle",
+          "dimensions": { "width": 1280, "height": 1080 },
+          "fill": { "r": 246, "g": 238, "b": 226, "a": 0.94 },
+          "startTime": 8500,
+          "endTime": 12800,
+          "position": { "x": 0, "y": 0 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "zIndex": 620
+        },
+        {
+          "id": "third-chart",
+          "type": "chart",
+          "chartType": "line",
+          "title": "{CHART_TITLE}",
+          "dimensions": { "width": 1120, "height": 620 },
+          "data": {
+            "labels": ["1950", "1960", "1970", "1980", "1990", "2000", "2010", "2020", "2024"],
+            "values": [2.1, 2.8, 3.6, 4.4, 5.3, 6.2, 7.1, 7.8, 8.0]
+          },
+          "yAxis": { "min": 1.5, "max": 8.5, "ticks": 8 },
+          "style": {
+            "lineColor": { "r": 231, "g": 126, "b": 89, "a": 1 },
+            "labelColor": { "r": 88, "g": 75, "b": 68, "a": 1 },
+            "valueColor": { "r": 58, "g": 48, "b": 43, "a": 1 },
+            "lineWidth": 4,
+            "pointRadius": 4,
+            "showGrid": true,
+            "showPoints": true,
+            "showValues": true,
+            "valueDecimals": 1,
+            "maxLabels": 9
+          },
+          "startTime": 8500,
+          "endTime": 12800,
+          "position": { "x": 80, "y": 300 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "zIndex": 950,
+          "animations": [
+            {
+              "property": "chartProgress",
+              "keyframes": [
+                { "time": 8500, "value": 0 },
+                { "time": 12300, "value": 1 }
+              ]
+            }
+          ]
+        }
+      ],
+      "transition": { "type": "fade", "duration": 700 }
+    },
+    {
+      "id": "scene-quarterbleed-close",
+      "name": "Scene 4 Quarterbleed Close",
+      "startTime": 12800,
+      "endTime": 16000,
+      "layers": [
+        {
+          "id": "quarter-video",
+          "type": "video",
+          "src": "assets/videos/{QUARTER_VIDEO}",
+          "dimensions": { "width": 480, "height": 1080 },
+          "startTime": 12800,
+          "endTime": 16000,
+          "position": { "x": 1440, "y": 0 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 0.94,
+          "zIndex": 220
+        },
+        {
+          "id": "quarter-left-panel",
+          "type": "shape",
+          "shapeType": "rectangle",
+          "dimensions": { "width": 1440, "height": 1080 },
+          "fill": { "r": 244, "g": 235, "b": 223, "a": 0.9 },
+          "startTime": 12800,
+          "endTime": 16000,
+          "position": { "x": 0, "y": 0 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "zIndex": 700
+        },
+        {
+          "id": "quarter-title",
+          "type": "text",
+          "text": "{CLOSE_HEADLINE}",
+          "fontFamily": "Arial",
+          "fontSize": 64,
+          "fontWeight": "700",
+          "typographyPreset": "headline",
+          "textAlign": "left",
+          "maxWidth": 860,
+          "lineHeight": 1.1,
+          "textStroke": {
+            "color": { "r": 76, "g": 46, "b": 38, "a": 1 },
+            "width": 2
+          },
+          "textShadow": {
+            "color": { "r": 0, "g": 0, "b": 0, "a": 0.35 },
+            "blur": 8,
+            "offsetX": 0,
+            "offsetY": 2
+          },
+          "color": { "r": 64, "g": 46, "b": 38, "a": 1 },
+          "overlapMode": "avoid-text",
+          "startTime": 12800,
+          "endTime": 16000,
+          "position": { "x": 120, "y": 390 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "zIndex": 1450
+        }
+      ],
+      "transition": { "type": "fade", "duration": 700 }
+    }
+  ],
+  "audio": [
+    {
+      "id": "bgm-track",
+      "type": "music",
+      "src": "assets/audio/{BGM_TRACK}.wav",
+      "startTime": 0,
+      "endTime": 16000,
+      "volume": 0.16,
+      "loop": true
+    },
+    {
+      "id": "voice-1",
+      "type": "voice",
+      "src": "assets/audio/{VOICE_TRACK_1}.wav",
+      "startTime": 0,
+      "endTime": 4000,
+      "volume": 1
+    },
+    {
+      "id": "voice-2",
+      "type": "voice",
+      "src": "assets/audio/{VOICE_TRACK_2}.wav",
+      "startTime": 4000,
+      "endTime": 8500,
+      "volume": 1
+    },
+    {
+      "id": "voice-3",
+      "type": "voice",
+      "src": "assets/audio/{VOICE_TRACK_3}.wav",
+      "startTime": 8500,
+      "endTime": 12800,
+      "volume": 1
+    },
+    {
+      "id": "voice-4",
+      "type": "voice",
+      "src": "assets/audio/{VOICE_TRACK_4}.wav",
+      "startTime": 12800,
+      "endTime": 16000,
+      "volume": 1
+    }
+  ]
+}

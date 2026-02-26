@@ -4,7 +4,9 @@
     "subject": {
       "cyberpunk_finance_city": "cyberpunk financial district, neon market displays, holographic candlestick overlays",
       "cyberpunk_analyst_character": "cyberpunk analyst character, chrome details, augmented interface, focused expression",
-      "market_stress_symbolism": "volatile market atmosphere, red selloff flashes, distressed ticker walls"
+      "market_stress_symbolism": "volatile market atmosphere, red selloff flashes, distressed ticker walls",
+      "foodie_editorial_icecream": "foodie magazine editorial, artisan ice cream styling, macro food texture, premium plating",
+      "foodie_culinary_scene": "culinary magazine spread, warm natural light, elegant table styling, restrained prop layout"
     },
     "shot": {
       "fullbleed_hero": "epic wide hero framing, dominant center subject, cinematic depth",
@@ -16,11 +18,14 @@
       "hook": "high urgency opening beat, immediate visual impact",
       "thesis": "clear risk narrative, tension-forward visual language",
       "data_support": "chart-friendly background, reduced visual noise around labels",
-      "cta": "confident close with premium editorial look"
+      "cta": "confident close with premium editorial look",
+      "food_story": "editorial narrative beat, appetizing but clean layout",
+      "food_data_support": "data-forward culinary backdrop, typography-safe negative space"
     },
     "style_signature": {
       "cyberpunk_neon_noir": "neon noir cyberpunk aesthetic, volumetric haze, teal cyan and hot magenta accents, wet reflective surfaces",
-      "premium_finance": "editorial-grade composition, high legibility, cinematic contrast, clean depth layering"
+      "premium_finance": "editorial-grade composition, high legibility, cinematic contrast, clean depth layering",
+      "foodie_magazine_editorial": "foodie magazine editorial style, pastel cream tones, warm caramel accents, clean premium finish"
     },
     "quality": {
       "high_detail": "ultra detailed, crisp edges, coherent lighting, cinematic color grading",

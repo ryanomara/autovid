@@ -1,0 +1,86 @@
+{
+  "id": "foodie-magazine-v1",
+  "name": "Foodie Magazine Style Rules",
+  "version": "1.0.0",
+  "canvas": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "durationMs": 16000
+  },
+  "bleedSlots": {
+    "fullbleed": { "areaPercent": 100, "targetSize": "1920x1080", "targetAspect": "16:9" },
+    "halfbleed": { "areaPercent": 50, "targetSize": "960x1080", "targetAspect": "8:9" },
+    "thirdbleed": { "areaPercent": 33, "targetSize": "640x1080", "targetAspect": "640:1080" },
+    "quarterbleed": { "areaPercent": 25, "targetSize": "480x1080", "targetAspect": "4:9" }
+  },
+  "generationRules": {
+    "aspectFirst": true,
+    "seedReuse": {
+      "enabled": true,
+      "strategy": "singleConceptSeedAcrossAspectVariants",
+      "example": {
+        "concept": "artisan ice cream editorial",
+        "seed": 73,
+        "derivedVariants": ["fullbleed", "halfbleed", "thirdbleed", "quarterbleed"]
+      }
+    },
+    "promptBlocks": {
+      "coreIdentity": [
+        "foodie magazine editorial",
+        "artisan ice cream styling",
+        "macro food photography",
+        "natural soft light"
+      ],
+      "styleSignature": [
+        "pastel editorial palette",
+        "clean typography-safe negative space",
+        "premium culinary direction",
+        "high detail texture"
+      ],
+      "negativePrompt": [
+        "blurry",
+        "oversaturated",
+        "text watermark",
+        "plastic texture",
+        "harsh clipping"
+      ]
+    },
+    "audioPromptStyle": {
+      "provider": "https://huggingface.co/spaces/tencent/SongGeneration",
+      "lyricPolicy": "lyricless-instrumental-only",
+      "tempoOptionsBpm": [90, 120],
+      "promptSuffixTemplate": "instrumental only, lyricless, {BPM} BPM"
+    }
+  },
+  "placementRules": {
+    "dominantPlateMinAreaPercent": 33,
+    "maxCombinedVideoAreaPercent": 50,
+    "quarterbleedInset": {
+      "anchor": "corner",
+      "forbidden": ["nearCenterFloating"]
+    },
+    "noMicroVideoBlocksUnderPercentWidth": 18
+  },
+  "visualDirection": {
+    "palette": {
+      "background": [250, 244, 236],
+      "accentA": [231, 126, 89],
+      "accentB": [152, 212, 255],
+      "textPrimary": [64, 46, 38],
+      "textSecondary": [92, 72, 60]
+    },
+    "typography": {
+      "headline": {
+        "fontFamily": "Arial",
+        "fontWeight": 700,
+        "fontSizeRange": [56, 88]
+      },
+      "body": {
+        "fontFamily": "Arial",
+        "fontWeight": 600,
+        "fontSizeRange": [30, 36]
+      }
+    }
+  }
+}

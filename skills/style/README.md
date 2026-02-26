@@ -6,6 +6,7 @@ Use these blocks to assemble prompts per scene type while keeping visual consist
 
 - Core prompt blocks: `skills/style/prompt-styles.json`
 - Cyberpunk finance profile: `skills/style/cyberpunk-finance-scenes.md`
+- Foodie magazine profile: `skills/style/foodie-magazine-scenes.md`
 
 Recommended assembly order:
 
