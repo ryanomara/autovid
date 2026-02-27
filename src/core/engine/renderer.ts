@@ -36,10 +36,12 @@ import { Compositor, createPositionedLayer, BlendMode } from './compositor.js';
 import { Timeline, AnimatedProperties } from './timeline.js';
 import { FFmpegEncoder } from './ffmpeg.js';
 import { AudioMixer } from '../audio/mixer.js';
+import { assertNoNarrationOverlap } from '../audio/narration-overlap.js';
 import { TTSService } from '../audio/tts.js';
 import { HuggingFaceTTSProvider } from '../audio/providers/huggingface.js';
-import { applyBlur, applyGlow, applyTint } from '../effects/visual.js';
+import { applyBlur, applyGlow, applyShadow, applyTint } from '../effects/visual.js';
 import { generateParticles } from '../effects/particles.js';
+import type { ParticleEmitter } from '../effects/particles.js';
 import { loadLottie } from '../effects/lottie.js';
 import { CPURenderer } from '../3d/cpu-renderer.js';
 import { GPURenderer } from '../3d/gpu-renderer.js';
@@ -126,6 +128,11 @@ export class Renderer {
       renderWithoutTts,
       ttsMaxRetries
     );
+
+    await assertNoNarrationOverlap({
+      ...project,
+      audio: [...(project.audio || []), ...narrationTracks],
+    });
 
     const timeline = new Timeline({
       fps: project.config.fps,
@@ -257,7 +264,7 @@ export class Renderer {
       cameraState,
       project
     );
-    const textMargin = this.getSceneTextMargin(activeScene, cameraState.zoom);
+    const textMargin = this.getSceneTextMargin(activeScene, project.config, cameraState.zoom);
     const compositorLayers = [];
     const occupiedTextBounds: TextBounds[] = [];
     const occupiedObjectBounds: TextBounds[] = [];
@@ -267,9 +274,24 @@ export class Renderer {
     for (let i = 0; i < activeLayers.length; i++) {
       const layer = activeLayers[i];
       const props = timeline.getAnimatedPropertiesAtTime(layer, time);
+      const particleEmitter = await this.getParticleEmitterForLayer(
+        layer,
+        activeLayers,
+        timeline,
+        time,
+        cameraState,
+        project.config,
+        compositor
+      );
 
       try {
-        const layerBuffer = await this.renderLayer(layer, props, project.config, time);
+        const layerBuffer = await this.renderLayer(
+          layer,
+          props,
+          project.config,
+          time,
+          particleEmitter
+        );
 
         if (layerBuffer) {
           const transformed = compositor.applyTransform(
@@ -397,7 +419,8 @@ export class Renderer {
     layer: Layer,
     props: AnimatedProperties,
     config: VideoConfig,
-    time: Timestamp
+    time: Timestamp,
+    particleEmitter?: ParticleEmitter
   ): Promise<PixelBuffer | null> {
     if (layer.visible === false) return null;
 
@@ -413,7 +436,13 @@ export class Renderer {
       case 'video':
         return await this.renderVideoLayer(layer as VideoLayer, props, time);
       case 'effect':
-        return await this.renderEffectLayer(layer as EffectLayer, props, config);
+        return await this.renderEffectLayer(
+          layer as EffectLayer,
+          props,
+          config,
+          time,
+          particleEmitter
+        );
       case '3d':
         return await this.render3DLayer(layer as Layer3D, props, config);
       default: {
@@ -427,7 +456,9 @@ export class Renderer {
   private async renderEffectLayer(
     layer: EffectLayer,
     _props: AnimatedProperties,
-    config: VideoConfig
+    config: VideoConfig,
+    time: Timestamp,
+    particleEmitter?: ParticleEmitter
   ): Promise<PixelBuffer | null> {
     const base = createBuffer(config.width, config.height);
     fillBuffer(base, { r: 0, g: 0, b: 0, a: 0 });
@@ -438,11 +469,28 @@ export class Renderer {
       case 'glow':
         return await applyGlow(base, layer.params || {});
       case 'shadow':
-        return await applyBlur(base, layer.params || {});
+        return await applyShadow(base, layer.params || {});
       case 'particles':
         return generateParticles(base, {
           preset: layer.params?.preset || 'confetti',
           count: layer.params?.count || 250,
+          timeMs: time - layer.startTime,
+          seed: layer.params?.seed,
+          speed: layer.params?.speed,
+          size: layer.params?.size,
+          wind: layer.params?.wind,
+          opacity: layer.params?.opacity,
+          emitter: particleEmitter,
+          edgeFallbackRatio: layer.params?.edgeFallbackRatio,
+          birthRate: layer.params?.birthRate,
+          lifetime: layer.params?.lifetime,
+          velocity: layer.params?.velocity,
+          drag: layer.params?.drag,
+          turbulence: layer.params?.turbulence,
+          spread: layer.params?.spread,
+          inheritVelocity: layer.params?.inheritVelocity,
+          gravityX: layer.params?.gravityX,
+          gravityY: layer.params?.gravityY,
         });
       case 'custom':
         if (layer.params?.tint) {
@@ -966,7 +1014,360 @@ export class Renderer {
     };
   }
 
-  private getSceneTextMargin(scene: Scene, zoom: number): number {
+  private async getParticleEmitterForLayer(
+    layer: Layer,
+    activeLayers: Layer[],
+    timeline: Timeline,
+    time: Timestamp,
+    cameraState: ReturnType<typeof getCameraStateAtTime>,
+    config: VideoConfig,
+    compositor: Compositor
+  ): Promise<ParticleEmitter | undefined> {
+    if (layer.type !== 'effect') {
+      return undefined;
+    }
+
+    const effectLayer = layer as EffectLayer;
+    if (effectLayer.effectType !== 'particles') {
+      return undefined;
+    }
+
+    const sourceLayerId =
+      typeof effectLayer.params?.sourceLayerId === 'string'
+        ? effectLayer.params.sourceLayerId.trim()
+        : '';
+
+    if (!sourceLayerId) {
+      return undefined;
+    }
+
+    const sourceLayer = activeLayers.find((candidate) => candidate.id === sourceLayerId);
+    if (!sourceLayer) {
+      return undefined;
+    }
+
+    const sourceAnchor =
+      typeof effectLayer.params?.sourceAnchor === 'string'
+        ? effectLayer.params.sourceAnchor.trim()
+        : 'edge';
+
+    if (sourceAnchor === 'chart-line-tip' && sourceLayer.type === 'chart') {
+      const tip = this.getChartLineTipEmitter(
+        sourceLayer as ChartLayer,
+        timeline,
+        time,
+        cameraState,
+        config
+      );
+      if (tip) {
+        return tip;
+      }
+    }
+
+    if (sourceLayer.type === 'effect' || sourceLayer.type === '3d') {
+      return this.measureLayerBoundsAtTime(sourceLayer, timeline, time, cameraState, config);
+    }
+
+    const sourceProps = timeline.getAnimatedPropertiesAtTime(sourceLayer, time);
+    const sourceBuffer = await this.renderLayer(sourceLayer, sourceProps, config, time);
+    if (!sourceBuffer) {
+      return this.measureLayerBoundsAtTime(sourceLayer, timeline, time, cameraState, config);
+    }
+
+    const transformed = compositor.applyTransform(
+      sourceBuffer,
+      { x: sourceProps.scale.x * cameraState.zoom, y: sourceProps.scale.y * cameraState.zoom },
+      sourceProps.rotation + cameraState.rotation
+    );
+
+    const placement = this.computeLayerScreenPlacement(
+      sourceLayer,
+      sourceProps,
+      transformed,
+      cameraState,
+      config
+    );
+    const edgePoints = this.extractVisibleEdgePoints(transformed, placement.x, placement.y, config);
+
+    return {
+      x: placement.x,
+      y: placement.y,
+      width: placement.width,
+      height: placement.height,
+      edgePoints,
+    };
+  }
+
+  private computeLayerScreenPlacement(
+    layer: Layer,
+    props: AnimatedProperties,
+    transformed: PixelBuffer,
+    cameraState: ReturnType<typeof getCameraStateAtTime>,
+    config: VideoConfig
+  ): { x: number; y: number; width: number; height: number } {
+    let x = Math.round(props.position.x - cameraState.position.x + config.width / 2);
+    let y = Math.round(props.position.y - cameraState.position.y + config.height / 2);
+
+    if (layer.type === 'text') {
+      const textAlign = (layer as TextLayer).textAlign ?? 'left';
+      if (textAlign === 'center') {
+        x -= Math.round(transformed.width / 2);
+      } else if (textAlign === 'right') {
+        x -= transformed.width;
+      }
+    }
+
+    const clampedX = this.clampPosition(x, 0, config.width - 1);
+    const clampedY = this.clampPosition(y, 0, config.height - 1);
+    const maxWidth = Math.max(1, config.width - clampedX);
+    const maxHeight = Math.max(1, config.height - clampedY);
+
+    return {
+      x: clampedX,
+      y: clampedY,
+      width: Math.min(transformed.width, maxWidth),
+      height: Math.min(transformed.height, maxHeight),
+    };
+  }
+
+  private getChartLineTipEmitter(
+    layer: ChartLayer,
+    timeline: Timeline,
+    time: Timestamp,
+    cameraState: ReturnType<typeof getCameraStateAtTime>,
+    config: VideoConfig
+  ): ParticleEmitter | undefined {
+    if (layer.chartType !== 'line' || layer.data.values.length === 0) {
+      return undefined;
+    }
+
+    const props = timeline.getAnimatedPropertiesAtTime(layer, time);
+    const progressCandidate = (props as unknown as { chartProgress?: number }).chartProgress;
+    const progress =
+      typeof progressCandidate === 'number' ? Math.max(0, Math.min(1, progressCandidate)) : 1;
+
+    const values = layer.data.values;
+    const width = Math.max(
+      1,
+      Math.round(layer.dimensions.width * props.scale.x * cameraState.zoom)
+    );
+    const height = Math.max(
+      1,
+      Math.round(layer.dimensions.height * props.scale.y * cameraState.zoom)
+    );
+
+    const margin = { top: 84, right: 52, bottom: 92, left: 92 };
+    const plot = {
+      x: margin.left,
+      y: margin.top,
+      width: Math.max(1, width - margin.left - margin.right),
+      height: Math.max(1, height - margin.top - margin.bottom),
+    };
+
+    const computedMin = Math.min(...values, 0);
+    const computedMax = Math.max(...values, 1);
+    const min = layer.yAxis?.min ?? computedMin;
+    const max = layer.yAxis?.max ?? computedMax;
+    const safeRange = max - min === 0 ? 1 : max - min;
+
+    const points = values.map((value, i) => {
+      const x =
+        plot.x + (values.length === 1 ? plot.width / 2 : (i / (values.length - 1)) * plot.width);
+      const norm = (value - min) / safeRange;
+      const y = plot.y + (1 - norm) * plot.height;
+      return { x, y };
+    });
+
+    const segmentCount = Math.max(1, points.length - 1);
+    const revealStyle =
+      (layer.style?.lineRevealEasing as
+        | 'linear'
+        | 'organic'
+        | 'cinematic'
+        | 'elastic'
+        | 'bounce'
+        | undefined) ?? 'organic';
+    const animatedSegments = progress * segmentCount;
+    const fullSegments = Math.floor(animatedSegments);
+    const partialProgressRaw = animatedSegments - fullSegments;
+    const partialProgress = this.resolveChartRevealProgress(partialProgressRaw, revealStyle);
+
+    let tip = points[Math.max(0, Math.min(points.length - 1, fullSegments))];
+    let direction = { x: 1, y: 0 };
+    const visiblePath: Array<{ x: number; y: number }> = [];
+    for (let i = 0; i <= Math.min(fullSegments, points.length - 1); i += 1) {
+      visiblePath.push(points[i]);
+    }
+
+    if (fullSegments < segmentCount && partialProgress > 0) {
+      const start = points[fullSegments];
+      const end = points[fullSegments + 1];
+      direction = { x: end.x - start.x, y: end.y - start.y };
+      tip = {
+        x: start.x + (end.x - start.x) * partialProgress,
+        y: start.y + (end.y - start.y) * partialProgress,
+      };
+      visiblePath.push(tip);
+    } else if (fullSegments > 0) {
+      const start = points[Math.max(0, fullSegments - 1)];
+      const end = points[Math.min(points.length - 1, fullSegments)];
+      direction = { x: end.x - start.x, y: end.y - start.y };
+    } else if (progress >= 1) {
+      const start = points[Math.max(0, points.length - 2)] ?? points[0];
+      const end = points[points.length - 1];
+      direction = { x: end.x - start.x, y: end.y - start.y };
+      tip = points[points.length - 1];
+    }
+
+    if (visiblePath.length === 0) {
+      visiblePath.push(points[0]);
+    }
+
+    const layerX = props.position.x - cameraState.position.x + config.width / 2;
+    const layerY = props.position.y - cameraState.position.y + config.height / 2;
+
+    const worldPath = visiblePath.map((point) => ({
+      x: this.clampPosition(Math.round(layerX + point.x), 0, config.width - 1),
+      y: this.clampPosition(Math.round(layerY + point.y), 0, config.height - 1),
+    }));
+
+    const minX = Math.min(...worldPath.map((p) => p.x));
+    const maxX = Math.max(...worldPath.map((p) => p.x));
+    const minY = Math.min(...worldPath.map((p) => p.y));
+    const maxY = Math.max(...worldPath.map((p) => p.y));
+
+    return {
+      x: minX,
+      y: minY,
+      width: Math.max(1, maxX - minX + 1),
+      height: Math.max(1, maxY - minY + 1),
+      edgePoints: worldPath,
+      flow: 'trail',
+      directionX: direction.x,
+      directionY: direction.y,
+      trailLength: 120,
+      trailSpread: 16,
+    };
+  }
+
+  private measureLayerBoundsAtTime(
+    layer: Layer,
+    timeline: Timeline,
+    time: Timestamp,
+    cameraState: ReturnType<typeof getCameraStateAtTime>,
+    config: VideoConfig
+  ): ParticleEmitter {
+    const props = timeline.getAnimatedPropertiesAtTime(layer, time);
+
+    let width = 0;
+    let height = 0;
+
+    if (layer.type === 'text') {
+      const textLayer = layer as TextLayer;
+      const metrics = measureText({
+        text: textLayer.text,
+        fontSize: textLayer.fontSize,
+        fontFamily: textLayer.fontFamily,
+        fontWeight: textLayer.fontWeight,
+        fontStyle: textLayer.fontStyle,
+        color: { r: 0, g: 0, b: 0, a: 1 },
+        maxWidth: textLayer.maxWidth,
+      });
+      width = metrics.width;
+      height = metrics.height;
+    } else if (layer.type === 'shape' || layer.type === 'chart') {
+      width = layer.dimensions.width;
+      height = layer.dimensions.height;
+    } else if (layer.type === 'image') {
+      width = layer.dimensions?.width ?? 320;
+      height = layer.dimensions?.height ?? 240;
+    } else if (layer.type === 'video') {
+      const videoLayer = layer as VideoLayer;
+      width = videoLayer.dimensions?.width ?? videoLayer.width ?? 320;
+      height = videoLayer.dimensions?.height ?? videoLayer.height ?? 240;
+    } else {
+      width = config.width;
+      height = config.height;
+    }
+
+    const scaledWidth = Math.max(1, Math.round(width * props.scale.x * cameraState.zoom));
+    const scaledHeight = Math.max(1, Math.round(height * props.scale.y * cameraState.zoom));
+
+    let x = Math.round(props.position.x - cameraState.position.x + config.width / 2);
+    const y = Math.round(props.position.y - cameraState.position.y + config.height / 2);
+
+    if (layer.type === 'text') {
+      const textAlign = (layer as TextLayer).textAlign ?? 'left';
+      if (textAlign === 'center') {
+        x -= Math.round(scaledWidth / 2);
+      } else if (textAlign === 'right') {
+        x -= scaledWidth;
+      }
+    }
+
+    const clampedX = this.clampPosition(x, 0, config.width - 1);
+    const clampedY = this.clampPosition(y, 0, config.height - 1);
+    const maxWidth = Math.max(1, config.width - clampedX);
+    const maxHeight = Math.max(1, config.height - clampedY);
+
+    return {
+      x: clampedX,
+      y: clampedY,
+      width: Math.min(scaledWidth, maxWidth),
+      height: Math.min(scaledHeight, maxHeight),
+    };
+  }
+
+  private extractVisibleEdgePoints(
+    buffer: PixelBuffer,
+    offsetX: number,
+    offsetY: number,
+    config: VideoConfig
+  ): Array<{ x: number; y: number }> {
+    const points: Array<{ x: number; y: number }> = [];
+    const width = buffer.width;
+    const height = buffer.height;
+    const maxPoints = 5000;
+    const step = Math.max(1, Math.floor(Math.min(width, height) / 240));
+
+    for (let y = 0; y < height; y += step) {
+      for (let x = 0; x < width; x += step) {
+        const idx = (y * width + x) * 4;
+        const alpha = buffer.data[idx + 3];
+        if (alpha < 24) {
+          continue;
+        }
+
+        const leftAlpha = x > 0 ? buffer.data[(y * width + (x - 1)) * 4 + 3] : 0;
+        const rightAlpha = x + 1 < width ? buffer.data[(y * width + (x + 1)) * 4 + 3] : 0;
+        const upAlpha = y > 0 ? buffer.data[((y - 1) * width + x) * 4 + 3] : 0;
+        const downAlpha = y + 1 < height ? buffer.data[((y + 1) * width + x) * 4 + 3] : 0;
+        const isEdge = leftAlpha < 20 || rightAlpha < 20 || upAlpha < 20 || downAlpha < 20;
+        if (!isEdge) {
+          continue;
+        }
+
+        const worldX = this.clampPosition(offsetX + x, 0, config.width - 1);
+        const worldY = this.clampPosition(offsetY + y, 0, config.height - 1);
+        points.push({ x: worldX, y: worldY });
+        if (points.length >= maxPoints) {
+          return points;
+        }
+      }
+    }
+
+    return points;
+  }
+
+  private getSceneTextMargin(scene: Scene, config: VideoConfig, zoom: number): number {
+    if (typeof scene.textSafeMargin === 'number' && Number.isFinite(scene.textSafeMargin)) {
+      return Math.max(0, Math.ceil(scene.textSafeMargin));
+    }
+
+    if (typeof config.textSafeMargin === 'number' && Number.isFinite(config.textSafeMargin)) {
+      return Math.max(0, Math.ceil(config.textSafeMargin));
+    }
+
     const textLayers = scene.layers.filter((layer) => layer.type === 'text') as TextLayer[];
     if (textLayers.length === 0) {
       return 0;
@@ -993,6 +1394,68 @@ export class Renderer {
       return min;
     }
     return Math.min(Math.max(value, min), max);
+  }
+
+  private resolveChartRevealProgress(
+    t: number,
+    style: 'linear' | 'organic' | 'cinematic' | 'elastic' | 'bounce'
+  ): number {
+    const clamped = Math.max(0, Math.min(1, t));
+
+    switch (style) {
+      case 'linear':
+        return clamped;
+      case 'cinematic':
+        return this.smootherStep(clamped);
+      case 'elastic':
+        return Math.max(0, Math.min(1, this.easeOutElastic(clamped)));
+      case 'bounce':
+        return this.easeOutBounce(clamped);
+      case 'organic':
+      default:
+        return this.easeInOutSine(clamped);
+    }
+  }
+
+  private easeInOutSine(t: number): number {
+    const clamped = Math.max(0, Math.min(1, t));
+    return -(Math.cos(Math.PI * clamped) - 1) / 2;
+  }
+
+  private smootherStep(t: number): number {
+    return t * t * t * (t * (t * 6 - 15) + 10);
+  }
+
+  private easeOutElastic(t: number): number {
+    if (t === 0) {
+      return 0;
+    }
+    if (t === 1) {
+      return 1;
+    }
+
+    const c4 = (2 * Math.PI) / 3;
+    return Math.pow(2, -10 * t) * Math.sin((t * 10 - 0.75) * c4) + 1;
+  }
+
+  private easeOutBounce(t: number): number {
+    const n1 = 7.5625;
+    const d1 = 2.75;
+
+    if (t < 1 / d1) {
+      return n1 * t * t;
+    }
+    if (t < 2 / d1) {
+      const x = t - 1.5 / d1;
+      return n1 * x * x + 0.75;
+    }
+    if (t < 2.5 / d1) {
+      const x = t - 2.25 / d1;
+      return n1 * x * x + 0.9375;
+    }
+
+    const x = t - 2.625 / d1;
+    return n1 * x * x + 0.984375;
   }
 
   private isPositionAnimated(layer: Layer): boolean {

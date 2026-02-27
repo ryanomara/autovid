@@ -44,6 +44,7 @@ export interface VideoConfig {
   height: number;
   fps: number;
   duration: number; // milliseconds
+  textSafeMargin?: number;
   backgroundColor?: Color;
   outputFormat: 'mp4' | 'webm' | 'gif' | 'frames';
   quality?: 'low' | 'medium' | 'high' | 'ultra';
@@ -247,8 +248,6 @@ export interface ChartLayer extends BaseLayer {
     min?: number;
     max?: number;
     ticks?: number;
-    /** Axis value format: number, currency, percentage, or compact */
-    format?: 'number' | 'currency' | 'percentage' | 'compact';
   };
   style?: {
     axisColor?: Color;
@@ -264,10 +263,7 @@ export interface ChartLayer extends BaseLayer {
     showValues?: boolean;
     maxLabels?: number;
     valueDecimals?: number;
-    /** Enable anti-aliased rendering for lines and points (default: true) */
-    antiAlias?: boolean;
-    /** Enable smart label placement with better collision avoidance (default: true) */
-    smartLabels?: boolean;
+    lineRevealEasing?: 'linear' | 'organic' | 'cinematic' | 'elastic' | 'bounce';
   };
 }
 
@@ -306,6 +302,7 @@ export interface Scene {
   startTime: Timestamp;
   endTime: Timestamp;
   layers: Layer[];
+  textSafeMargin?: number;
   narration?: {
     text: string;
     voice?: string;

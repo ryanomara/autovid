@@ -4,23 +4,16 @@ import {
   drawRect,
   drawLine,
   drawCircle,
-  drawLineAA,
-  drawCircleAA,
   blitBuffer,
   type PixelBuffer,
 } from './canvas.js';
 import { renderText } from './text-renderer.js';
-import { formatAxisValue, inferAxisFormat } from './format-axis.js';
-import { calculateLabelDensity, getPacingPreset } from '../storytelling/pacing.js';
-import type { PacingPreset } from '../storytelling/pacing.js';
 
 interface ChartRenderOptions {
   progress?: number;
-  /** Scene duration in ms - used for label density calculation */
-  sceneDuration?: number;
-  /** Pacing preset - used to determine label density */
-  pacingPreset?: PacingPreset;
 }
+
+type ChartRevealStyle = 'linear' | 'organic' | 'cinematic' | 'elastic' | 'bounce';
 
 interface ChartPalette {
   axis: Color;
@@ -53,6 +46,69 @@ function rectsIntersect(a: Rect, b: Rect): boolean {
 
 function intersectsAny(target: Rect, blockers: Rect[]): boolean {
   return blockers.some((blocker) => rectsIntersect(target, blocker));
+}
+
+function easeInOutSine(t: number): number {
+  const clamped = Math.max(0, Math.min(1, t));
+  return -(Math.cos(Math.PI * clamped) - 1) / 2;
+}
+
+function resolveRevealProgress(t: number, style: ChartRevealStyle): number {
+  const clamped = Math.max(0, Math.min(1, t));
+
+  switch (style) {
+    case 'linear':
+      return clamped;
+    case 'cinematic':
+      return smootherStep(clamped);
+    case 'elastic':
+      return clamp01(easeOutElastic(clamped));
+    case 'bounce':
+      return easeOutBounce(clamped);
+    case 'organic':
+    default:
+      return easeInOutSine(clamped);
+  }
+}
+
+function smootherStep(t: number): number {
+  return t * t * t * (t * (t * 6 - 15) + 10);
+}
+
+function easeOutElastic(t: number): number {
+  if (t === 0) {
+    return 0;
+  }
+  if (t === 1) {
+    return 1;
+  }
+
+  const c4 = (2 * Math.PI) / 3;
+  return Math.pow(2, -10 * t) * Math.sin((t * 10 - 0.75) * c4) + 1;
+}
+
+function easeOutBounce(t: number): number {
+  const n1 = 7.5625;
+  const d1 = 2.75;
+
+  if (t < 1 / d1) {
+    return n1 * t * t;
+  }
+  if (t < 2 / d1) {
+    const x = t - 1.5 / d1;
+    return n1 * x * x + 0.75;
+  }
+  if (t < 2.5 / d1) {
+    const x = t - 2.25 / d1;
+    return n1 * x * x + 0.9375;
+  }
+
+  const x = t - 2.625 / d1;
+  return n1 * x * x + 0.984375;
+}
+
+function clamp01(value: number): number {
+  return Math.max(0, Math.min(1, value));
 }
 
 const defaults: ChartPalette = {
@@ -103,25 +159,8 @@ export function renderChartLayer(layer: ChartLayer, options: ChartRenderOptions 
   const showPoints = layer.style?.showPoints ?? true;
   const showValues = layer.style?.showValues ?? true;
   const labelLimit = Math.max(2, layer.style?.maxLabels ?? 6);
-  // M1: Anti-aliasing and smart label placement
-  const antiAlias = layer.style?.antiAlias ?? true;
-  const smartLabels = layer.style?.smartLabels ?? true;
-
-  // M2: Calculate label density based on pacing if provided
-  let effectiveLabelLimit = labelLimit;
-  if (options.sceneDuration && options.pacingPreset && smartLabels) {
-    const labelDensity = calculateLabelDensity(
-      values.length,
-      options.sceneDuration,
-      { name: options.pacingPreset, ...getPacingPreset(options.pacingPreset) }
-    );
-    effectiveLabelLimit = Math.min(labelDensity.recommendedLabels, labelLimit);
-  }
   const valueDecimals = Math.max(0, layer.style?.valueDecimals ?? 2);
   const progress = Math.max(0, Math.min(1, options.progress ?? 1));
-
-  // M1: Financial axis formatting
-  const axisFormat = layer.yAxis?.format ?? inferAxisFormat(values);
 
   for (let i = 0; i < ticks; i++) {
     const t = i / (ticks - 1);
@@ -132,7 +171,7 @@ export function renderChartLayer(layer: ChartLayer, options: ChartRenderOptions 
 
     const value = max - t * safeRange;
     const labelBuffer = renderText({
-      text: formatAxisValue(value, { type: axisFormat, decimals: valueDecimals }),
+      text: Number.isInteger(value) ? String(value) : value.toFixed(2),
       fontSize: 20,
       fontFamily: 'Arial',
       fontWeight: 'bold',
@@ -177,16 +216,15 @@ export function renderChartLayer(layer: ChartLayer, options: ChartRenderOptions 
     });
 
     const segmentCount = Math.max(1, points.length - 1);
+    const revealStyle =
+      (layer.style?.lineRevealEasing as ChartRevealStyle | undefined) ?? 'organic';
     const animatedSegments = progress * segmentCount;
     const fullSegments = Math.floor(animatedSegments);
-    const partialProgress = animatedSegments - fullSegments;
+    const partialProgressRaw = animatedSegments - fullSegments;
+    const partialProgress = resolveRevealProgress(partialProgressRaw, revealStyle);
 
     for (let i = 0; i < fullSegments; i++) {
-      if (antiAlias) {
-        drawLineAA(buffer, points[i], points[i + 1], palette.line, lineWidth);
-      } else {
-        drawLine(buffer, points[i], points[i + 1], palette.line, lineWidth);
-      }
+      drawLine(buffer, points[i], points[i + 1], palette.line, lineWidth);
     }
 
     if (fullSegments < segmentCount && partialProgress > 0) {
@@ -196,16 +234,16 @@ export function renderChartLayer(layer: ChartLayer, options: ChartRenderOptions 
         x: start.x + (end.x - start.x) * partialProgress,
         y: start.y + (end.y - start.y) * partialProgress,
       };
-      if (antiAlias) {
-        drawLineAA(buffer, start, partialPoint, palette.line, lineWidth);
-      } else {
-        drawLine(buffer, start, partialPoint, palette.line, lineWidth);
-      }
+      drawLine(buffer, start, partialPoint, palette.line, lineWidth);
     }
 
-    const visiblePointCount = Math.max(1, Math.ceil(progress * points.length));
+    const easedSegmentProgress = fullSegments + partialProgress;
+    const visiblePointCount = Math.max(
+      1,
+      Math.ceil((Math.min(segmentCount, easedSegmentProgress) / segmentCount) * points.length)
+    );
     const visiblePoints = points.slice(0, visiblePointCount);
-    const labelStride = Math.max(1, Math.ceil(points.length / effectiveLabelLimit));
+    const labelStride = Math.max(1, Math.ceil(points.length / labelLimit));
     const occupiedRects: Rect[] = [];
 
     for (const point of visiblePoints) {
@@ -222,11 +260,7 @@ export function renderChartLayer(layer: ChartLayer, options: ChartRenderOptions 
     for (let index = 0; index < visiblePoints.length; index++) {
       const point = visiblePoints[index];
       if (showPoints) {
-        if (antiAlias) {
-          drawCircleAA(buffer, point, pointRadius, palette.line);
-        } else {
-          drawCircle(buffer, point, pointRadius, palette.line);
-        }
+        drawCircle(buffer, point, pointRadius, palette.line);
       }
 
       const shouldDrawLabel =
@@ -252,7 +286,9 @@ export function renderChartLayer(layer: ChartLayer, options: ChartRenderOptions 
 
       if (showValues) {
         const valueBuffer = renderText({
-          text: formatAxisValue(point.value, { type: axisFormat, decimals: valueDecimals }),
+          text: Number.isInteger(point.value)
+            ? String(point.value)
+            : point.value.toFixed(valueDecimals),
           fontSize: 18,
           fontFamily: 'Arial',
           fontWeight: 'bold',
@@ -315,7 +351,7 @@ export function renderChartLayer(layer: ChartLayer, options: ChartRenderOptions 
 
       if (showValues && perBarProgress > 0.55) {
         const valueBuffer = renderText({
-          text: formatAxisValue(value, { type: axisFormat, decimals: valueDecimals }),
+          text: Number.isInteger(value) ? String(value) : value.toFixed(valueDecimals),
           fontSize: 18,
           fontFamily: 'Arial',
           fontWeight: 'bold',
