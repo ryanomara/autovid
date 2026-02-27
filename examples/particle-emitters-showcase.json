@@ -1,0 +1,205 @@
+{
+  "id": "particle-emitters-showcase",
+  "name": "Particle Emitters Showcase",
+  "config": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "duration": 7000,
+    "backgroundColor": { "r": 7, "g": 12, "b": 22, "a": 1 },
+    "outputFormat": "mp4",
+    "quality": "high"
+  },
+  "scenes": [
+    {
+      "id": "emitters-demo",
+      "name": "Chart, Text, and Globe Emitters",
+      "startTime": 0,
+      "endTime": 7000,
+      "layers": [
+        {
+          "id": "bg-gradient-plate",
+          "type": "shape",
+          "shapeType": "rectangle",
+          "dimensions": { "width": 1920, "height": 1080 },
+          "fill": { "r": 8, "g": 16, "b": 31, "a": 1 },
+          "position": { "x": 0, "y": 0 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "startTime": 0,
+          "endTime": 7000,
+          "zIndex": 10
+        },
+        {
+          "id": "trend-chart",
+          "type": "chart",
+          "chartType": "line",
+          "title": "Momentum Index",
+          "dimensions": { "width": 920, "height": 520 },
+          "data": {
+            "labels": ["W1", "W2", "W3", "W4", "W5", "W6", "W7"],
+            "values": [42, 46, 45, 52, 59, 63, 68]
+          },
+          "yAxis": { "min": 38, "max": 72, "ticks": 6 },
+          "style": {
+            "lineColor": { "r": 90, "g": 217, "b": 255, "a": 1 },
+            "labelColor": { "r": 183, "g": 214, "b": 235, "a": 1 },
+            "valueColor": { "r": 235, "g": 246, "b": 255, "a": 1 },
+            "showGrid": true,
+            "showPoints": true,
+            "showValues": true,
+            "valueDecimals": 0,
+            "lineRevealEasing": "organic"
+          },
+          "position": { "x": 90, "y": 240 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "startTime": 0,
+          "endTime": 7000,
+          "zIndex": 180,
+          "animations": [
+            {
+              "property": "chartProgress",
+              "keyframes": [
+                { "time": 0, "value": 0 },
+                { "time": 5600, "value": 1 }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "chart-emitter",
+          "type": "effect",
+          "effectType": "particles",
+          "params": {
+            "preset": "sparks",
+            "count": 190,
+            "sourceLayerId": "trend-chart",
+            "sourceAnchor": "chart-line-tip",
+            "seed": 51,
+            "speed": 0.95,
+            "size": 0.9,
+            "wind": 0.12,
+            "opacity": 0.88,
+            "edgeFallbackRatio": 0,
+            "birthRate": 260,
+            "lifetime": 1.4,
+            "velocity": 260,
+            "drag": 1.2,
+            "turbulence": 22,
+            "spread": 120,
+            "inheritVelocity": 0.18,
+            "gravityX": 0,
+            "gravityY": 28
+          },
+          "position": { "x": 0, "y": 0 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "startTime": 0,
+          "endTime": 7000,
+          "zIndex": 260
+        },
+        {
+          "id": "pulse-text",
+          "type": "text",
+          "text": "SIGNAL LOCK",
+          "fontFamily": "Arial",
+          "fontSize": 92,
+          "fontWeight": "700",
+          "textAlign": "left",
+          "color": { "r": 255, "g": 241, "b": 175, "a": 1 },
+          "textStroke": {
+            "color": { "r": 36, "g": 29, "b": 12, "a": 1 },
+            "width": 2
+          },
+          "position": { "x": 1080, "y": 120 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "startTime": 0,
+          "endTime": 7000,
+          "zIndex": 980
+        },
+        {
+          "id": "text-emitter",
+          "type": "effect",
+          "effectType": "particles",
+          "params": {
+            "preset": "confetti",
+            "count": 140,
+            "sourceLayerId": "pulse-text",
+            "seed": 11,
+            "speed": 1.1,
+            "size": 0.85,
+            "wind": 0.08,
+            "opacity": 0.85,
+            "edgeFallbackRatio": 0
+          },
+          "position": { "x": 0, "y": 0 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "startTime": 0,
+          "endTime": 7000,
+          "zIndex": 720
+        },
+        {
+          "id": "globe-shell",
+          "type": "shape",
+          "shapeType": "circle",
+          "dimensions": { "width": 430, "height": 430 },
+          "fill": { "r": 56, "g": 117, "b": 198, "a": 0.32 },
+          "position": { "x": 1360, "y": 340 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "startTime": 0,
+          "endTime": 7000,
+          "zIndex": 320
+        },
+        {
+          "id": "globe-atmosphere",
+          "type": "effect",
+          "effectType": "particles",
+          "params": {
+            "preset": "smoke",
+            "count": 460,
+            "sourceLayerId": "globe-shell",
+            "seed": 77,
+            "speed": 0.8,
+            "size": 1.2,
+            "wind": -0.07,
+            "opacity": 0.86,
+            "edgeFallbackRatio": 0
+          },
+          "position": { "x": 0, "y": 0 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "startTime": 0,
+          "endTime": 7000,
+          "zIndex": 360
+        },
+        {
+          "id": "globe-highlight",
+          "type": "shape",
+          "shapeType": "circle",
+          "dimensions": { "width": 430, "height": 430 },
+          "fill": { "r": 194, "g": 232, "b": 255, "a": 0.09 },
+          "position": { "x": 1360, "y": 340 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "startTime": 0,
+          "endTime": 7000,
+          "zIndex": 410
+        }
+      ],
+      "transition": { "type": "fade", "duration": 500 }
+    }
+  ],
+  "audio": []
+}

@@ -16,3 +16,19 @@ Recommended assembly order:
 4. Style signature block
 5. Technical quality block
 6. Optional negatives
+
+## Agent Auto-Pick: Chart Motion
+
+For line charts, agents should set `chart.style.lineRevealEasing` by intent:
+
+- `organic` (default): balanced premium motion, general-purpose finance.
+- `cinematic`: slower settle at points, boardroom/editorial tone.
+- `elastic`: energetic overshoot feel for hype/growth moments.
+- `bounce`: playful explainers or lightweight social narratives.
+- `linear`: strict utility/diagnostic views.
+
+If no explicit creative direction is provided, prefer:
+
+1. `organic` for normal chart storytelling
+2. `cinematic` for premium/high-trust narratives
+3. `linear` only when clarity and neutrality are the sole goal

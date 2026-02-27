@@ -381,6 +381,37 @@ These rules codify common failure modes seen in generated scenes. Agents should 
 - [ ] Peaks and drawdowns visually align with annotated values.
 - [ ] Axis, grid, marks, and labels are separable at a glance.
 
+### 13.3.4 Chart Motion Presets (Line Reveal)
+
+Use `style.lineRevealEasing` on `chart` layers to pick the reveal feel.
+
+- `organic` (default): smooth ramp in/out at each point, balanced and natural.
+- `cinematic`: slower settle at key points, premium editorial pacing.
+- `elastic`: slight overshoot/spring feel at segment ends, high energy.
+- `bounce`: playful rebound feel, suitable for casual/explainer stories.
+- `linear`: uniform velocity, technical/minimal look.
+
+Recommended intent mapping:
+
+- Finance/pro charts: `organic` or `cinematic`.
+- Growth hype/social clips: `elastic`.
+- Casual educational or youth tone: `bounce`.
+- Strict utility dashboards: `linear`.
+
+Example:
+
+```json
+{
+  "type": "chart",
+  "chartType": "line",
+  "style": {
+    "lineRevealEasing": "cinematic",
+    "lineWidth": 5,
+    "showPoints": true
+  }
+}
+```
+
 ### 13.4 Financial Chart Readability
 
 - Maximum one primary metric label per quadrant.
@@ -547,7 +578,29 @@ For non-chart, non-text accompaniment assets:
 
 These commands generate local media + sidecar metadata files (`*.asset.json`) that can be used in `image` and `video` layers.
 
-### 13.12 Lessons Learned: Line Height Semantics (Critical)
+### 13.13 External Audio Workflow (Background Music + SFX)
+
+For generated background music and light SFX beds, use Tencent SongGeneration via Hugging Face:
+
+- Space: `https://huggingface.co/spaces/tencent/SongGeneration`
+- CLI:
+  - `autovid assets audio "prompt" -o assets/audio/scene-bgm.wav`
+
+Hard prompt-style rules:
+
+- Use **lyricless/instrumental** prompts by default (no vocals unless explicitly requested).
+- Include target tempo hint in prompt as **90 BPM** or **120 BPM**.
+- Preferred wording pattern:
+  - `"<mood and instrumentation>, instrumental only, lyricless, 90 BPM"`
+  - or `"<mood and instrumentation>, instrumental only, lyricless, 120 BPM"`
+
+Mixing policy:
+
+- Keep generated BGM under narration (`volume` typically `0.08` to `0.25`).
+- Never let generated BGM mask KPI/CTA narration intelligibility.
+- For narration-first videos, default to sparse textures and soft transients.
+
+### 13.14 Lessons Learned: Line Height Semantics (Critical)
 
 This bug caused headline rows to visually overlap and appear clipped in production renders.
 
