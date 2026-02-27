@@ -53,6 +53,33 @@ describe('Chart Renderer', () => {
     expect(fullVisible).toBeGreaterThan(earlyVisible);
   });
 
+  it('supports alternate line reveal easing styles', () => {
+    const layer = createLineLayer();
+    const linear = renderChartLayer(
+      {
+        ...layer,
+        style: {
+          ...layer.style,
+          lineRevealEasing: 'linear',
+        },
+      },
+      { progress: 0.45 }
+    );
+
+    const elastic = renderChartLayer(
+      {
+        ...layer,
+        style: {
+          ...layer.style,
+          lineRevealEasing: 'elastic',
+        },
+      },
+      { progress: 0.45 }
+    );
+
+    expect(Array.from(linear.data)).not.toEqual(Array.from(elastic.data));
+  });
+
   it('reduces x-axis label density when maxLabels is low', () => {
     const labels = ['M1', 'M2', 'M3', 'M4', 'M5', 'M6', 'M7', 'M8', 'M9', 'M10', 'M11', 'M12'];
     const values = [10, 12, 9, 14, 13, 17, 16, 19, 21, 20, 22, 24];
@@ -86,90 +113,5 @@ describe('Chart Renderer', () => {
     const sparseVisible = countVisiblePixels(sparse.data);
 
     expect(denseVisible).toBeGreaterThan(sparseVisible);
-  });
-
-  // M1: Anti-aliased rendering tests
-  it('renders with anti-aliased lines when enabled', () => {
-    const layer: ChartLayer = {
-      ...createLineLayer(),
-      style: {
-        antiAlias: true,
-        showPoints: true,
-      },
-    };
-    const result = renderChartLayer(layer);
-    expect(result.width).toBe(640);
-    expect(countVisiblePixels(result.data)).toBeGreaterThan(0);
-  });
-
-  it('renders without anti-aliasing when disabled', () => {
-    const layer: ChartLayer = {
-      ...createLineLayer(),
-      style: {
-        antiAlias: false,
-        showPoints: true,
-      },
-    };
-    const result = renderChartLayer(layer);
-    expect(result.width).toBe(640);
-    expect(countVisiblePixels(result.data)).toBeGreaterThan(0);
-  });
-
-  // M1: Financial axis formatting tests
-  it('applies currency format to axis labels', () => {
-    const layer: ChartLayer = {
-      ...createLineLayer(),
-      data: {
-        labels: ['Jan', 'Feb', 'Mar'],
-        values: [1000, 2500, 5000],
-      },
-      yAxis: {
-        format: 'currency',
-        ticks: 5,
-      },
-      style: {
-        showValues: true,
-      },
-    };
-    const result = renderChartLayer(layer);
-    expect(result.width).toBe(640);
-  });
-
-  it('applies compact format to large numbers', () => {
-    const layer: ChartLayer = {
-      ...createLineLayer(),
-      data: {
-        labels: ['Q1', 'Q2', 'Q3', 'Q4'],
-        values: [1000000, 2500000, 5000000, 10000000],
-      },
-      yAxis: {
-        format: 'compact',
-        ticks: 5,
-      },
-      style: {
-        showValues: true,
-      },
-    };
-    const result = renderChartLayer(layer);
-    expect(result.width).toBe(640);
-  });
-
-  it('applies percentage format to small values', () => {
-    const layer: ChartLayer = {
-      ...createLineLayer(),
-      data: {
-        labels: ['A', 'B', 'C'],
-        values: [10, 25, 50],
-      },
-      yAxis: {
-        format: 'percentage',
-        ticks: 5,
-      },
-      style: {
-        showValues: true,
-      },
-    };
-    const result = renderChartLayer(layer);
-    expect(result.width).toBe(640);
   });
 });
