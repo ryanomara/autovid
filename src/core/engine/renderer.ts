@@ -41,7 +41,7 @@ import { TTSService } from '../audio/tts.js';
 import { HuggingFaceTTSProvider } from '../audio/providers/huggingface.js';
 import { applyBlur, applyGlow, applyShadow, applyTint } from '../effects/visual.js';
 import { generateParticles } from '../effects/particles.js';
-import type { ParticleEmitter } from '../effects/particles.js';
+import type { ParticleEmitter, ParticleEmitterPoint } from '../effects/particles.js';
 import { loadLottie } from '../effects/lottie.js';
 import { CPURenderer } from '../3d/cpu-renderer.js';
 import { GPURenderer } from '../3d/gpu-renderer.js';
@@ -1050,6 +1050,20 @@ export class Renderer {
       typeof effectLayer.params?.sourceAnchor === 'string'
         ? effectLayer.params.sourceAnchor.trim()
         : 'edge';
+    const sourceMode =
+      typeof effectLayer.params?.sourceMode === 'string'
+        ? effectLayer.params.sourceMode.trim()
+        : 'edge';
+    const sourceColorMode =
+      typeof effectLayer.params?.sourceColorMode === 'string'
+        ? effectLayer.params.sourceColorMode.trim()
+        : 'none';
+    const sampleColor = sourceColorMode === 'sample';
+    const brightnessThreshold =
+      typeof effectLayer.params?.brightnessThreshold === 'number' &&
+      Number.isFinite(effectLayer.params.brightnessThreshold)
+        ? Math.max(0, Math.min(1, effectLayer.params.brightnessThreshold))
+        : 0.62;
 
     if (sourceAnchor === 'chart-line-tip' && sourceLayer.type === 'chart') {
       const tip = this.getChartLineTipEmitter(
@@ -1087,14 +1101,35 @@ export class Renderer {
       cameraState,
       config
     );
-    const edgePoints = this.extractVisibleEdgePoints(transformed, placement.x, placement.y, config);
+    const edgePoints = this.extractVisibleEdgePoints(
+      transformed,
+      placement.x,
+      placement.y,
+      config,
+      sampleColor
+    );
+    const brightPoints = this.extractBrightPoints(
+      transformed,
+      placement.x,
+      placement.y,
+      config,
+      brightnessThreshold,
+      sampleColor
+    );
+
+    let selectedPoints: ParticleEmitterPoint[] = edgePoints;
+    if (sourceMode === 'bright') {
+      selectedPoints = brightPoints;
+    } else if (sourceMode === 'bright-edge') {
+      selectedPoints = brightPoints.length > 0 ? brightPoints.concat(edgePoints) : edgePoints;
+    }
 
     return {
       x: placement.x,
       y: placement.y,
       width: placement.width,
       height: placement.height,
-      edgePoints,
+      edgePoints: selectedPoints,
     };
   }
 
@@ -1322,9 +1357,10 @@ export class Renderer {
     buffer: PixelBuffer,
     offsetX: number,
     offsetY: number,
-    config: VideoConfig
-  ): Array<{ x: number; y: number }> {
-    const points: Array<{ x: number; y: number }> = [];
+    config: VideoConfig,
+    sampleColor: boolean
+  ): ParticleEmitterPoint[] {
+    const points: ParticleEmitterPoint[] = [];
     const width = buffer.width;
     const height = buffer.height;
     const maxPoints = 5000;
@@ -1349,7 +1385,66 @@ export class Renderer {
 
         const worldX = this.clampPosition(offsetX + x, 0, config.width - 1);
         const worldY = this.clampPosition(offsetY + y, 0, config.height - 1);
-        points.push({ x: worldX, y: worldY });
+        if (sampleColor) {
+          points.push({
+            x: worldX,
+            y: worldY,
+            color: {
+              r: buffer.data[idx],
+              g: buffer.data[idx + 1],
+              b: buffer.data[idx + 2],
+            },
+          });
+        } else {
+          points.push({ x: worldX, y: worldY });
+        }
+        if (points.length >= maxPoints) {
+          return points;
+        }
+      }
+    }
+
+    return points;
+  }
+
+  private extractBrightPoints(
+    buffer: PixelBuffer,
+    offsetX: number,
+    offsetY: number,
+    config: VideoConfig,
+    threshold: number,
+    sampleColor: boolean
+  ): ParticleEmitterPoint[] {
+    const points: ParticleEmitterPoint[] = [];
+    const width = buffer.width;
+    const height = buffer.height;
+    const maxPoints = 7000;
+    const step = Math.max(1, Math.floor(Math.min(width, height) / 320));
+
+    for (let y = 0; y < height; y += step) {
+      for (let x = 0; x < width; x += step) {
+        const idx = (y * width + x) * 4;
+        const alpha = buffer.data[idx + 3] / 255;
+        if (alpha < 0.08) {
+          continue;
+        }
+
+        const r = buffer.data[idx];
+        const g = buffer.data[idx + 1];
+        const b = buffer.data[idx + 2];
+        const luminance = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+        if (luminance < threshold) {
+          continue;
+        }
+
+        const worldX = this.clampPosition(offsetX + x, 0, config.width - 1);
+        const worldY = this.clampPosition(offsetY + y, 0, config.height - 1);
+        if (sampleColor) {
+          points.push({ x: worldX, y: worldY, color: { r, g, b } });
+        } else {
+          points.push({ x: worldX, y: worldY });
+        }
+
         if (points.length >= maxPoints) {
           return points;
         }

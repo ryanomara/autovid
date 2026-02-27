@@ -1,0 +1,289 @@
+{
+  "id": "pro-particle-reveals-dissolves",
+  "name": "Pro Particle Reveals and Dissolves",
+  "config": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "duration": 12000,
+    "backgroundColor": { "r": 8, "g": 14, "b": 26, "a": 1 },
+    "outputFormat": "mp4",
+    "quality": "high"
+  },
+  "scenes": [
+    {
+      "id": "text-reveal",
+      "name": "Text Reveal - Elastic Sparks",
+      "startTime": 0,
+      "endTime": 3000,
+      "layers": [
+        {
+          "id": "title-reveal",
+          "type": "text",
+          "text": "QUANT SIGNAL ONLINE",
+          "fontFamily": "Arial",
+          "fontSize": 88,
+          "fontWeight": "700",
+          "textAlign": "center",
+          "color": { "r": 242, "g": 248, "b": 255, "a": 1 },
+          "position": { "x": 960, "y": 470 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "startTime": 0,
+          "endTime": 3000,
+          "zIndex": 920,
+          "animations": [
+            {
+              "property": "opacity",
+              "keyframes": [
+                { "time": 0, "value": 0 },
+                { "time": 800, "value": 1, "easing": "easeOutElastic" }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "title-reveal-particles",
+          "type": "effect",
+          "effectType": "particles",
+          "params": {
+            "preset": "sparks",
+            "count": 320,
+            "sourceLayerId": "title-reveal",
+            "seed": 17,
+            "speed": 1.1,
+            "size": 1.0,
+            "opacity": 0.9,
+            "edgeFallbackRatio": 0,
+            "birthRate": 320,
+            "lifetime": 1.25,
+            "velocity": 250,
+            "drag": 1.1,
+            "turbulence": 18,
+            "spread": 105,
+            "gravityY": 26,
+            "alphaOverLife": { "start": 1, "end": 0 },
+            "sizeOverLife": { "start": 1.1, "end": 0.45 }
+          },
+          "position": { "x": 0, "y": 0 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "startTime": 0,
+          "endTime": 3000,
+          "zIndex": 880
+        }
+      ],
+      "transition": { "type": "fade", "duration": 450 }
+    },
+    {
+      "id": "text-dissolve",
+      "name": "Text Dissolve - Smoke Drift",
+      "startTime": 3000,
+      "endTime": 6000,
+      "layers": [
+        {
+          "id": "title-dissolve",
+          "type": "text",
+          "text": "RISK WINDOW CLOSING",
+          "fontFamily": "Arial",
+          "fontSize": 86,
+          "fontWeight": "700",
+          "textAlign": "center",
+          "color": { "r": 255, "g": 232, "b": 196, "a": 1 },
+          "position": { "x": 960, "y": 470 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "startTime": 3000,
+          "endTime": 6000,
+          "zIndex": 920,
+          "animations": [
+            {
+              "property": "opacity",
+              "keyframes": [
+                { "time": 3000, "value": 1 },
+                { "time": 5600, "value": 0, "easing": "easeInOutCubic" }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "title-dissolve-particles",
+          "type": "effect",
+          "effectType": "particles",
+          "params": {
+            "preset": "smoke",
+            "count": 460,
+            "sourceLayerId": "title-dissolve",
+            "seed": 29,
+            "speed": 0.95,
+            "size": 1.25,
+            "opacity": 0.92,
+            "edgeFallbackRatio": 0,
+            "birthRate": 280,
+            "lifetime": 1.7,
+            "velocity": 190,
+            "drag": 0.85,
+            "turbulence": 34,
+            "spread": 120,
+            "gravityY": -14,
+            "colorOverLife": {
+              "start": { "r": 224, "g": 214, "b": 198 },
+              "end": { "r": 96, "g": 101, "b": 120 }
+            },
+            "alphaOverLife": { "start": 0.95, "end": 0.12 },
+            "sizeOverLife": { "start": 0.8, "end": 1.65 }
+          },
+          "position": { "x": 0, "y": 0 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "startTime": 3000,
+          "endTime": 6000,
+          "zIndex": 880
+        }
+      ],
+      "transition": { "type": "fade", "duration": 450 }
+    },
+    {
+      "id": "image-reveal",
+      "name": "Image Reveal - Ember Sweep",
+      "startTime": 6000,
+      "endTime": 9000,
+      "layers": [
+        {
+          "id": "hero-image-reveal",
+          "type": "image",
+          "src": "assets/images/cyberpunk-finance-hero.png",
+          "fit": "cover",
+          "dimensions": { "width": 900, "height": 520 },
+          "position": { "x": 510, "y": 260 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "startTime": 6000,
+          "endTime": 9000,
+          "zIndex": 360,
+          "animations": [
+            {
+              "property": "opacity",
+              "keyframes": [
+                { "time": 6000, "value": 0 },
+                { "time": 6900, "value": 1, "easing": "easeOutCubic" }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "hero-image-reveal-particles",
+          "type": "effect",
+          "effectType": "particles",
+          "params": {
+            "preset": "fire",
+            "count": 500,
+            "sourceLayerId": "hero-image-reveal",
+            "sourceMode": "bright",
+            "sourceColorMode": "sample",
+            "brightnessThreshold": 0.56,
+            "seed": 61,
+            "speed": 1,
+            "size": 1.05,
+            "opacity": 0.86,
+            "edgeFallbackRatio": 0,
+            "birthRate": 360,
+            "lifetime": 1.45,
+            "velocity": 220,
+            "drag": 1,
+            "turbulence": 25,
+            "spread": 115,
+            "gravityY": 18,
+            "alphaOverLife": { "start": 1, "end": 0 },
+            "sizeOverLife": { "start": 1, "end": 0.5 }
+          },
+          "position": { "x": 0, "y": 0 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "startTime": 6000,
+          "endTime": 9000,
+          "zIndex": 520
+        }
+      ],
+      "transition": { "type": "fade", "duration": 450 }
+    },
+    {
+      "id": "image-dissolve",
+      "name": "Image Dissolve - Atmos Drift",
+      "startTime": 9000,
+      "endTime": 12000,
+      "layers": [
+        {
+          "id": "hero-image-dissolve",
+          "type": "image",
+          "src": "assets/images/cyberpunk-finance-hero.png",
+          "fit": "cover",
+          "dimensions": { "width": 900, "height": 520 },
+          "position": { "x": 510, "y": 260 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "startTime": 9000,
+          "endTime": 12000,
+          "zIndex": 360,
+          "animations": [
+            {
+              "property": "opacity",
+              "keyframes": [
+                { "time": 9000, "value": 1 },
+                { "time": 11750, "value": 0, "easing": "easeInCubic" }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "hero-image-dissolve-particles",
+          "type": "effect",
+          "effectType": "particles",
+          "params": {
+            "preset": "smoke",
+            "count": 600,
+            "sourceLayerId": "hero-image-dissolve",
+            "sourceMode": "bright",
+            "sourceColorMode": "sample",
+            "brightnessThreshold": 0.56,
+            "seed": 88,
+            "speed": 0.9,
+            "size": 1.35,
+            "opacity": 0.92,
+            "edgeFallbackRatio": 0,
+            "birthRate": 320,
+            "lifetime": 1.9,
+            "velocity": 200,
+            "drag": 0.8,
+            "turbulence": 40,
+            "spread": 130,
+            "gravityY": -20,
+            "colorOverLife": {
+              "start": { "r": 220, "g": 214, "b": 206 },
+              "end": { "r": 70, "g": 84, "b": 108 }
+            },
+            "sourceColorMix": 0.6,
+            "alphaOverLife": { "start": 0.95, "end": 0.08 },
+            "sizeOverLife": { "start": 0.85, "end": 1.9 }
+          },
+          "position": { "x": 0, "y": 0 },
+          "scale": { "x": 1, "y": 1 },
+          "rotation": 0,
+          "opacity": 1,
+          "startTime": 9000,
+          "endTime": 12000,
+          "zIndex": 520
+        }
+      ],
+      "transition": { "type": "fade", "duration": 450 }
+    }
+  ],
+  "audio": []
+}

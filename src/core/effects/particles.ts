@@ -31,6 +31,13 @@ export interface ParticleSystemConfig {
   };
   sizeOverLife?: { start: number; end: number };
   alphaOverLife?: { start: number; end: number };
+  sourceColorMix?: number;
+}
+
+export interface ParticleEmitterPoint {
+  x: number;
+  y: number;
+  color?: { r: number; g: number; b: number };
 }
 
 export interface ParticleEmitter {
@@ -38,7 +45,7 @@ export interface ParticleEmitter {
   y: number;
   width: number;
   height: number;
-  edgePoints?: Array<{ x: number; y: number }>;
+  edgePoints?: ParticleEmitterPoint[];
   flow?: 'edge' | 'trail';
   directionX?: number;
   directionY?: number;
@@ -82,6 +89,7 @@ export const generateParticles = (
   const curlScale = Math.max(0.0001, config.curlScale ?? 0.01);
   const curlStrength = Math.max(0, config.curlStrength ?? 0);
   const simulationSteps = Math.max(2, Math.min(28, Math.round(config.simulationSteps ?? 10)));
+  const sourceColorMix = Math.max(0, Math.min(1, config.sourceColorMix ?? 0));
 
   for (let i = 0; i < count; i += 1) {
     const rng = createRng(seed ^ ((i + 1) * 2654435761));
@@ -126,6 +134,8 @@ export const generateParticles = (
       alphaOverLife: config.alphaOverLife,
       lifeSec: life,
       particleIndex: i,
+      sourceColor: origin.color,
+      sourceColorMix,
     });
 
     const tuned = applyLifeRamps(sample, phase, config);
@@ -166,6 +176,8 @@ interface ParticleSampleContext {
   alphaOverLife?: { start: number; end: number };
   lifeSec: number;
   particleIndex: number;
+  sourceColor?: { r: number; g: number; b: number };
+  sourceColorMix: number;
 }
 
 interface ParticleSample {
@@ -195,20 +207,29 @@ function samplePreset(preset: ParticlePreset, ctx: ParticleSampleContext): Parti
       const tangentX = next.x - prev.x;
       const tangentY = next.y - prev.y;
       const tangentLength = Math.hypot(tangentX, tangentY) || 1;
-      return simulateTrailParticle(
-        anchor,
-        { x: tangentX / tangentLength, y: tangentY / tangentLength },
-        ctx,
-        index / pathPoints.length
+      return tintSampleColor(
+        simulateTrailParticle(
+          anchor,
+          { x: tangentX / tangentLength, y: tangentY / tangentLength },
+          ctx,
+          index / pathPoints.length
+        ),
+        ctx
       );
     }
 
     const directionLength = Math.hypot(ctx.emitter.directionX, ctx.emitter.directionY) || 1;
-    return simulateTrailParticle(
-      { x: ctx.baseX, y: ctx.baseY },
-      { x: ctx.emitter.directionX / directionLength, y: ctx.emitter.directionY / directionLength },
-      ctx,
-      0
+    return tintSampleColor(
+      simulateTrailParticle(
+        { x: ctx.baseX, y: ctx.baseY },
+        {
+          x: ctx.emitter.directionX / directionLength,
+          y: ctx.emitter.directionY / directionLength,
+        },
+        ctx,
+        0
+      ),
+      ctx
     );
   }
 
@@ -224,13 +245,16 @@ function samplePreset(preset: ParticlePreset, ctx: ParticleSampleContext): Parti
       ? Math.max(40, Math.min(ctx.height - ctx.emitter.y, ctx.emitter.height * 4 + 140))
       : ctx.height + 24;
     const drift = ctx.sway * (5 + ctx.rng() * 7);
-    return {
-      x: xProject(ctx.baseX + drift + ctx.wind * 18 * ctx.timeS),
-      y: clamp(ctx.baseY + ctx.phase * fallRange - 12, -12, ctx.height + 12),
-      radius: Math.max(1, Math.round((1 + ctx.rng() * 2.2) * ctx.sizeMul)),
-      color: { r: 236, g: 245, b: 255 },
-      alpha: Math.round((120 + ctx.rng() * 110) * ctx.opacity),
-    };
+    return tintSampleColor(
+      {
+        x: xProject(ctx.baseX + drift + ctx.wind * 18 * ctx.timeS),
+        y: clamp(ctx.baseY + ctx.phase * fallRange - 12, -12, ctx.height + 12),
+        radius: Math.max(1, Math.round((1 + ctx.rng() * 2.2) * ctx.sizeMul)),
+        color: { r: 236, g: 245, b: 255 },
+        alpha: Math.round((120 + ctx.rng() * 110) * ctx.opacity),
+      },
+      ctx
+    );
   }
 
   if (preset === 'fire') {
@@ -240,17 +264,20 @@ function samplePreset(preset: ParticlePreset, ctx: ParticleSampleContext): Parti
       : ctx.height * (0.7 + ctx.rng() * 0.25);
     const y = originY - ctx.phase * riseRange;
     const heat = 1 - ctx.phase;
-    return {
-      x: xProject(ctx.baseX + ctx.sway * 10 + ctx.wind * 12 * ctx.timeS),
-      y,
-      radius: Math.max(1, Math.round((1 + heat * 3) * ctx.sizeMul)),
-      color: {
-        r: 255,
-        g: Math.round(120 + 110 * heat),
-        b: Math.round(20 + 30 * (1 - heat)),
+    return tintSampleColor(
+      {
+        x: xProject(ctx.baseX + ctx.sway * 10 + ctx.wind * 12 * ctx.timeS),
+        y,
+        radius: Math.max(1, Math.round((1 + heat * 3) * ctx.sizeMul)),
+        color: {
+          r: 255,
+          g: Math.round(120 + 110 * heat),
+          b: Math.round(20 + 30 * (1 - heat)),
+        },
+        alpha: Math.round((80 + 150 * heat) * ctx.opacity),
       },
-      alpha: Math.round((80 + 150 * heat) * ctx.opacity),
-    };
+      ctx
+    );
   }
 
   if (preset === 'smoke') {
@@ -261,13 +288,16 @@ function samplePreset(preset: ParticlePreset, ctx: ParticleSampleContext): Parti
         ? Math.max(30, Math.min(ctx.height, ctx.emitter.height * 4 + 120))
         : ctx.height * 0.65);
     const gray = Math.round(110 + ctx.rng() * 80);
-    return {
-      x: xProject(ctx.baseX + ctx.sway * 14 + ctx.wind * 16 * ctx.timeS),
-      y: originY - lift,
-      radius: Math.max(1, Math.round((2 + ctx.rng() * 4) * ctx.sizeMul)),
-      color: { r: gray, g: gray, b: gray },
-      alpha: Math.round((35 + 90 * (1 - ctx.phase)) * ctx.opacity),
-    };
+    return tintSampleColor(
+      {
+        x: xProject(ctx.baseX + ctx.sway * 14 + ctx.wind * 16 * ctx.timeS),
+        y: originY - lift,
+        radius: Math.max(1, Math.round((2 + ctx.rng() * 4) * ctx.sizeMul)),
+        color: { r: gray, g: gray, b: gray },
+        alpha: Math.round((35 + 90 * (1 - ctx.phase)) * ctx.opacity),
+      },
+      ctx
+    );
   }
 
   if (preset === 'sparks') {
@@ -277,13 +307,16 @@ function samplePreset(preset: ParticlePreset, ctx: ParticleSampleContext): Parti
       (ctx.emitter
         ? Math.max(24, Math.min(ctx.height, ctx.emitter.height * 4 + 140))
         : ctx.height * 0.85);
-    return {
-      x: xProject(ctx.baseX + ctx.sway * 20 + ctx.wind * 24 * ctx.timeS),
-      y: originY - rise,
-      radius: Math.max(1, Math.round((0.8 + ctx.rng() * 1.6) * ctx.sizeMul)),
-      color: { r: 255, g: Math.round(170 + ctx.rng() * 70), b: 40 },
-      alpha: Math.round((90 + 140 * (1 - ctx.phase)) * ctx.opacity),
-    };
+    return tintSampleColor(
+      {
+        x: xProject(ctx.baseX + ctx.sway * 20 + ctx.wind * 24 * ctx.timeS),
+        y: originY - rise,
+        radius: Math.max(1, Math.round((0.8 + ctx.rng() * 1.6) * ctx.sizeMul)),
+        color: { r: 255, g: Math.round(170 + ctx.rng() * 70), b: 40 },
+        alpha: Math.round((90 + 140 * (1 - ctx.phase)) * ctx.opacity),
+      },
+      ctx
+    );
   }
 
   const palette = [
@@ -297,12 +330,34 @@ function samplePreset(preset: ParticlePreset, ctx: ParticleSampleContext): Parti
   const fallRange = ctx.emitter
     ? Math.max(38, Math.min(ctx.height - ctx.emitter.y, ctx.emitter.height * 4 + 150))
     : ctx.height + 18;
+  return tintSampleColor(
+    {
+      x: xProject(ctx.baseX + ctx.sway * 28 + ctx.wind * 22 * ctx.timeS),
+      y: clamp(ctx.baseY + ctx.phase * fallRange - 9, -9, ctx.height + 9),
+      radius: Math.max(1, Math.round((1.4 + ctx.rng() * 2.4) * ctx.sizeMul)),
+      color,
+      alpha: Math.round((110 + ctx.rng() * 130) * ctx.opacity),
+    },
+    ctx
+  );
+}
+
+function tintSampleColor(sample: ParticleSample, ctx: ParticleSampleContext): ParticleSample {
+  if (!ctx.sourceColor || ctx.sourceColorMix <= 0) {
+    return sample;
+  }
+
+  const mix = ctx.sourceColorMix;
   return {
-    x: xProject(ctx.baseX + ctx.sway * 28 + ctx.wind * 22 * ctx.timeS),
-    y: clamp(ctx.baseY + ctx.phase * fallRange - 9, -9, ctx.height + 9),
-    radius: Math.max(1, Math.round((1.4 + ctx.rng() * 2.4) * ctx.sizeMul)),
-    color,
-    alpha: Math.round((110 + ctx.rng() * 130) * ctx.opacity),
+    x: sample.x,
+    y: sample.y,
+    radius: sample.radius,
+    alpha: sample.alpha,
+    color: {
+      r: Math.round(lerp(sample.color.r, ctx.sourceColor.r, mix)),
+      g: Math.round(lerp(sample.color.g, ctx.sourceColor.g, mix)),
+      b: Math.round(lerp(sample.color.b, ctx.sourceColor.b, mix)),
+    },
   };
 }
 
@@ -327,6 +382,13 @@ function normalizeEmitter(
         .map((point) => ({
           x: clamp(point.x, x, x + safeW - 1),
           y: clamp(point.y, y, y + safeH - 1),
+          color: point.color
+            ? {
+                r: Math.max(0, Math.min(255, Math.round(point.color.r))),
+                g: Math.max(0, Math.min(255, Math.round(point.color.g))),
+                b: Math.max(0, Math.min(255, Math.round(point.color.b))),
+              }
+            : undefined,
         }))
         .slice(0, 5000)
     : undefined;
@@ -351,7 +413,7 @@ function pickEmitterPoint(
   width: number,
   height: number,
   edgeFallbackRatio: number
-): { x: number; y: number } | null {
+): ParticleEmitterPoint | null {
   if (!emitter) {
     return { x: rng() * width, y: rng() * height };
   }
@@ -363,6 +425,7 @@ function pickEmitterPoint(
     return {
       x: clamp(point.x + (rng() - 0.5) * jitter, emitter.x, emitter.x + emitter.width - 1),
       y: clamp(point.y + (rng() - 0.5) * jitter, emitter.y, emitter.y + emitter.height - 1),
+      color: point.color,
     };
   }
 

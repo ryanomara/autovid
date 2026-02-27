@@ -172,4 +172,40 @@ describe('Particles', () => {
     const alphaValues = result.data.filter((_, idx) => idx % 4 === 3);
     expect(alphaValues.some((a) => a > 0)).toBe(false);
   });
+
+  it('changes particle coloration when source-color tint is enabled', () => {
+    const width = 96;
+    const height = 96;
+    const untinted = generateParticles(createBuffer(width, height), {
+      preset: 'sparks',
+      count: 160,
+      timeMs: 200,
+      seed: 19,
+      emitter: {
+        x: 40,
+        y: 40,
+        width: 1,
+        height: 1,
+        edgePoints: [{ x: 40, y: 40, color: { r: 10, g: 220, b: 180 } }],
+      },
+      sourceColorMix: 0,
+    });
+
+    const tinted = generateParticles(createBuffer(width, height), {
+      preset: 'sparks',
+      count: 160,
+      timeMs: 200,
+      seed: 19,
+      emitter: {
+        x: 40,
+        y: 40,
+        width: 1,
+        height: 1,
+        edgePoints: [{ x: 40, y: 40, color: { r: 10, g: 220, b: 180 } }],
+      },
+      sourceColorMix: 1,
+    });
+
+    expect(Array.from(tinted.data)).not.toEqual(Array.from(untinted.data));
+  });
 });
